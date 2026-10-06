@@ -27,6 +27,9 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  /* أعلى الصفحة: الهيدر فوق الهبوط الداكن → ألوان فاتحة */
+  const dark = !scrolled && !open;
+
   return (
     <>
       <header
@@ -38,7 +41,7 @@ export default function Header() {
       >
         <div className="container-x flex items-center justify-between">
           <a href="#home" aria-label="فيتبايت — الصفحة الرئيسية">
-            <Logo withTagline={!scrolled} />
+            <Logo tone={dark ? 'cream' : 'forest'} withTagline={!scrolled} />
           </a>
 
           <nav className="hidden items-center gap-7 lg:flex" aria-label="التنقل الرئيسي">
@@ -46,7 +49,9 @@ export default function Header() {
               <a
                 key={l.href}
                 href={l.href}
-                className="group relative text-sm font-extrabold text-ink/75 transition hover:text-forest"
+                className={`group relative text-sm font-extrabold transition ${
+                  dark ? 'text-cream/85 hover:text-cream' : 'text-ink/75 hover:text-forest'
+                }`}
               >
                 {l.label}
                 <span className="absolute -bottom-1.5 right-0 h-0.5 w-0 rounded-full bg-copper transition-all duration-300 group-hover:w-full" />
@@ -57,7 +62,11 @@ export default function Header() {
           <div className="flex items-center gap-2">
             <button
               onClick={openCart}
-              className="relative grid h-11 w-11 place-items-center rounded-full bg-forest text-cream transition hover:bg-forest-deep hover:shadow-lift"
+              className={`relative grid h-11 w-11 place-items-center rounded-full transition hover:shadow-lift ${
+                dark
+                  ? 'bg-cream text-forest hover:bg-card'
+                  : 'bg-forest text-cream hover:bg-forest-deep'
+              }`}
               aria-label={`فتح سلة الطلبات (${totals.count} صنف)`}
             >
               <IconCart className="h-5 w-5" />
@@ -77,7 +86,11 @@ export default function Header() {
             </button>
             <button
               onClick={() => setOpen((o) => !o)}
-              className="grid h-11 w-11 place-items-center rounded-full border border-sand bg-card text-forest lg:hidden"
+              className={`grid h-11 w-11 place-items-center rounded-full border transition lg:hidden ${
+                dark
+                  ? 'border-cream/25 bg-cream/10 text-cream'
+                  : 'border-sand bg-card text-forest'
+              }`}
               aria-label="فتح القائمة"
             >
               {open ? <IconClose className="h-5 w-5" /> : <IconMenuBars className="h-5 w-5" />}

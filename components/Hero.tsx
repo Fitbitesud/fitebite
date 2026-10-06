@@ -3,8 +3,14 @@
 import { motion } from 'framer-motion';
 import { SITE } from '@/lib/config';
 import { whatsappLink } from '@/lib/whatsapp';
-import { IconFlame, IconStar, IconWhatsApp } from './Icons';
-import { LogoMark } from './Logo';
+import {
+  IconChart,
+  IconCloche,
+  IconFlame,
+  IconLeaf,
+  IconStar,
+  IconWhatsApp,
+} from './Icons';
 
 const STATS = [
   { value: '+500', label: 'وجبة تُسلّم أسبوعياً', star: false },
@@ -18,30 +24,38 @@ const MACROS = [
   { v: '58غ', l: 'كاربوهيدرات' },
 ];
 
+/** شريط وعود الهوية — مثل الشريط السفلي في البوستر الرسمي */
+const STRIP = [
+  { Icon: IconCloche, t: 'طعم شهي', s: 'وجودة عالية' },
+  { Icon: IconChart, t: 'ماكروز', s: 'محسوبة بدقة' },
+  { Icon: IconFlame, t: 'سعرات حرارية', s: 'دقيقة' },
+  { Icon: IconLeaf, t: 'بدون زيوت', s: 'أكل صحي 100%' },
+];
+
 export default function Hero() {
   return (
-    <section id="home" className="relative overflow-hidden pb-28 pt-36 scroll-mt-20">
-      {/* خلفية الهبوط: شعار المطعم كخلفية + لون أخضر خفيف فوقه */}
+    <section id="home" className="relative scroll-mt-20 overflow-hidden bg-forest pt-32 text-cream">
+      {/* الخلفية: شعار المطعم متكرر + توهجات لونية */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        {/* علامة الشعار خلفيةً بأكمل الهبوط */}
-        <LogoMark className="absolute left-1/2 top-1/2 h-[135vmin] w-[135vmin] -translate-x-1/2 -translate-y-1/2 text-forest opacity-[0.07]" />
-        {/* عمق لوني */}
-        <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-olive/20 blur-3xl" />
-        <div className="absolute -left-24 top-40 h-72 w-72 rounded-full bg-leaf/20 blur-3xl" />
-        {/* اللون الأخضر الخفيف فوق الشعار */}
-        <div className="absolute inset-0 bg-gradient-to-b from-leaf/20 via-leaf/10 to-cream/70" />
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{ backgroundImage: "url('/logo-pattern.svg')", backgroundSize: '170px 170px' }}
+        />
+        <div className="absolute -right-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-leaf/15 blur-3xl" />
+        <div className="absolute -left-32 bottom-0 h-96 w-96 rounded-full bg-copper/15 blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-t from-forest-deep/70 via-transparent to-forest-deep/40" />
       </div>
 
-      <div className="container-x grid items-center gap-16 lg:grid-cols-2">
+      <div className="container-x relative grid items-center gap-16 pb-24 pt-10 lg:grid-cols-2 lg:pb-28">
         {/* النص */}
         <div>
           <motion.span
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full bg-leaf/15 px-4 py-2 text-xs font-extrabold text-forest"
+            className="inline-flex items-center gap-2 rounded-full border border-cream/15 bg-cream/10 px-4 py-2 text-xs font-extrabold text-cream backdrop-blur"
           >
-            <IconFlame className="h-4 w-4 text-copper" />
+            <IconFlame className="h-4 w-4 text-[#D9A05B]" />
             وجبات طازجة تُطهى يومياً بدون زيوت مضافة
           </motion.span>
 
@@ -49,10 +63,10 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="mt-6 text-4xl font-black leading-[1.2] text-forest sm:text-5xl lg:text-[3.4rem]"
+            className="mt-6 text-4xl font-black leading-[1.25] text-cream sm:text-5xl lg:text-[3.4rem]"
           >
             طعام صحي يُحسب{' '}
-            <span className="relative inline-block text-copper">
+            <span className="relative inline-block text-[#D9A05B]">
               بالغرام
               <svg viewBox="0 0 120 14" className="absolute -bottom-2 right-0 w-full" fill="none" aria-hidden="true">
                 <path d="M4 10 C30 4 90 4 116 8" stroke="#7E9C4E" strokeWidth="5" strokeLinecap="round" />
@@ -67,7 +81,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.32, duration: 0.6 }}
-            className="mt-6 max-w-lg text-base leading-8 text-muted sm:text-lg"
+            className="mt-6 max-w-lg text-base leading-8 text-cream/70 sm:text-lg"
           >
             وجبات محسوبة السعرات والماكروز، مشوية ومطهوة على البخار — حسب هدفك ضخامة أو
             تنشيف — وتوصلك حتى باب البيت في {SITE.city}.
@@ -81,7 +95,7 @@ export default function Hero() {
           >
             <a
               href="#menu"
-              className="rounded-full bg-forest px-8 py-4 text-base font-black text-cream shadow-soft transition hover:-translate-y-0.5 hover:bg-forest-deep hover:shadow-lift"
+              className="rounded-full bg-copper px-8 py-4 text-base font-black text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-copper-dark"
             >
               تصفح القائمة
             </a>
@@ -89,7 +103,7 @@ export default function Hero() {
               href={whatsappLink(`مرحباً ${SITE.nameAr}! 👋 أريد الاستفسار عن الوجبات.`)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-full bg-wa px-7 py-4 text-base font-black text-white shadow-soft transition hover:-translate-y-0.5 hover:brightness-110"
+              className="flex items-center gap-2 rounded-full bg-wa px-7 py-4 text-base font-black text-white shadow-lift transition hover:-translate-y-0.5 hover:brightness-110"
             >
               <IconWhatsApp className="h-5 w-5" />
               اطلب عبر واتساب
@@ -104,61 +118,89 @@ export default function Hero() {
           >
             {STATS.map((s, i) => (
               <div key={s.label} className="flex items-center gap-5 sm:gap-7">
-                {i > 0 && <span className="h-10 w-px bg-sand" aria-hidden="true" />}
+                {i > 0 && <span className="h-10 w-px bg-cream/15" aria-hidden="true" />}
                 <div>
-                  <div className="flex items-center gap-1 text-2xl font-black text-forest">
+                  <div className="flex items-center gap-1 text-2xl font-black text-cream">
                     {s.value}
-                    {s.star && <IconStar className="h-5 w-5 text-copper" />}
+                    {s.star && <IconStar className="h-5 w-5 text-[#D9A05B]" />}
                   </div>
-                  <div className="mt-1 text-xs font-bold text-muted">{s.label}</div>
+                  <div className="mt-1 text-xs font-bold text-cream/60">{s.label}</div>
                 </div>
               </div>
             ))}
           </motion.div>
         </div>
 
-        {/* الصورة */}
-        <div className="relative">
-          <div className="absolute -inset-6 rotate-3 rounded-[3rem] bg-olive/15 sm:-inset-8" aria-hidden="true" />
-          <div className="absolute -inset-6 -rotate-2 rounded-[3rem] border-2 border-dashed border-leaf/40 sm:-inset-8" aria-hidden="true" />
+        {/* الصورة داخل إطار قوسي بأسلوب البوستر */}
+        <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+          <div
+            className="absolute -inset-5 rotate-2 rounded-t-[13rem] rounded-b-[2.5rem] bg-olive/40"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute -inset-5 -rotate-3 rounded-t-[13rem] rounded-b-[2.5rem] border-2 border-dashed border-cream/20"
+            aria-hidden="true"
+          />
           <motion.img
             src="/images/hero-bowl.jpg"
             alt="باول الدجاج المشوي من فيتبايت"
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.25, duration: 0.8 }}
-            className="relative aspect-[4/3] w-full rounded-[2.5rem] border-4 border-card object-cover shadow-lift"
+            className="relative aspect-[4/5] w-full rounded-t-[12rem] rounded-b-[2rem] border-4 border-cream/15 object-cover shadow-lift"
           />
           <motion.span
             initial={{ scale: 0, rotate: -20 }}
             animate={{ scale: 1, rotate: -3 }}
             transition={{ delay: 0.9, type: 'spring', stiffness: 200, damping: 14 }}
-            className="absolute -top-5 left-6 rounded-full bg-copper px-4 py-2 text-xs font-black text-white shadow-lift"
+            className="absolute -top-4 left-8 rounded-full bg-copper px-4 py-2 text-xs font-black text-white shadow-lift"
           >
             100% بدون زيوت مضافة
           </motion.span>
-          <div className="absolute -bottom-12 right-4 animate-float sm:right-10">
+          <div className="absolute -bottom-10 right-4 animate-float sm:right-8">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.6 }}
-              className="rounded-2xl border border-sand bg-card/95 p-4 shadow-soft backdrop-blur"
+              className="rounded-2xl border border-cream/10 bg-forest-deep/85 p-4 shadow-lift backdrop-blur"
             >
-              <div className="flex items-center gap-2 text-xs font-black text-forest">
-                <IconFlame className="h-4 w-4 text-copper" />
+              <div className="flex items-center gap-2 text-xs font-black text-cream">
+                <IconFlame className="h-4 w-4 text-[#D9A05B]" />
                 باول الدجاج المشوي
               </div>
               <div className="mt-2.5 flex gap-2 text-center">
                 {MACROS.map((m) => (
-                  <div key={m.l} className="rounded-lg border border-sand bg-cream px-2.5 py-1.5">
-                    <b className="block text-sm font-black text-forest">{m.v}</b>
-                    <span className="text-[9px] font-bold text-muted">{m.l}</span>
+                  <div key={m.l} className="rounded-lg border border-cream/10 bg-cream/10 px-2.5 py-1.5">
+                    <b className="block text-sm font-black text-cream">{m.v}</b>
+                    <span className="text-[9px] font-bold text-cream/60">{m.l}</span>
                   </div>
                 ))}
               </div>
             </motion.div>
           </div>
         </div>
+      </div>
+
+      {/* شريط وعود الهوية أسفل الهبوط */}
+      <div className="relative grid grid-cols-2 divide-x divide-x-reverse divide-y divide-cream/10 border-t border-cream/10 bg-forest-deep/70 backdrop-blur lg:grid-cols-4 lg:divide-y-0">
+        {STRIP.map((s, i) => (
+          <motion.div
+            key={s.t}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.08, duration: 0.5 }}
+            className="flex items-center gap-3.5 px-6 py-5"
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cream/20 bg-cream/5 text-leaf">
+              <s.Icon className="h-5 w-5" />
+            </span>
+            <span>
+              <b className="block text-sm font-black text-cream">{s.t}</b>
+              <span className="text-[11px] font-bold text-cream/60">{s.s}</span>
+            </span>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
