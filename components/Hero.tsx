@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { SITE } from '@/lib/config';
 import { whatsappLink } from '@/lib/whatsapp';
 import { IconFlame, IconStar, IconWhatsApp } from './Icons';
+import { LogoMark } from './Logo';
 
 const STATS = [
   { value: '+500', label: 'وجبة تُسلّم أسبوعياً', star: false },
