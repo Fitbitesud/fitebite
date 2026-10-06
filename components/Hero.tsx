@@ -35,16 +35,11 @@ const STRIP = [
 export default function Hero() {
   return (
     <section id="home" className="relative scroll-mt-20 overflow-hidden bg-forest pt-32 text-cream">
-      {/* الخلفية: شعار المطعم متكرر + توهجات لونية */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div
-          className="absolute inset-0 opacity-[0.05]"
-          style={{ backgroundImage: "url('/logo-pattern.svg')", backgroundSize: '170px 170px' }}
-        />
-        <div className="absolute -right-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-leaf/15 blur-3xl" />
-        <div className="absolute -left-32 bottom-0 h-96 w-96 rounded-full bg-copper/15 blur-3xl" />
-        <div className="absolute inset-0 bg-gradient-to-t from-forest-deep/70 via-transparent to-forest-deep/40" />
-      </div>
+      {/* خلفية بسيطة: لون أخضر داكن مسطّح + إضاءة علوية خفيفة واحدة */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_0%,rgba(126,156,78,0.14),transparent_70%)]"
+        aria-hidden="true"
+      />
 
       <div className="container-x relative grid items-center gap-16 pb-24 pt-10 lg:grid-cols-2 lg:pb-28">
         {/* النص */}
@@ -131,23 +126,15 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* الصورة داخل إطار قوسي بأسلوب البوستر */}
+        {/* الصورة بإطار نظيف بسيط */}
         <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-          <div
-            className="absolute -inset-5 rotate-2 rounded-t-[13rem] rounded-b-[2.5rem] bg-olive/40"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute -inset-5 -rotate-3 rounded-t-[13rem] rounded-b-[2.5rem] border-2 border-dashed border-cream/20"
-            aria-hidden="true"
-          />
           <motion.img
             src="/images/hero-bowl.jpg"
             alt="باول الدجاج المشوي من فيتبايت"
-            initial={{ opacity: 0, scale: 0.94 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.25, duration: 0.8 }}
-            className="relative aspect-[4/5] w-full rounded-t-[12rem] rounded-b-[2rem] border-4 border-cream/15 object-cover shadow-lift"
+            className="relative aspect-[4/5] w-full rounded-[2.5rem] border border-cream/10 object-cover shadow-2xl"
           />
           <motion.span
             initial={{ scale: 0, rotate: -20 }}
