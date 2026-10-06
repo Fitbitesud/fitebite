@@ -21,12 +21,16 @@ const MACROS = [
 export default function Hero() {
   return (
     <section id="home" className="relative overflow-hidden pb-28 pt-36 scroll-mt-20">
-      {/* زخارف خلفية */}
-      <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-olive/15 blur-3xl" aria-hidden="true" />
-      <div className="pointer-events-none absolute -left-24 top-40 h-72 w-72 rounded-full bg-leaf/10 blur-3xl" aria-hidden="true" />
-      <svg viewBox="0 0 24 24" className="pointer-events-none absolute -top-8 left-8 h-40 w-40 rotate-[200deg] text-forest opacity-[0.06]" fill="currentColor" aria-hidden="true">
-        <path d="M5 19C5 10 10 5 20 4c-.5 10-5.5 15-15 15z" />
-      </svg>
+      {/* خلفية الهبوط: شعار المطعم كخلفية + لون أخضر خفيف فوقه */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        {/* علامة الشعار خلفيةً بأكمل الهبوط */}
+        <LogoMark className="absolute left-1/2 top-1/2 h-[135vmin] w-[135vmin] -translate-x-1/2 -translate-y-1/2 text-forest opacity-[0.07]" />
+        {/* عمق لوني */}
+        <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-olive/20 blur-3xl" />
+        <div className="absolute -left-24 top-40 h-72 w-72 rounded-full bg-leaf/20 blur-3xl" />
+        {/* اللون الأخضر الخفيف فوق الشعار */}
+        <div className="absolute inset-0 bg-gradient-to-b from-leaf/20 via-leaf/10 to-cream/70" />
+      </div>
 
       <div className="container-x grid items-center gap-16 lg:grid-cols-2">
         {/* النص */}
