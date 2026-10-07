@@ -97,6 +97,74 @@ export function computeQuote(goal: GoalInfo, meals: number): SubscriptionQuote {
 export const mealsLabel = (m: number): string =>
   m === 1 ? 'وجبة واحدة' : m === 2 ? 'وجبتان' : `${m} وجبات`;
 
+/** الباقات الشهرية الجاهزة — تُعرض كبطاقات بسعر مباشر */
+export interface ReadyPackage {
+  id: string;
+  name: string;
+  goalId: SubscriptionGoalId;
+  meals: number;
+  kcal: number;
+  desc: string;
+  badge?: string;
+}
+
+export const READY_PACKAGES: ReadyPackage[] = [
+  {
+    id: 'bulk-pro',
+    name: 'باقة التضخيم برو',
+    goalId: 'bulking',
+    meals: 4,
+    kcal: 3400,
+    desc: 'فائض سعرات عالٍ بأربع وجبات تغطي يوم تمرين شاق بالكامل.',
+    badge: 'الأقوى للضخامة',
+  },
+  {
+    id: 'bulk-core',
+    name: 'باقة التضخيم الأساسية',
+    goalId: 'bulking',
+    meals: 3,
+    kcal: 3000,
+    desc: 'ثلاث وجبات متوازنة لبناء عضلي ثابت بدون أي تحضير منزلي.',
+  },
+  {
+    id: 'cut-pro',
+    name: 'باقة التنشيف برو',
+    goalId: 'cutting',
+    meals: 3,
+    kcal: 2400,
+    desc: 'عجز محسوب مع بروتين مرتفع يحفظ العضل أثناء التخسيس.',
+    badge: 'الأكثر اختياراً',
+  },
+  {
+    id: 'cut-core',
+    name: 'باقة التنشيف الأساسية',
+    goalId: 'cutting',
+    meals: 2,
+    kcal: 2000,
+    desc: 'وجبتا اليوم الأعلى تأثيراً بأقل سعرات — مثالية للموظفين.',
+  },
+  {
+    id: 'maintain-active',
+    name: 'باقة المحافظة النشطة',
+    goalId: 'maintain',
+    meals: 2,
+    kcal: 2600,
+    desc: 'توازن يحافظ على وزنك وطاقتك مع نمط حياة رياضي.',
+  },
+  {
+    id: 'maintain-light',
+    name: 'باقة الصحة الخفيفة',
+    goalId: 'maintain',
+    meals: 1,
+    kcal: 2200,
+    desc: 'وجبة واحدة متكاملة تُدخل عادة الأكل الصحي بدون التزام كبير.',
+  },
+];
+
+/** ضمان فيتبايت للاشتراكات */
+export const GUARANTEE =
+  'التزام دقيق بالماكروز المعلنة (±5%)، وجبات طازجة تُطهى يومياً، وإمكانية تعديل السعرات مع أخصائي التغذية خلال أول أسبوع — أو استبدال الوجبة مجاناً.';
+
 /** رسالة واتساب لطلب الاشتراك المخصص */
 export function buildSubscriptionMessage(opts: {
   goal: GoalInfo;

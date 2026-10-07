@@ -4,14 +4,17 @@ import { useMemo, useState } from 'react';
 import { fmt, price } from '@/lib/format';
 import {
   GOALS,
+  GUARANTEE,
   KCAL_RANGE,
   MEAL_DISCOUNT,
   MEAL_OPTIONS,
+  READY_PACKAGES,
   SUBSCRIPTION_DAYS,
   buildSubscriptionMessage,
   computeDailyMacros,
   computeQuote,
   mealsLabel,
+  type ReadyPackage,
   type SubscriptionGoalId,
 } from '@/lib/subscriptions';
 import { openWhatsApp } from '@/lib/whatsapp';
@@ -20,6 +23,7 @@ import {
   IconDumbbell,
   IconFlame,
   IconLeafSprig,
+  IconShield,
   IconWhatsApp,
 } from '../Icons';
 import Reveal from '../Reveal';
@@ -30,12 +34,6 @@ const GOAL_ICONS = {
   flame: IconFlame,
   leaf: IconLeafSprig,
 } as const;
-
-const PRESETS: { goal: SubscriptionGoalId; meals: number }[] = [
-  { goal: 'bulking', meals: 3 },
-  { goal: 'cutting', meals: 2 },
-  { goal: 'maintain', meals: 2 },
-];
 
 const KCAL_CHIPS = [2200, 2600, 3000, 3400];
 
@@ -53,11 +51,85 @@ function StepTitle({ n, children }: { n: number; children: React.ReactNode }) {
   );
 }
 
-/** واجهة تخصيص الاشتراكات الشهرية */
+/** بطاقة باقة شهرية جاهزة بسعرها وماكروزها */
+function ReadyPackageCard({
+  pkg,
+  onPick,
+}: {
+  pkg: ReadyPackage;
+  onPick: (p: ReadyPackage) => void;
+}) {
+  const goal = GOALS.find((g) => g.id === pkg.goalId)!;
+  const macros = computeDailyMacros(goal, pkg.kcal);
+  const quote = computeQuote(goal, pkg.meals);
+  const tiles = [
+    { v: fmt(macros.kcal), l: 'سعرة' },
+    { v: `${fmt(macros.protein)}غ`, l: 'بروتين' },
+    { v: `${fmt(macros.carbs)}غ`, l: 'كارب' },
+    { v: `${fmt(macros.fat)}غ`, l: 'دهون' },
+  ];
+
+  return (
+    <div className="relative flex h-full flex-col gap-3.5 rounded-3xl border border-sand bg-card p-5 shadow-soft transition duration-300 hover:-translate-y-1.5 hover:shadow-lift">
+      {pkg.badge && (
+        <span className="absolute -top-3 right-5 rounded-full bg-copper px-3 py-1 text-[10px] font-black text-white shadow">
+          {pkg.badge}
+        </span>
+      )}
+      <div>
+        <b className="block text-lg font-black text-forest">{pkg.name}</b>
+        <p className="mt-1 text-xs font-bold leading-6 text-muted">{pkg.desc}</p>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <span className="rounded-full bg-forest/10 px-2.5 py-1 text-[10px] font-extrabold text-forest">
+          {goal.name}
+        </span>
+        <span className="rounded-full bg-leaf/10 px-2.5 py-1 text-[10px] font-extrabold text-forest">
+          {mealsLabel(pkg.meals)} يومياً
+        </span>
+        <span className="rounded-full bg-copper/10 px-2.5 py-1 text-[10px] font-extrabold text-copper-dark">
+          {fmt(pkg.kcal)} سعرة/يوم
+        </span>
+      </div>
+      <div className="grid grid-cols-4 gap-1.5 text-center">
+        {tiles.map((t) => (
+          <div key={t.l} className="rounded-lg border border-sand bg-cream py-1.5">
+            <b className="block text-xs font-black text-forest">{t.v}</b>
+            <span className="text-[9px] font-bold text-muted">{t.l}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-auto flex items-end justify-between pt-1">
+        <div className="leading-none">
+          <span className="text-2xl font-black text-forest">{fmt(quote.monthly)}</span>
+          <span className="mr-1 text-[10px] font-bold text-muted">ج.س / شهرياً</span>
+          <span className="mt-1 block text-[11px] font-bold text-muted">
+            {price(quote.daily)} يومياً
+            {quote.discount > 0 && <span className="text-leaf"> (خصم {quote.discount * 100}%)</span>}
+          </span>
+        </div>
+      </div>
+      <span className="flex items-center gap-1.5 text-[10px] font-black text-leaf">
+        <IconShield className="h-3.5 w-3.5" />
+        مشمولة بضمان فيتبايت
+      </span>
+      <button
+        onClick={() => onPick(pkg)}
+        className="w-full rounded-full bg-forest py-3 text-sm font-black text-cream transition hover:bg-leaf"
+      >
+        اشترك بها
+      </button>
+    </div>
+  );
+}
+
+/** مكان الباقات الشهرية الجاهزة + واجهة التخصيص */
 export default function SubscriptionBuilder() {
-  const [goalId, setGoalId] = useState<SubscriptionGoalId>('bulking');
+  const [goalId, setGoalId] = useState<SubscriptionGoalId>('cutting');
   const [meals, setMeals] = useState(3);
-  const [kcal, setKcal] = useState(GOALS[0].recommendedKcal);
+  const [kcal, setKcal] = useState(
+    GOALS.find((g) => g.id === 'cutting')?.recommendedKcal ?? 2200,
+  );
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -67,6 +139,16 @@ export default function SubscriptionBuilder() {
   const macros = useMemo(() => computeDailyMacros(goal, kcal), [goal, kcal]);
   const quote = useMemo(() => computeQuote(goal, meals), [goal, meals]);
 
+  const goToSummary = () => {
+    setTimeout(
+      () =>
+        document
+          .getElementById('subs-summary')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+      80,
+    );
+  };
+
   const selectGoal = (id: SubscriptionGoalId) => {
     const g = GOALS.find((x) => x.id === id);
     setGoalId(id);
@@ -74,12 +156,12 @@ export default function SubscriptionBuilder() {
     setSent(false);
   };
 
-  const applyPreset = (p: { goal: SubscriptionGoalId; meals: number }) => {
-    const g = GOALS.find((x) => x.id === p.goal);
-    setGoalId(p.goal);
+  const pickPackage = (p: ReadyPackage) => {
+    setGoalId(p.goalId);
     setMeals(p.meals);
-    if (g) setKcal(g.recommendedKcal);
+    setKcal(p.kcal);
     setSent(false);
+    goToSummary();
   };
 
   const submit = () => {
@@ -101,29 +183,41 @@ export default function SubscriptionBuilder() {
   ];
 
   return (
-    <section id="subs" className="scroll-mt-20 py-24">
+    <section id="subs" className="scroll-mt-20 border-t border-sand bg-card/50 py-24">
       <div className="container-x">
         <SectionHeading
           eyebrow="الاشتراكات الشهرية"
-          title="خصّص باقتك كما يناسب هدفك"
-          sub="حدّد هدفك وعدد وجباتك وحصة سعراتك اليومية — نحسب الماكروز والسعر فوراً، ويصلنا طلبك على واتساب بضغطة."
+          title="باقات شهرية جاهزة… أو خصّص باقتك"
+          sub="اختر باقة جاهزة بسعرها وماكروزها المعلنة، أو ابنِ باقتك خطوة بخطوة — والطلب يصلنا على واتساب بضغطة."
         />
 
-        {/* قوالب جاهزة */}
-        <Reveal className="mb-10 flex flex-wrap items-center justify-center gap-2.5">
-          <span className="text-xs font-extrabold text-muted">جرّب سريعاً:</span>
-          {PRESETS.map((p) => {
-            const g = GOALS.find((x) => x.id === p.goal)!;
-            return (
-              <button
-                key={p.goal}
-                onClick={() => applyPreset(p)}
-                className="rounded-full border border-sand bg-card px-4 py-2 text-xs font-extrabold text-ink/70 transition hover:border-forest/40 hover:text-forest"
-              >
-                {g.name} — {mealsLabel(p.meals)}
-              </button>
-            );
-          })}
+        {/* ── مكان الباقات الجاهزة ── */}
+        <div className="grid gap-5 pt-3 sm:grid-cols-2 lg:grid-cols-3">
+          {READY_PACKAGES.map((p, i) => (
+            <Reveal key={p.id} delay={(i % 3) * 0.08} className="h-full">
+              <ReadyPackageCard pkg={p} onPick={pickPackage} />
+            </Reveal>
+          ))}
+        </div>
+
+        {/* ضمان فيتبايت */}
+        <Reveal delay={0.1}>
+          <div className="mt-8 flex items-start gap-4 rounded-2xl border border-leaf/30 bg-leaf/10 p-5">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-leaf text-white">
+              <IconShield className="h-5 w-5" />
+            </span>
+            <div>
+              <b className="block text-sm font-black text-forest">ضمان فيتبايت للاشتراكات</b>
+              <p className="mt-1 text-xs font-bold leading-6 text-muted">{GUARANTEE}</p>
+            </div>
+          </div>
+        </Reveal>
+
+        {/* فاصل */}
+        <Reveal className="my-12 flex items-center gap-4">
+          <span className="h-px flex-1 bg-sand" aria-hidden="true" />
+          <span className="text-xs font-black text-muted">أو خصّص باقتك بنفسك</span>
+          <span className="h-px flex-1 bg-sand" aria-hidden="true" />
         </Reveal>
 
         <div className="grid gap-8 lg:grid-cols-3">
@@ -256,7 +350,10 @@ export default function SubscriptionBuilder() {
 
           {/* ملخص الباقة */}
           <Reveal delay={0.15}>
-            <aside className="rounded-3xl bg-forest p-6 text-cream shadow-lift lg:sticky lg:top-24">
+            <aside
+              id="subs-summary"
+              className="scroll-mt-24 rounded-3xl bg-forest p-6 text-cream shadow-lift lg:sticky lg:top-24"
+            >
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-black">ملخص باقتك</h3>
                 <span className="rounded-full bg-cream/10 px-3 py-1 text-[11px] font-black">

@@ -232,3 +232,10 @@ export const IconArrowLeft = (p: P) => (
     <path d="M19 12H5M12 19l-7-7 7-7" />
   </svg>
 );
+
+export const IconShield = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M12 2l8 3.5v5.5c0 5-3.4 9.3-8 10.5-4.6-1.2-8-5.5-8-10.5V5.5z" />
+    <path d="M9 11.5l2 2 4-4" />
+  </svg>
+);
