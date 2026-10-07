@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { SITE } from '@/lib/config';
 import { fmt, price } from '@/lib/format';
@@ -169,13 +170,13 @@ export default function CartDrawer() {
                 <p className="text-sm leading-7 text-muted">
                   أضف وجباتك المفضلة من القائمة وستظهر هنا جاهزة للإرسال عبر واتساب.
                 </p>
-                <a
-                  href="#menu"
+                <Link
+                  href="/menu"
                   onClick={closeCart}
                   className="mt-2 rounded-full bg-forest px-7 py-3 text-sm font-black text-cream transition hover:bg-leaf"
                 >
                   تصفح القائمة
-                </a>
+                </Link>
               </div>
             ) : (
               /* ── محتوى السلة ── */

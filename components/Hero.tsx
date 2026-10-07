@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { asset, SITE } from '@/lib/config';
 import { whatsappLink } from '@/lib/whatsapp';
 import {
@@ -88,12 +89,12 @@ export default function Hero() {
             transition={{ delay: 0.44, duration: 0.6 }}
             className="mt-9 flex flex-wrap items-center gap-3"
           >
-            <a
-              href="#menu"
+            <Link
+              href="/menu"
               className="rounded-full bg-copper px-8 py-4 text-base font-black text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-copper-dark"
             >
               تصفح القائمة
-            </a>
+            </Link>
             <a
               href={whatsappLink(`مرحباً ${SITE.nameAr}! 👋 أريد الاستفسار عن الوجبات.`)}
               target="_blank"

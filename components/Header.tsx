@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useCart } from './cart/CartContext';
 import { IconCart, IconClose, IconMenuBars } from './Icons';
@@ -9,7 +10,8 @@ import Logo from './Logo';
 const LINKS = [
   { href: '#home', label: 'الرئيسية' },
   { href: '#features', label: 'لماذا فيتبايت' },
-  { href: '#menu', label: 'القائمة' },
+  { href: '/menu', label: 'القائمة' },
+  { href: '#subs', label: 'الاشتراكات' },
   { href: '#how', label: 'كيف تطلب' },
   { href: '#reviews', label: 'آراء العملاء' },
   { href: '#contact', label: 'تواصل معنا' },
@@ -40,23 +42,26 @@ export default function Header() {
         }`}
       >
         <div className="container-x flex items-center justify-between">
-          <a href="#home" aria-label="فيتبايت — الصفحة الرئيسية">
+          <Link href="/#home" aria-label="فيتبايت — الصفحة الرئيسية">
             <Logo tone={dark ? 'cream' : 'forest'} withTagline={!scrolled} />
-          </a>
+          </Link>
 
           <nav className="hidden items-center gap-7 lg:flex" aria-label="التنقل الرئيسي">
-            {LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                className={`group relative text-sm font-extrabold transition ${
-                  dark ? 'text-cream/85 hover:text-cream' : 'text-ink/75 hover:text-forest'
-                }`}
-              >
-                {l.label}
-                <span className="absolute -bottom-1.5 right-0 h-0.5 w-0 rounded-full bg-copper transition-all duration-300 group-hover:w-full" />
-              </a>
-            ))}
+            {LINKS.map((l) => {
+              const Tag = l.href.startsWith('/') ? Link : 'a';
+              return (
+                <Tag
+                  key={l.href}
+                  href={l.href}
+                  className={`group relative text-sm font-extrabold transition ${
+                    dark ? 'text-cream/85 hover:text-cream' : 'text-ink/75 hover:text-forest'
+                  }`}
+                >
+                  {l.label}
+                  <span className="absolute -bottom-1.5 right-0 h-0.5 w-0 rounded-full bg-copper transition-all duration-300 group-hover:w-full" />
+                </Tag>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -108,16 +113,19 @@ export default function Header() {
             className="fixed inset-x-0 top-[68px] z-40 border-b border-sand bg-cream/95 px-6 pb-4 pt-2 shadow-soft backdrop-blur-md lg:hidden"
             aria-label="قائمة الجوال"
           >
-            {LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="block border-b border-sand/60 py-3.5 text-base font-extrabold text-ink/80 last:border-0 hover:text-forest"
-              >
-                {l.label}
-              </a>
-            ))}
+            {LINKS.map((l) => {
+              const Tag = l.href.startsWith('/') ? Link : 'a';
+              return (
+                <Tag
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="block border-b border-sand/60 py-3.5 text-base font-extrabold text-ink/80 last:border-0 hover:text-forest"
+                >
+                  {l.label}
+                </Tag>
+              );
+            })}
           </motion.nav>
         )}
       </AnimatePresence>

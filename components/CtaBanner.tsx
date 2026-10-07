@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { SITE } from '@/lib/config';
 import { whatsappLink } from '@/lib/whatsapp';
 import { IconWhatsApp } from './Icons';
@@ -5,7 +6,7 @@ import Reveal from './Reveal';
 
 export default function CtaBanner() {
   return (
-    <section className="py-24">
+    <section className="pb-24">
       <div className="container-x">
         <Reveal>
           <div className="relative overflow-hidden rounded-[2.5rem] bg-forest px-6 py-16 text-center shadow-lift sm:px-12">
@@ -32,12 +33,12 @@ export default function CtaBanner() {
                 <IconWhatsApp className="h-5 w-5" />
                 اطلب عبر واتساب
               </a>
-              <a
-                href="#menu"
+              <Link
+                href="/menu"
                 className="rounded-full bg-cream px-8 py-4 text-base font-black text-forest transition hover:-translate-y-0.5 hover:bg-card"
               >
                 تصفح القائمة
-              </a>
+              </Link>
             </div>
           </div>
         </Reveal>

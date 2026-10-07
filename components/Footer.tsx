@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { SITE } from '@/lib/config';
 import { whatsappLink } from '@/lib/whatsapp';
 import {
@@ -12,11 +13,12 @@ import {
 import Logo from './Logo';
 
 const QUICK_LINKS = [
-  { href: '#home', label: 'الرئيسية' },
-  { href: '#features', label: 'لماذا فيتبايت' },
-  { href: '#menu', label: 'القائمة' },
-  { href: '#how', label: 'كيف تطلب' },
-  { href: '#reviews', label: 'آراء العملاء' },
+  { href: '/#home', label: 'الرئيسية' },
+  { href: '/#features', label: 'لماذا فيتبايت' },
+  { href: '/menu', label: 'القائمة الكاملة' },
+  { href: '/#subs', label: 'الاشتراكات' },
+  { href: '/#how', label: 'كيف تطلب' },
+  { href: '/#reviews', label: 'آراء العملاء' },
 ];
 
 const SOCIALS = [
@@ -51,13 +53,16 @@ export default function Footer() {
         <div>
           <h4 className="mb-5 text-base font-black text-cream">روابط سريعة</h4>
           <ul className="space-y-3 text-sm font-bold">
-            {QUICK_LINKS.map((l) => (
-              <li key={l.href}>
-                <a href={l.href} className="transition hover:text-leaf">
-                  {l.label}
-                </a>
-              </li>
-            ))}
+            {QUICK_LINKS.map((l) => {
+              const Tag = l.href.startsWith('/') ? Link : 'a';
+              return (
+                <li key={l.href}>
+                  <Tag href={l.href} className="transition hover:text-leaf">
+                    {l.label}
+                  </Tag>
+                </li>
+              );
+            })}
           </ul>
         </div>
 
