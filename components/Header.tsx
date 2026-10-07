@@ -11,7 +11,7 @@ const LINKS = [
   { href: '#home', label: 'الرئيسية' },
   { href: '#features', label: 'لماذا فيتبايت' },
   { href: '/menu', label: 'القائمة' },
-  { href: '#subs', label: 'الاشتراكات' },
+  { href: '/packages', label: 'الباقات' },
   { href: '#how', label: 'كيف تطلب' },
   { href: '#reviews', label: 'آراء العملاء' },
   { href: '#contact', label: 'تواصل معنا' },

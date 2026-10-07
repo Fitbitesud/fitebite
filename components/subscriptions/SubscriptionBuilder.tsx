@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { fmt, price } from '@/lib/format';
 import {
   GOALS,
-  GUARANTEE,
   KCAL_RANGE,
   MEAL_DISCOUNT,
   MEAL_OPTIONS,
@@ -14,7 +14,6 @@ import {
   computeDailyMacros,
   computeQuote,
   mealsLabel,
-  type ReadyPackage,
   type SubscriptionGoalId,
 } from '@/lib/subscriptions';
 import { openWhatsApp } from '@/lib/whatsapp';
@@ -51,79 +50,7 @@ function StepTitle({ n, children }: { n: number; children: React.ReactNode }) {
   );
 }
 
-/** بطاقة باقة شهرية جاهزة بسعرها وماكروزها */
-function ReadyPackageCard({
-  pkg,
-  onPick,
-}: {
-  pkg: ReadyPackage;
-  onPick: (p: ReadyPackage) => void;
-}) {
-  const goal = GOALS.find((g) => g.id === pkg.goalId)!;
-  const macros = computeDailyMacros(goal, pkg.kcal);
-  const quote = computeQuote(goal, pkg.meals);
-  const tiles = [
-    { v: fmt(macros.kcal), l: 'سعرة' },
-    { v: `${fmt(macros.protein)}غ`, l: 'بروتين' },
-    { v: `${fmt(macros.carbs)}غ`, l: 'كارب' },
-    { v: `${fmt(macros.fat)}غ`, l: 'دهون' },
-  ];
-
-  return (
-    <div className="relative flex h-full flex-col gap-3.5 rounded-3xl border border-sand bg-card p-5 shadow-soft transition duration-300 hover:-translate-y-1.5 hover:shadow-lift">
-      {pkg.badge && (
-        <span className="absolute -top-3 right-5 rounded-full bg-copper px-3 py-1 text-[10px] font-black text-white shadow">
-          {pkg.badge}
-        </span>
-      )}
-      <div>
-        <b className="block text-lg font-black text-forest">{pkg.name}</b>
-        <p className="mt-1 text-xs font-bold leading-6 text-muted">{pkg.desc}</p>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        <span className="rounded-full bg-forest/10 px-2.5 py-1 text-[10px] font-extrabold text-forest">
-          {goal.name}
-        </span>
-        <span className="rounded-full bg-leaf/10 px-2.5 py-1 text-[10px] font-extrabold text-forest">
-          {mealsLabel(pkg.meals)} يومياً
-        </span>
-        <span className="rounded-full bg-copper/10 px-2.5 py-1 text-[10px] font-extrabold text-copper-dark">
-          {fmt(pkg.kcal)} سعرة/يوم
-        </span>
-      </div>
-      <div className="grid grid-cols-4 gap-1.5 text-center">
-        {tiles.map((t) => (
-          <div key={t.l} className="rounded-lg border border-sand bg-cream py-1.5">
-            <b className="block text-xs font-black text-forest">{t.v}</b>
-            <span className="text-[9px] font-bold text-muted">{t.l}</span>
-          </div>
-        ))}
-      </div>
-      <div className="mt-auto flex items-end justify-between pt-1">
-        <div className="leading-none">
-          <span className="text-2xl font-black text-forest">{fmt(quote.monthly)}</span>
-          <span className="mr-1 text-[10px] font-bold text-muted">ج.س / شهرياً</span>
-          <span className="mt-1 block text-[11px] font-bold text-muted">
-            {price(quote.daily)} يومياً
-            {quote.discount > 0 && <span className="text-leaf"> (خصم {quote.discount * 100}%)</span>}
-          </span>
-        </div>
-      </div>
-      <span className="flex items-center gap-1.5 text-[10px] font-black text-leaf">
-        <IconShield className="h-3.5 w-3.5" />
-        مشمولة بضمان فيتبايت
-      </span>
-      <button
-        onClick={() => onPick(pkg)}
-        className="w-full rounded-full bg-forest py-3 text-sm font-black text-cream transition hover:bg-leaf"
-      >
-        اشترك بها
-      </button>
-    </div>
-  );
-}
-
-/** مكان الباقات الشهرية الجاهزة + واجهة التخصيص */
+/** مُخصّص الاشتراكات في الرئيسية — الباقات الجاهزة في صفحة /packages */
 export default function SubscriptionBuilder() {
   const [goalId, setGoalId] = useState<SubscriptionGoalId>('cutting');
   const [meals, setMeals] = useState(3);
@@ -149,19 +76,24 @@ export default function SubscriptionBuilder() {
     );
   };
 
+  /* الوصول من صفحة الباقات عبر /?pkg=id#subs → شحن المُخصّص تلقائياً */
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('pkg');
+    const pkg = READY_PACKAGES.find((p) => p.id === id);
+    if (pkg) {
+      setGoalId(pkg.goalId);
+      setMeals(pkg.meals);
+      setKcal(pkg.kcal);
+      goToSummary();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const selectGoal = (id: SubscriptionGoalId) => {
     const g = GOALS.find((x) => x.id === id);
     setGoalId(id);
     if (g) setKcal(g.recommendedKcal);
     setSent(false);
-  };
-
-  const pickPackage = (p: ReadyPackage) => {
-    setGoalId(p.goalId);
-    setMeals(p.meals);
-    setKcal(p.kcal);
-    setSent(false);
-    goToSummary();
   };
 
   const submit = () => {
@@ -187,37 +119,31 @@ export default function SubscriptionBuilder() {
       <div className="container-x">
         <SectionHeading
           eyebrow="الاشتراكات الشهرية"
-          title="باقات شهرية جاهزة… أو خصّص باقتك"
-          sub="اختر باقة جاهزة بسعرها وماكروزها المعلنة، أو ابنِ باقتك خطوة بخطوة — والطلب يصلنا على واتساب بضغطة."
+          title="خصّص باقتك كما يناسب هدفك"
+          sub="ابنِ باقتك خطوة بخطوة — هدفك، عدد وجباتك، وحصة سعراتك — والماكروز والسعر يُحسبان فوراً."
         />
 
-        {/* ── مكان الباقات الجاهزة ── */}
-        <div className="grid gap-5 pt-3 sm:grid-cols-2 lg:grid-cols-3">
-          {READY_PACKAGES.map((p, i) => (
-            <Reveal key={p.id} delay={(i % 3) * 0.08} className="h-full">
-              <ReadyPackageCard pkg={p} onPick={pickPackage} />
-            </Reveal>
-          ))}
-        </div>
-
-        {/* ضمان فيتبايت */}
-        <Reveal delay={0.1}>
-          <div className="mt-8 flex items-start gap-4 rounded-2xl border border-leaf/30 bg-leaf/10 p-5">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-leaf text-white">
-              <IconShield className="h-5 w-5" />
-            </span>
-            <div>
-              <b className="block text-sm font-black text-forest">ضمان فيتبايت للاشتراكات</b>
-              <p className="mt-1 text-xs font-bold leading-6 text-muted">{GUARANTEE}</p>
+        {/* مدخل الباقات الجاهزة */}
+        <Reveal className="mb-12">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-copper/30 bg-copper/10 p-5">
+            <div className="flex items-center gap-4">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-copper text-white">
+                <IconShield className="h-5 w-5" />
+              </span>
+              <div>
+                <b className="block text-sm font-black text-forest">تفضّل الجاهز؟</b>
+                <p className="mt-1 text-xs font-bold leading-6 text-muted">
+                  6 باقات شهرية بأسعار وماكروز معلنة، كلها مشمولة بضمان فيتبايت.
+                </p>
+              </div>
             </div>
+            <Link
+              href="/packages"
+              className="rounded-full bg-copper px-6 py-3 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-copper-dark"
+            >
+              شاهد الباقات الجاهزة
+            </Link>
           </div>
-        </Reveal>
-
-        {/* فاصل */}
-        <Reveal className="my-12 flex items-center gap-4">
-          <span className="h-px flex-1 bg-sand" aria-hidden="true" />
-          <span className="text-xs font-black text-muted">أو خصّص باقتك بنفسك</span>
-          <span className="h-px flex-1 bg-sand" aria-hidden="true" />
         </Reveal>
 
         <div className="grid gap-8 lg:grid-cols-3">
@@ -373,7 +299,6 @@ export default function SubscriptionBuilder() {
                 ))}
               </div>
 
-              {/* شريط توزيع الماكروز */}
               <div className="mt-4 flex h-3 overflow-hidden rounded-full" aria-hidden="true">
                 <span style={{ width: `${goal.split.protein * 100}%` }} className="bg-leaf" />
                 <span style={{ width: `${goal.split.carbs * 100}%` }} className="bg-[#D9A05B]" />

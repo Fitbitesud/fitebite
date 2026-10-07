@@ -16,7 +16,7 @@ const QUICK_LINKS = [
   { href: '/#home', label: 'الرئيسية' },
   { href: '/#features', label: 'لماذا فيتبايت' },
   { href: '/menu', label: 'القائمة الكاملة' },
-  { href: '/#subs', label: 'الاشتراكات' },
+  { href: '/packages', label: 'الباقات الشهرية' },
   { href: '/#how', label: 'كيف تطلب' },
   { href: '/#reviews', label: 'آراء العملاء' },
 ];
