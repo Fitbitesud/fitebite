@@ -5,6 +5,7 @@ import {
   FORK_TRANSFORM,
   LEAF_PATH,
   LEAF_TRANSFORM,
+  LEAF2_TRANSFORM,
   LETTERS_TRANSFORM,
   MARK_VIEWBOX,
   PATHS,
@@ -50,6 +51,7 @@ export function LogoMark({ className = '' }: { className?: string }) {
       </g>
       {/* الورقة */}
       <path d={LEAF_PATH} transform={LEAF_TRANSFORM} fill="#7E9C4E" />
+      <path d={LEAF_PATH} transform={LEAF2_TRANSFORM} fill="#7E9C4E" />
     </svg>
   );
 }

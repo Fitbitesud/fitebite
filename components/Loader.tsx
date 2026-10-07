@@ -9,6 +9,7 @@ import {
   FORK_TRANSFORM,
   LEAF_PATH,
   LEAF_TRANSFORM,
+  LEAF2_TRANSFORM,
   LETTERS_TRANSFORM,
   MARK_VIEWBOX,
   PATHS,
@@ -164,6 +165,15 @@ export default function Loader() {
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 1.55, type: 'spring', stiffness: 220, damping: 14 }}
+              style={{ originX: '0px', originY: '0px' }}
+            />
+            <motion.path
+              d={LEAF_PATH}
+              transform={LEAF2_TRANSFORM}
+              fill="#7E9C4E"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 1.7, type: 'spring', stiffness: 220, damping: 14 }}
               style={{ originX: '0px', originY: '0px' }}
             />
           </motion.svg>
