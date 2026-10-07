@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { asset, SITE } from '@/lib/config';
 import { whatsappLink } from '@/lib/whatsapp';
+import { LogoMark } from './Logo';
 import {
   IconChart,
   IconCloche,
@@ -36,9 +37,13 @@ const STRIP = [
 export default function Hero() {
   return (
     <section id="home" className="relative scroll-mt-20 overflow-hidden bg-forest pt-32 text-cream">
-      {/* خلفية بسيطة: لون أخضر داكن مسطّح + إضاءة علوية خفيفة واحدة */}
+      {/* خلفية بسيطة: لون أخضر داكن مسطّح + إضاءة علوية خفيفة واحدة + توهج برتقالي متناسق */}
       <div
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_0%,rgba(126,156,78,0.14),transparent_70%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_12%_88%,rgba(224,123,46,0.12),transparent_70%)]"
         aria-hidden="true"
       />
 
@@ -51,7 +56,7 @@ export default function Hero() {
             transition={{ delay: 0.1, duration: 0.5 }}
             className="inline-flex items-center gap-2 rounded-full border border-cream/15 bg-cream/10 px-4 py-2 text-xs font-extrabold text-cream backdrop-blur"
           >
-            <IconFlame className="h-4 w-4 text-[#D9A05B]" />
+            <IconFlame className="h-4 w-4 text-orange-soft" />
             وجبات طازجة تُطهى يومياً بدون زيوت مضافة
           </motion.span>
 
@@ -62,7 +67,7 @@ export default function Hero() {
             className="mt-6 text-4xl font-black leading-[1.25] text-cream sm:text-5xl lg:text-[3.4rem]"
           >
             طعام صحي يُحسب{' '}
-            <span className="relative inline-block text-[#D9A05B]">
+            <span className="relative inline-block bg-gradient-to-l from-orange-soft via-orange to-copper bg-clip-text text-transparent">
               بالغرام
               <svg viewBox="0 0 120 14" className="absolute -bottom-2 right-0 w-full" fill="none" aria-hidden="true">
                 <path d="M4 10 C30 4 90 4 116 8" stroke="#7E9C4E" strokeWidth="5" strokeLinecap="round" />
@@ -118,7 +123,7 @@ export default function Hero() {
                 <div>
                   <div className="flex items-center gap-1 text-2xl font-black text-cream">
                     {s.value}
-                    {s.star && <IconStar className="h-5 w-5 text-[#D9A05B]" />}
+                    {s.star && <IconStar className="h-5 w-5 text-orange-soft" />}
                   </div>
                   <div className="mt-1 text-xs font-bold text-cream/60">{s.label}</div>
                 </div>
@@ -129,6 +134,16 @@ export default function Hero() {
 
         {/* الصورة بإطار نظيف بسيط */}
         <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+          {/* لوحة الشعار في الهبوط */}
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55, duration: 0.6 }}
+            className="absolute -top-7 right-6 z-10 flex items-center gap-2.5 rounded-2xl bg-cream px-4 py-2.5 shadow-lift"
+          >
+            <LogoMark className="h-10 w-10 text-forest" />
+            <span className="text-lg font-black leading-none text-forest">فيتبايت</span>
+          </motion.div>
           <motion.img
             src={asset('/images/hero-bowl.jpg')}
             alt="باول الدجاج المشوي من فيتبايت"
@@ -153,7 +168,7 @@ export default function Hero() {
               className="rounded-2xl border border-cream/10 bg-forest-deep/85 p-4 shadow-lift backdrop-blur"
             >
               <div className="flex items-center gap-2 text-xs font-black text-cream">
-                <IconFlame className="h-4 w-4 text-[#D9A05B]" />
+                <IconFlame className="h-4 w-4 text-orange-soft" />
                 باول الدجاج المشوي
               </div>
               <div className="mt-2.5 flex gap-2 text-center">

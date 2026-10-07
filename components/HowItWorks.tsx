@@ -40,7 +40,7 @@ export default function HowItWorks() {
               <div className="relative text-center">
                 <div className="relative mx-auto grid h-20 w-20 place-items-center rounded-full bg-forest text-cream shadow-soft">
                   <s.Icon className="h-8 w-8" />
-                  <span className="absolute -right-2 -top-2 grid h-8 w-8 place-items-center rounded-full border-4 border-cream bg-copper text-sm font-black text-white">
+                  <span className="absolute -right-2 -top-2 grid h-8 w-8 place-items-center rounded-full border-4 border-cream bg-orange text-sm font-black text-white">
                     {i + 1}
                   </span>
                 </div>

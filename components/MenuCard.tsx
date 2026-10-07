@@ -35,7 +35,7 @@ export default function MenuCard({ item, index }: { item: MenuItem; index: numbe
           className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
         />
         {item.popular && (
-          <span className="absolute right-3 top-3 rounded-full bg-copper px-3 py-1 text-[11px] font-black text-white shadow">
+          <span className="absolute right-3 top-3 rounded-full bg-orange px-3 py-1 text-[11px] font-black text-white shadow">
             الأكثر طلباً
           </span>
         )}

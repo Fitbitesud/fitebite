@@ -82,7 +82,7 @@ export default function Header() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
-                    className="absolute -left-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-copper px-1 text-[10px] font-black text-white"
+                    className="absolute -left-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-orange px-1 text-[10px] font-black text-white"
                   >
                     {totals.count}
                   </motion.span>

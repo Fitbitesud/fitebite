@@ -191,7 +191,7 @@ export default function Loader() {
           {/* شريط التقدم */}
           <div className="mt-8 h-1.5 w-60 overflow-hidden rounded-full bg-sand">
             <motion.div
-              className="h-full rounded-full bg-leaf"
+              className="h-full rounded-full bg-gradient-to-l from-leaf to-orange"
               initial={{ width: '0%' }}
               animate={{ width: '100%' }}
               transition={{ duration: 2.5, ease: 'easeInOut' }}

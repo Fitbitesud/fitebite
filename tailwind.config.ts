@@ -14,6 +14,7 @@ const config: Config = {
         moss: '#6C7C4A',
         leaf: '#7E9C4E',
         copper: { DEFAULT: '#A9743F', dark: '#8C5C2C' },
+        orange: { DEFAULT: '#E07B2E', soft: '#F09A4E', deep: '#C05F14' },
         cream: '#EFEEE6',
         card: '#F8F7F0',
         sand: '#DFDDCF',

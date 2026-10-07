@@ -20,7 +20,7 @@ export default function SectionHeading({
         <span className="h-px w-16 bg-sand" />
         <svg viewBox="0 0 40 20" className="h-4 w-9" fill="none">
           <path d="M18 17C10 15 6 10 6 3c7 1 11 5 12 14z" fill="#7E9C4E" />
-          <path d="M22 15c1-6 5-9 12-10-1 7-5 10-12 10z" fill="#A9743F" />
+          <path d="M22 15c1-6 5-9 12-10-1 7-5 10-12 10z" fill="#E07B2E" />
         </svg>
         <span className="h-px w-16 bg-sand" />
       </div>

@@ -346,7 +346,7 @@ export default function SubscriptionBuilder() {
                     onChange={(e) => setName(e.target.value)}
                   />
                   {errors.name && (
-                    <p className="mt-1 text-xs font-bold text-[#D9A05B]">{errors.name}</p>
+                    <p className="mt-1 text-xs font-bold text-orange-soft">{errors.name}</p>
                   )}
                 </div>
                 <div>
@@ -359,7 +359,7 @@ export default function SubscriptionBuilder() {
                     onChange={(e) => setPhone(e.target.value)}
                   />
                   {errors.phone && (
-                    <p className="mt-1 text-xs font-bold text-[#D9A05B]">{errors.phone}</p>
+                    <p className="mt-1 text-xs font-bold text-orange-soft">{errors.phone}</p>
                   )}
                 </div>
               </div>

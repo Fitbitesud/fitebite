@@ -27,7 +27,7 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
   return (
     <div className="relative flex h-full flex-col gap-3.5 rounded-3xl border border-sand bg-card p-5 shadow-soft transition duration-300 hover:-translate-y-1.5 hover:shadow-lift">
       {pkg.badge && (
-        <span className="absolute -top-3 right-5 rounded-full bg-copper px-3 py-1 text-[10px] font-black text-white shadow">
+        <span className="absolute -top-3 right-5 rounded-full bg-orange px-3 py-1 text-[10px] font-black text-white shadow">
           {pkg.badge}
         </span>
       )}
