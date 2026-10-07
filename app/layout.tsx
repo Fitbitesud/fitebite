@@ -12,10 +12,10 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Loader from '@/components/Loader';
-import { SITE } from '@/lib/config';
+import { asset, SITE } from '@/lib/config';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(process.env.SITE_URL ?? 'https://fitbitesud.github.io/fitebite/'),
   title: {
     default: `${SITE.nameAr} | ${SITE.taglineAr}`,
     template: `%s | ${SITE.nameAr}`,
@@ -27,9 +27,9 @@ export const metadata: Metadata = {
     description: SITE.description,
     locale: 'ar_SD',
     type: 'website',
-    images: ['/images/hero-bowl.jpg'],
+    images: [asset('/images/hero-bowl.jpg')],
   },
-  icons: { icon: '/logo-mark.svg' },
+  icons: { icon: asset('/logo-mark.svg') },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -45,7 +45,26 @@ npm start
 | `regions`          | مناطق التوصيل في نموذج الطلب                        |
 | `hours / socials`  | ساعات العمل وروابط السوشال                          |
 
-## الربط مع Sanity لاحقاً
+## النشر على GitHub Pages
+
+الموقع مُهيأ للتصدير الثابت (`output: 'export'`) ليعمل على Pages:
+
+- ملف الـ workflow: `.github/workflows/deploy-pages.yml` — يبني بـ `basePath=/fitebite`
+  عند كل push على `main` أو فرع الجلسة وينشر مجلد `out/` تلقائياً.
+- في إعدادات المستودع: **Settings → Pages → Source = GitHub Actions** (مرة واحدة).
+- رابط الموقع بعد النشر: `https://fitbitesud.github.io/fitebite/`
+- للبناء محلياً بنفس إعداد Pages: `npm run build:pages` ثم افتح مجلد `out/` بأي خادم ثابت.
+
+## الربط مع Sanity Studio لاحقاً
+
+الموقع حالياً بياناته محلية (`lib/menu.ts`). عند ربط Sanity:
+
+1. أنشئ مشروع Sanity Studio (مستضاف على sanity.io أو مجلد `studio/` مستقل).
+2. `npm i next-sanity` واستبدل جسم `getMenu()` باستعلام GROQ الموثّق أعلى `lib/menu.ts`.
+3. لأن الموقع تصدير ثابت على Pages: تُجلب البيانات **وقت البناء** داخل الـ workflow
+   (ضع `SANITY_PROJECT_ID` و `SANITY_DATASET` وtoken قراءة في أسرار المستودع)،
+   أو اجلبها في المتصفح (client-side) إذا أردت تحديثاً فورياً بدون إعادة نشر.
+4. أنواع `lib/types.ts` مطابقة لمخطط Sanity — لا تعديل على أي مكوّن واجهة.
 
 البيانات حالياً محلية في `lib/menu.ts` عبر `getMenu()`، والأنواع في `lib/types.ts` مصممة
 لتطابق مخطط Sanity حرفياً (`menuItem` و `category` بنفس الحقول). للربط:

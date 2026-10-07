@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { SITE } from '@/lib/config';
+import { asset, SITE } from '@/lib/config';
 import { whatsappLink } from '@/lib/whatsapp';
 import {
   IconChart,
@@ -129,7 +129,7 @@ export default function Hero() {
         {/* الصورة بإطار نظيف بسيط */}
         <div className="relative mx-auto w-full max-w-md lg:max-w-none">
           <motion.img
-            src="/images/hero-bowl.jpg"
+            src={asset('/images/hero-bowl.jpg')}
             alt="باول الدجاج المشوي من فيتبايت"
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}

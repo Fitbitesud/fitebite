@@ -44,3 +44,9 @@ export const SITE = {
 } as const;
 
 export type SiteConfig = typeof SITE;
+
+/** مسار الأساس عند النشر على GitHub Pages (يُحقن من بيئة البناء) */
+export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
+/** إلحاق مسار الأساس بأي ملف داخل public/ (ضروري للصور في التصدير الثابت) */
+export const asset = (path: string): string => `${BASE_PATH}${path}`;
