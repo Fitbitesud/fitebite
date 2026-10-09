@@ -17,7 +17,7 @@ export function useLiveMenu(initial: MenuData): MenuData {
   useEffect(() => {
     let alive = true;
     getMenu()
-      .then((d) => alive && setData(d))
+      .then((d) => alive && d && Array.isArray(d.categories) && Array.isArray(d.items) && setData(d))
       .catch(() => {});
     return () => {
       alive = false;
@@ -31,7 +31,7 @@ export function useLivePackages(initial: ReadyPackage[]): ReadyPackage[] {
   useEffect(() => {
     let alive = true;
     getReadyPackages()
-      .then((d) => alive && setData(d))
+      .then((d) => alive && Array.isArray(d) && setData(d))
       .catch(() => {});
     return () => {
       alive = false;
@@ -45,7 +45,7 @@ export function useLiveComments(initial: SiteComment[]): SiteComment[] {
   useEffect(() => {
     let alive = true;
     getApprovedComments()
-      .then((d) => alive && setData(d))
+      .then((d) => alive && Array.isArray(d) && setData(d))
       .catch(() => {});
     return () => {
       alive = false;
