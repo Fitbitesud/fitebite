@@ -11,6 +11,8 @@ import {
   IconCup,
   IconFlame,
   IconLeaf,
+  IconSandwich,
+  IconSnack,
   IconSun,
   IconWhatsApp,
 } from './Icons';
@@ -25,6 +27,8 @@ const CATEGORY_ICONS = {
   sun: IconSun,
   cup: IconCup,
   box: IconBox,
+  sandwich: IconSandwich,
+  snack: IconSnack,
 } as const;
 
 export default function Menu({ menu }: { menu: MenuData }) {

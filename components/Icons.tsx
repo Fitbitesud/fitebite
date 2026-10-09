@@ -239,3 +239,23 @@ export const IconShield = (p: P) => (
     <path d="M9 11.5l2 2 4-4" />
   </svg>
 );
+
+/** أيقونة سندوتش */
+export const IconSandwich = (p: P) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M4 9c0-2.2 3.6-4 8-4s8 1.8 8 4v1H4V9z" />
+    <path d="M4 13h16" />
+    <path d="M4 16.5c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5V16H4v.5z" />
+  </svg>
+);
+
+/** أيقونة سناك (حبة مكسرات/بسكويت) */
+export const IconSnack = (p: P) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <circle cx="12" cy="12" r="8" />
+    <circle cx="9.5" cy="10" r="0.6" fill="currentColor" />
+    <circle cx="14" cy="9.5" r="0.6" fill="currentColor" />
+    <circle cx="12" cy="14" r="0.6" fill="currentColor" />
+    <circle cx="15.5" cy="13.5" r="0.6" fill="currentColor" />
+  </svg>
+);

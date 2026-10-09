@@ -10,15 +10,8 @@ import {
   IconCloche,
   IconFlame,
   IconLeaf,
-  IconStar,
   IconWhatsApp,
 } from './Icons';
-
-const STATS = [
-  { value: '+500', label: 'وجبة تُسلّم أسبوعياً', star: false },
-  { value: '4.9', label: 'تقييم عملائنا', star: true },
-  { value: '45 د', label: 'متوسط زمن التوصيل', star: false },
-];
 
 const MACROS = [
   { v: '520', l: 'سعرة' },
@@ -111,25 +104,6 @@ export default function Hero() {
             </a>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.7 }}
-            className="mt-12 flex items-center gap-5 sm:gap-7"
-          >
-            {STATS.map((s, i) => (
-              <div key={s.label} className="flex items-center gap-5 sm:gap-7">
-                {i > 0 && <span className="h-10 w-px bg-cream/15" aria-hidden="true" />}
-                <div>
-                  <div className="flex items-center gap-1 text-2xl font-black text-cream">
-                    {s.value}
-                    {s.star && <IconStar className="h-5 w-5 text-orange-soft" />}
-                  </div>
-                  <div className="mt-1 text-xs font-bold text-cream/60">{s.label}</div>
-                </div>
-              </div>
-            ))}
-          </motion.div>
         </div>
 
         {/* الصورة بإطار نظيف بسيط */}

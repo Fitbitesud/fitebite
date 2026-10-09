@@ -32,7 +32,7 @@ export interface Category {
   _id: string;
   slug: string;
   name: string;
-  icon: 'bowl' | 'leaf' | 'flame' | 'sun' | 'cup' | 'box';
+  icon: 'bowl' | 'leaf' | 'flame' | 'sun' | 'cup' | 'box' | 'sandwich' | 'snack';
   order: number;
 }
 

@@ -83,3 +83,9 @@ lib/            config (الرقم والعملة…)، menu (البيانات)�
 public/images/  صور الوجبات بهوية المطعم
 public/logo-mark.svg  علامة الشعار (SVG متجهي بدون نص)
 ```
+
+## تعليقات الزوار (Moderation)
+
+- خانة التعليقات أسفل الصفحة الرئيسية (`components/Comments.tsx` + `lib/comments.ts`).
+- قبل ربط Sanity: التعليقات المعتمدة منشورة من بذور محلية، وتعليق الزائر الجديد يُحفظ في متصفحه بحالة «بانتظار الموافقة» ويصلك نصّه عبر واتساب للمراجعة.
+- بعد ربط Sanity: أنشئ نوع `comment` بحقول `name / text / postedAt / approved`؛ التعليق الجديد يُنشأ بـ `approved: false` فيظهر عندك في Sanity Studio، وعند تفعيل الموافقة يُنشر تلقائياً في الموقع عبر `getApprovedComments()`.

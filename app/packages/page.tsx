@@ -34,12 +34,6 @@ export default function PackagesPage() {
         <ReadyPackages />
 
         <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/#subs"
-            className="rounded-full bg-forest px-7 py-3.5 text-sm font-black text-cream shadow-soft transition hover:-translate-y-0.5 hover:bg-forest-deep"
-          >
-            أو خصّص باقتك بنفسك
-          </Link>
           <a
             href={whatsappLink(`مرحباً ${SITE.nameAr}! 👋 أريد استفساراً عن الباقات الشهرية.`)}
             target="_blank"

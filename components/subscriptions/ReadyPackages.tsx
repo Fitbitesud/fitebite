@@ -1,18 +1,19 @@
-import Link from 'next/link';
 import { fmt, price } from '@/lib/format';
 import {
   GOALS,
   GUARANTEE,
   READY_PACKAGES,
+  buildPackageOrderMessage,
   computeDailyMacros,
   computeQuote,
   mealsLabel,
   type ReadyPackage,
 } from '@/lib/subscriptions';
-import { IconShield } from '../Icons';
+import { whatsappLink } from '@/lib/whatsapp';
+import { IconShield, IconWhatsApp } from '../Icons';
 import Reveal from '../Reveal';
 
-/** بطاقة باقة جاهزة — زرّها ينقل للرئيسية مع شحن المُخصّص بإعداداتها */
+/** بطاقة باقة جاهزة — صورة + ماكروز + سعر، وزر طلب مباشر عبر واتساب */
 function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
   const goal = GOALS.find((g) => g.id === pkg.goalId)!;
   const macros = computeDailyMacros(goal, pkg.kcal);
@@ -27,10 +28,16 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
   return (
     <div className="relative flex h-full flex-col gap-3.5 rounded-3xl border border-sand bg-card p-5 shadow-soft transition duration-300 hover:-translate-y-1.5 hover:shadow-lift">
       {pkg.badge && (
-        <span className="absolute -top-3 right-5 rounded-full bg-orange px-3 py-1 text-[10px] font-black text-white shadow">
+        <span className="absolute -top-3 right-5 z-10 rounded-full bg-orange px-3 py-1 text-[10px] font-black text-white shadow">
           {pkg.badge}
         </span>
       )}
+      <img
+        src={pkg.image}
+        alt={pkg.name}
+        loading="lazy"
+        className="h-40 w-full rounded-2xl object-cover"
+      />
       <div>
         <b className="block text-lg font-black text-forest">{pkg.name}</b>
         <p className="mt-1 text-xs font-bold leading-6 text-muted">{pkg.desc}</p>
@@ -66,12 +73,15 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
         <IconShield className="h-3.5 w-3.5" />
         مشمولة بضمان فيتبايت
       </span>
-      <Link
-        href={`/?pkg=${pkg.id}#subs`}
-        className="w-full rounded-full bg-forest py-3 text-center text-sm font-black text-cream transition hover:bg-leaf"
+      <a
+        href={whatsappLink(buildPackageOrderMessage(pkg))}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-forest py-3 text-center text-sm font-black text-cream transition hover:bg-leaf"
       >
-        اخترها وأكمل الاشتراك
-      </Link>
+        <IconWhatsApp className="h-4 w-4" />
+        اطلبها عبر واتساب
+      </a>
     </div>
   );
 }

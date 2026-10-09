@@ -56,16 +56,18 @@ export function LogoMark({ className = '' }: { className?: string }) {
   );
 }
 
-/** الشعار الكامل: العلامة + الكلمة العربية «فيتبايت» (بدون نص إنجليزي) */
+/** الشعار الكامل: العلامة + الكلمة (عربية افتراضياً، أو إنجليزية عبر wordmark) */
 export default function Logo({
   withWordmark = true,
   withTagline = false,
   tone = 'forest',
+  wordmark,
   className = '',
 }: {
   withWordmark?: boolean;
   withTagline?: boolean;
   tone?: 'forest' | 'cream';
+  wordmark?: string;
   className?: string;
 }) {
   const main = tone === 'cream' ? 'text-cream' : 'text-forest';
@@ -75,7 +77,12 @@ export default function Logo({
       <LogoMark className={`h-11 w-11 shrink-0 ${main}`} />
       {withWordmark && (
         <span className="flex flex-col leading-none">
-          <span className={`text-2xl font-black tracking-tight ${word}`}>{SITE.nameAr}</span>
+          <span
+            className={`text-2xl font-black tracking-tight ${word}`}
+            dir={wordmark ? 'ltr' : undefined}
+          >
+            {wordmark ?? SITE.nameAr}
+          </span>
           {withTagline && (
             <span
               className={`mt-1.5 flex items-center gap-1.5 text-[11px] font-bold ${

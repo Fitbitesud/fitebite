@@ -43,7 +43,7 @@ export default function Header() {
       >
         <div className="container-x flex items-center justify-between">
           <Link href="/#home" aria-label="فيتبايت — الصفحة الرئيسية">
-            <Logo tone={dark ? 'cream' : 'forest'} withTagline={!scrolled} />
+            <Logo tone={dark ? 'cream' : 'forest'} withTagline={!scrolled} wordmark="FITBITE" />
           </Link>
 
           <nav className="hidden items-center gap-7 lg:flex" aria-label="التنقل الرئيسي">

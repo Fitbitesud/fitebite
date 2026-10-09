@@ -178,15 +178,16 @@ export default function Loader() {
             />
           </motion.svg>
 
-          {/* الكلمة العربية تظهر بستارة */}
+          {/* الاسم بالإنجليزية يظهر بستارة */}
           <div className="mt-2 overflow-hidden">
             <motion.span
               className="block text-5xl font-black tracking-tight text-forest"
+              dir="ltr"
               initial={{ y: '110%' }}
               animate={{ y: 0 }}
               transition={{ delay: 1.75, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             >
-              {SITE.nameAr}
+              FITBITE
             </motion.span>
           </div>
           <motion.p
@@ -195,7 +196,7 @@ export default function Loader() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2.15, duration: 0.5 }}
           >
-            {SITE.taglineAr}
+            طعام صحي
           </motion.p>
 
           {/* شريط التقدم */}

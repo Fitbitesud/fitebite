@@ -1,4 +1,4 @@
-import { SITE } from './config';
+import { asset, SITE } from './config';
 import { fmt, price } from './format';
 
 /** أهداف الاشتراكات */
@@ -97,7 +97,7 @@ export function computeQuote(goal: GoalInfo, meals: number): SubscriptionQuote {
 export const mealsLabel = (m: number): string =>
   m === 1 ? 'وجبة واحدة' : m === 2 ? 'وجبتان' : `${m} وجبات`;
 
-/** الباقات الشهرية الجاهزة — تُعرض كبطاقات بسعر مباشر */
+/** الباقات الشهرية الجاهزة — تُعرض كبطاقات بسعر مباشر وصورة */
 export interface ReadyPackage {
   id: string;
   name: string;
@@ -106,6 +106,7 @@ export interface ReadyPackage {
   kcal: number;
   desc: string;
   badge?: string;
+  image: string;
 }
 
 export const READY_PACKAGES: ReadyPackage[] = [
@@ -117,6 +118,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     kcal: 3400,
     desc: 'فائض سعرات عالٍ بأربع وجبات تغطي يوم تمرين شاق بالكامل.',
     badge: 'الأقوى للضخامة',
+    image: asset('/images/grill-plate.jpg'),
   },
   {
     id: 'bulk-core',
@@ -125,6 +127,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     meals: 3,
     kcal: 3000,
     desc: 'ثلاث وجبات متوازنة لبناء عضلي ثابت بدون أي تحضير منزلي.',
+    image: asset('/images/mealprep-box.jpg'),
   },
   {
     id: 'cut-pro',
@@ -134,6 +137,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     kcal: 2400,
     desc: 'عجز محسوب مع بروتين مرتفع يحفظ العضل أثناء التخسيس.',
     badge: 'الأكثر اختياراً',
+    image: asset('/images/green-salad.jpg'),
   },
   {
     id: 'cut-core',
@@ -142,6 +146,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     meals: 2,
     kcal: 2000,
     desc: 'وجبتا اليوم الأعلى تأثيراً بأقل سعرات — مثالية للموظفين.',
+    image: asset('/images/quinoa-salad.jpg'),
   },
   {
     id: 'maintain-active',
@@ -150,6 +155,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     meals: 2,
     kcal: 2600,
     desc: 'توازن يحافظ على وزنك وطاقتك مع نمط حياة رياضي.',
+    image: asset('/images/hero-bowl.jpg'),
   },
   {
     id: 'maintain-light',
@@ -158,6 +164,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     meals: 1,
     kcal: 2200,
     desc: 'وجبة واحدة متكاملة تُدخل عادة الأكل الصحي بدون التزام كبير.',
+    image: asset('/images/smoothies.jpg'),
   },
 ];
 
@@ -203,4 +210,24 @@ export function buildSubscriptionMessage(opts: {
   L.push('');
   L.push(`_أُرسل تلقائياً من موقع ${SITE.nameAr}_ 🌿`);
   return L.join('\n');
+}
+
+/** رسالة واتساب جاهزة لطلب باقة شهرية جاهزة بالاسم والسعر والماكروز */
+export function buildPackageOrderMessage(pkg: ReadyPackage): string {
+  const goal = GOALS.find((g) => g.id === pkg.goalId)!;
+  const macros = computeDailyMacros(goal, pkg.kcal);
+  const quote = computeQuote(goal, pkg.meals);
+  return [
+    `طلب باقة شهرية جاهزة من ${SITE.nameAr} 🍽`,
+    `الباقة: ${pkg.name}`,
+    `الهدف: ${goal.name}`,
+    `الوجبات: ${mealsLabel(pkg.meals)} يومياً`,
+    `السعرات اليومية: ${fmt(pkg.kcal)} سعرة`,
+    `الماكروز اليومي: بروتين ${fmt(macros.protein)}غ | كاربوهيدرات ${fmt(macros.carbs)}غ | دهون ${fmt(macros.fat)}غ`,
+    `السعر الشهري: ${fmt(quote.monthly)} ${SITE.currency}`,
+    '──────────',
+    'الاسم: ',
+    'المنطقة: ',
+    'تاريخ البدء المطلوب: ',
+  ].join('\n');
 }
