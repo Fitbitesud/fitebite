@@ -41,6 +41,6 @@ export const menuItem = defineType({
     defineField({name: 'order', title: 'ترتيب العرض', type: 'number', initialValue: 1}),
   ],
   preview: {
-    select: {title: 'name', subtitle: 'category.name', media: 'image'},
+    select: {title: 'name', media: 'image'},
   },
 })

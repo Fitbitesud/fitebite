@@ -26,10 +26,10 @@ export const comment = defineType({
     }),
   ],
   preview: {
-    select: {title: 'name', subtitle: 'text', media: 'approved'},
-    prepare({title, subtitle, media}) {
+    select: {title: 'name', subtitle: 'text', approved: 'approved'},
+    prepare({title, subtitle, approved}) {
       return {
-        title: `${title} ${media ? '✅' : '⏳'}`,
+        title: `${title} ${approved ? '✅' : '⏳'}`,
         subtitle: String(subtitle ?? '').slice(0, 80),
       }
     },

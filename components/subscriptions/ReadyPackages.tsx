@@ -11,6 +11,7 @@ import {
   type ReadyPackage,
 } from '@/lib/subscriptions';
 import { useSite, useWhatsapp } from '../SiteContext';
+import { useLivePackages } from '../useLiveData';
 import { IconShield, IconWhatsApp } from '../Icons';
 import Reveal from '../Reveal';
 
@@ -87,10 +88,11 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
 
 /** شبكة الباقات الشهرية الجاهزة + بانر الضمان (صفحة /packages) */
 export default function ReadyPackages({ packages }: { packages: ReadyPackage[] }) {
+  const live = useLivePackages(packages);
   return (
     <>
       <div className="grid gap-5 pt-3 sm:grid-cols-2 lg:grid-cols-3">
-        {packages.map((p, i) => (
+        {live.map((p, i) => (
           <Reveal key={p.id} delay={(i % 3) * 0.08} className="h-full">
             <ReadyPackageCard pkg={p} />
           </Reveal>

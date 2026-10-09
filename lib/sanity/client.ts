@@ -11,7 +11,7 @@ import { createClient, type SanityClient } from '@sanity/client';
  *  NEXT_PUBLIC_SANITY_API_VERSION     — إصدار API (افتراضياً 2026-01-01)
  *  NEXT_PUBLIC_SANITY_COMMENT_TOKEN   — توكن دقيق الصلاحية (إنشاء تعليق فقط) لنشر تعليقات الزوار
  */
-export const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? '';
+export const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'zes52trp';
 export const SANITY_DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
 export const SANITY_API_VERSION = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-01-01';
 const SANITY_COMMENT_TOKEN = process.env.NEXT_PUBLIC_SANITY_COMMENT_TOKEN ?? '';

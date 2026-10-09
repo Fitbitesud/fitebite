@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import type { MenuData } from '@/lib/types';
 import { useSite, useWhatsapp } from './SiteContext';
+import { useLiveMenu } from './useLiveData';
 import {
   IconBox,
   IconBowl,
@@ -33,8 +34,12 @@ const CATEGORY_ICONS = {
 export default function Menu({ menu }: { menu: MenuData }) {
   const site = useSite();
   const wa = useWhatsapp();
-  const [active, setActive] = useState(menu.categories[0]?.slug ?? '');
-  const items = menu.items.filter((i) => i.categorySlug === active && i.available);
+  const live = useLiveMenu(menu);
+  const [active, setActive] = useState(live.categories[0]?.slug ?? '');
+  const activeSlug = live.categories.some((c) => c.slug === active)
+    ? active
+    : (live.categories[0]?.slug ?? '');
+  const items = live.items.filter((i) => i.categorySlug === activeSlug && i.available);
 
   return (
     <section id="menu" className="scroll-mt-20 border-y border-sand bg-card/50 py-24">
@@ -46,9 +51,9 @@ export default function Menu({ menu }: { menu: MenuData }) {
         />
 
         <Reveal className="mb-12 flex flex-wrap justify-center gap-2.5">
-          {menu.categories.map((c) => {
+          {live.categories.map((c) => {
             const Icon = CATEGORY_ICONS[c.icon];
-            const isActive = c.slug === active;
+            const isActive = c.slug === activeSlug;
             return (
               <button
                 key={c.slug}
