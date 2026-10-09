@@ -11,6 +11,7 @@ import {
 } from '@/lib/comments';
 import { IconCheck, IconClock, IconStar, IconWhatsApp } from './Icons';
 import { useWhatsapp } from './SiteContext';
+import { useLiveComments } from './useLiveData';
 import Reveal from './Reveal';
 import SectionHeading from './SectionHeading';
 
@@ -19,6 +20,7 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
   const [name, setName] = useState('');
   const [text, setText] = useState('');
   const wa = useWhatsapp();
+  const liveApproved = useLiveComments(approved);
   const [sending, setSending] = useState(false);
   const [pending, setPending] = useState<PendingComment[]>(() => getPendingComments());
   const [lastLocal, setLastLocal] = useState<PendingComment | null>(null);
@@ -54,7 +56,7 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
 
         {/* التعليقات المعتمدة المنشورة */}
         <div className="grid gap-5 md:grid-cols-3">
-          {approved.map((c, i) => (
+          {liveApproved.map((c, i) => (
             <Reveal key={c._id} delay={i * 0.08} className="h-full">
               <figure className="flex h-full flex-col gap-3 rounded-3xl border border-sand bg-card p-6 shadow-soft">
                 <div className="flex items-center gap-1">

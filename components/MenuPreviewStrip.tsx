@@ -1,6 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { fmt } from '@/lib/format';
 import type { MenuData } from '@/lib/types';
+import { useLiveMenu } from './useLiveData';
 import { IconArrowLeft } from './Icons';
 import MenuCard from './MenuCard';
 import Reveal from './Reveal';
@@ -10,9 +13,10 @@ import Reveal from './Reveal';
  * ينتهي ببطاقة تدعو لدخول صفحة القائمة الكاملة /menu.
  */
 export default function MenuPreviewStrip({ menu }: { menu: MenuData }) {
+  const live = useLiveMenu(menu);
   const sample = [
-    ...menu.items.filter((i) => i.popular && i.available),
-    ...menu.items.filter((i) => !i.popular && i.available),
+    ...live.items.filter((i) => i.popular && i.available),
+    ...live.items.filter((i) => !i.popular && i.available),
   ].slice(0, 8);
 
   return (
@@ -62,7 +66,7 @@ export default function MenuPreviewStrip({ menu }: { menu: MenuData }) {
             </span>
             <b className="text-lg font-black text-forest">عيّنة شهية… لكن</b>
             <p className="text-sm font-bold leading-6 text-muted">
-              في القائمة الكاملة {fmt(menu.items.length)} وجبة عبر {fmt(menu.categories.length)}{' '}
+              في القائمة الكاملة {fmt(live.items.length)} وجبة عبر {fmt(live.categories.length)}{' '}
               تصنيفات تنتظرك.
             </p>
             <Link
