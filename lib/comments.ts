@@ -16,6 +16,9 @@
  *     → يظهر التعليق عندك في Sanity بحالة غير موافَق عليها، وبعد تفعيل approved يُنشر هنا تلقائياً.
  */
 
+import { getReadClient, getWriteClient, isSanityConfigured } from './sanity/client';
+import { APPROVED_COMMENTS_QUERY } from './sanity/queries';
+
 export interface SiteComment {
   _id: string;
   name: string;
@@ -46,9 +49,40 @@ export const APPROVED_COMMENTS: SiteComment[] = [
   },
 ];
 
-/** جلب التعليقات المعتمدة — حالياً محلي، ولاحقاً من Sanity (انظر أعلى الملف) */
+/** جلب التعليقات المعتمدة — من Sanity إذا ضُبط المشروع، وإلا البذور المحلية */
 export async function getApprovedComments(): Promise<SiteComment[]> {
+  if (isSanityConfigured) {
+    try {
+      const list = await getReadClient().fetch<SiteComment[]>(APPROVED_COMMENTS_QUERY);
+      if (Array.isArray(list) && list.length) return list;
+    } catch (err) {
+      console.error('Sanity comments fetch failed — falling back to local seeds:', err);
+    }
+  }
   return APPROVED_COMMENTS;
+}
+
+/** نشر تعليق زائر: يُنشأ في Sanity بحالة غير موافَق عليها، أو محلياً إذا لم يُضبط التوكن */
+export type SubmitMode = 'sanity' | 'local';
+
+export async function submitComment(name: string, text: string): Promise<SubmitMode> {
+  const write = getWriteClient();
+  if (write) {
+    try {
+      await write.create({
+        _type: 'comment',
+        name,
+        text,
+        approved: false,
+        postedAt: new Date().toISOString(),
+      });
+      return 'sanity';
+    } catch (err) {
+      console.error('Sanity comment create failed — falling back to local:', err);
+    }
+  }
+  savePendingComment(name, text);
+  return 'local';
 }
 
 /* ── التعليقات المعلقة (جهاز الزائر فقط، حتى ربط Sanity) ── */

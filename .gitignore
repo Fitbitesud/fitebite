@@ -31,3 +31,4 @@ yarn-error.log*
 
 # tooling caches
 *.tsbuildinfo
+image-search/

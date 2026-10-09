@@ -32,6 +32,11 @@ jobs:
 
       - name: Build static export (basePath=/fitebite)
         run: npm run build:pages
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
+          NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
+          NEXT_PUBLIC_SANITY_API_VERSION: ${{ secrets.SANITY_API_VERSION }}
+          NEXT_PUBLIC_SANITY_COMMENT_TOKEN: ${{ secrets.SANITY_COMMENT_TOKEN }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

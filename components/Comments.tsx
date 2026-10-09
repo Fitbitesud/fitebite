@@ -2,11 +2,12 @@
 
 import { useState, type FormEvent } from 'react';
 import {
-  APPROVED_COMMENTS,
   commentAdminMessage,
   getPendingComments,
   savePendingComment,
+  submitComment,
   type PendingComment,
+  type SiteComment,
 } from '@/lib/comments';
 import { whatsappLink } from '@/lib/whatsapp';
 import { IconCheck, IconClock, IconStar, IconWhatsApp } from './Icons';
@@ -14,22 +15,31 @@ import Reveal from './Reveal';
 import SectionHeading from './SectionHeading';
 
 /** خانة تعليقات الزوار أسفل الصفحة: المعتمدة منشورة، والجديد ينتظر موافقة الإدارة */
-export default function Comments() {
+export default function Comments({ approved }: { approved: SiteComment[] }) {
   const [name, setName] = useState('');
   const [text, setText] = useState('');
+  const [sending, setSending] = useState(false);
   const [pending, setPending] = useState<PendingComment[]>(() => getPendingComments());
-  const [lastSent, setLastSent] = useState<PendingComment | null>(null);
+  const [lastLocal, setLastLocal] = useState<PendingComment | null>(null);
+  const [sentToSanity, setSentToSanity] = useState(false);
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     const n = name.trim();
     const t = text.trim();
-    if (!n || !t) return;
-    const entry = savePendingComment(n, t);
-    setPending((p) => [...p, entry]);
-    setLastSent(entry);
+    if (!n || !t || sending) return;
+    setSending(true);
+    const mode = await submitComment(n, t);
+    if (mode === 'sanity') {
+      setSentToSanity(true);
+    } else {
+      const entry = savePendingComment(n, t);
+      setPending((p) => [...p, entry]);
+      setLastLocal(entry);
+    }
     setName('');
     setText('');
+    setSending(false);
   };
 
   return (
@@ -43,7 +53,7 @@ export default function Comments() {
 
         {/* التعليقات المعتمدة المنشورة */}
         <div className="grid gap-5 md:grid-cols-3">
-          {APPROVED_COMMENTS.map((c, i) => (
+          {approved.map((c, i) => (
             <Reveal key={c._id} delay={i * 0.08} className="h-full">
               <figure className="flex h-full flex-col gap-3 rounded-3xl border border-sand bg-card p-6 shadow-soft">
                 <div className="flex items-center gap-1">
@@ -88,17 +98,24 @@ export default function Comments() {
               />
               <button
                 type="submit"
-                className="rounded-full bg-forest px-7 py-3.5 text-sm font-black text-cream shadow-soft transition hover:-translate-y-0.5 hover:bg-leaf"
+                disabled={sending}
+                className="rounded-full bg-forest px-7 py-3.5 text-sm font-black text-cream shadow-soft transition hover:-translate-y-0.5 hover:bg-leaf disabled:opacity-60"
               >
-                أرسل التعليق
+                {sending ? 'جارٍ الإرسال…' : 'أرسل التعليق'}
               </button>
+              {sentToSanity && (
+                <p className="flex items-center gap-2 rounded-xl border border-leaf/30 bg-leaf/10 px-4 py-3 text-[11px] font-black text-forest">
+                  <IconCheck className="h-4 w-4 text-leaf" />
+                  وصل تعليقك إلى لوحة التحكم، وسيُنشر هنا بعد موافقة الإدارة.
+                </p>
+              )}
               <p className="text-[11px] font-bold leading-6 text-muted">
-                بعد الإرسال يصل تعليقك للإدارة عبر واتساب للمراجعة، ويُنشر هنا بعد الموافقة.
+                بعد الإرسال يصل تعليقك للإدارة للمراجعة، ويُنشر هنا بعد الموافقة.
               </p>
             </form>
           </Reveal>
 
-          {/* حالة التعليقات المرسلة من هذا الجهاز */}
+          {/* حالة التعليقات المرسلة من هذا الجهاز (قبل ربط Sanity) */}
           <Reveal delay={0.1}>
             <div className="flex h-full flex-col gap-3 rounded-3xl border border-sand bg-cream/60 p-6">
               <b className="text-sm font-black text-forest">تعليقاتك المرسلة</b>
@@ -118,9 +135,9 @@ export default function Comments() {
                   </div>
                 ))
               )}
-              {lastSent && (
+              {lastLocal && (
                 <a
-                  href={whatsappLink(commentAdminMessage(lastSent.name, lastSent.text))}
+                  href={whatsappLink(commentAdminMessage(lastLocal.name, lastLocal.text))}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto flex items-center justify-center gap-2 rounded-full bg-wa px-6 py-3 text-sm font-black text-white transition hover:brightness-110"

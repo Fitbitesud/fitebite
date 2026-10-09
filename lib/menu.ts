@@ -1,4 +1,6 @@
 import { asset } from './config';
+import { getReadClient, isSanityConfigured } from './sanity/client';
+import { MENU_QUERY } from './sanity/queries';
 import type { MenuData } from './types';
 
 /**
@@ -283,8 +285,16 @@ const MENU: MenuData = {
   ],
 };
 
-/** جلب القائمة — حالياً محلي، ولاحقاً من Sanity (انظر التعليق أعلى الملف) */
+/** جلب القائمة — من Sanity إذا ضُبط المشروع، وإلا فالبيانات المحلية */
 export async function getMenu(): Promise<MenuData> {
+  if (isSanityConfigured) {
+    try {
+      const data = await getReadClient().fetch<MenuData>(MENU_QUERY);
+      if (data && data.categories?.length && data.items?.length) return data;
+    } catch (err) {
+      console.error('Sanity menu fetch failed — falling back to local data:', err);
+    }
+  }
   return MENU;
 }
 
