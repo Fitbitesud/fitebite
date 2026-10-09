@@ -156,15 +156,49 @@ export const DEFAULT_SITE: SiteData = {
   },
 };
 
-/** دمج سطحي عميق بسيط: قيم لوحة التحكم فوق الافتراضية */
-function mergeSite(doc: Partial<SiteData> & { home?: Partial<HomeContent> }): SiteData {
+/** حذف القيم null/undefined القادمة من Sanity حتى لا تدهس الافتراضية */
+function cleanNulls<T>(v: T): T {
+  if (Array.isArray(v)) {
+    return v
+      .map((x) => cleanNulls(x))
+      .filter((x) => x !== null && x !== undefined) as unknown as T;
+  }
+  if (v && typeof v === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+      const c = cleanNulls(val);
+      if (c !== null && c !== undefined) out[k] = c;
+    }
+    return out as unknown as T;
+  }
+  return v;
+}
+
+/** دمج سطحي عميق بسيط: قيم لوحة التحكم فوق الافتراضية، مع ضمان المصفوفات والكائنات */
+function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): SiteData {
+  const doc = cleanNulls(raw);
   const { home, ...rest } = doc;
-  return {
+  const dh: Partial<HomeContent> = home ?? {};
+  const merged: SiteData = {
     ...DEFAULT_SITE,
     ...rest,
     socials: { ...DEFAULT_SITE.socials, ...(doc.socials ?? {}) },
-    home: { ...DEFAULT_SITE.home, ...(home ?? {}) },
+    home: {
+      ...DEFAULT_SITE.home,
+      ...dh,
+      featuresHeading: { ...DEFAULT_SITE.home.featuresHeading, ...(dh.featuresHeading ?? {}) },
+      howHeading: { ...DEFAULT_SITE.home.howHeading, ...(dh.howHeading ?? {}) },
+      cta: { ...DEFAULT_SITE.home.cta, ...(dh.cta ?? {}) },
+      pkgBanner: { ...DEFAULT_SITE.home.pkgBanner, ...(dh.pkgBanner ?? {}) },
+    },
   };
+  if (!Array.isArray(merged.hours) || !merged.hours.length) merged.hours = DEFAULT_SITE.hours;
+  if (!Array.isArray(merged.regions) || !merged.regions.length) merged.regions = DEFAULT_SITE.regions;
+  const h = merged.home;
+  if (!Array.isArray(h.strip) || !h.strip.length) h.strip = DEFAULT_SITE.home.strip;
+  if (!Array.isArray(h.features) || !h.features.length) h.features = DEFAULT_SITE.home.features;
+  if (!Array.isArray(h.steps) || !h.steps.length) h.steps = DEFAULT_SITE.home.steps;
+  return merged;
 }
 
 /** جلب إعدادات الموقع كاملة — من Sanity إذا ضُبط، وإلا الافتراضية */
@@ -184,7 +218,7 @@ export async function getSite(): Promise<SiteData> {
 
 /** صورة من Sanity (رابط مطلق) أو من مجلد public (مسار نسبي) */
 export const imgUrl = (path: string): string =>
-  path.startsWith('http') ? path : asset(path);
+  path && path.startsWith('http') ? path : asset(path || '/images/hero-bowl.jpg');
 
 /** استبدال رموز مثل {city} بقيم الإعدادات */
 export const fillTokens = (text: string, site: SiteData): string =>
