@@ -1,10 +1,15 @@
+'use client';
+
 import Link from 'next/link';
-import { SITE } from '@/lib/config';
-import { whatsappLink } from '@/lib/whatsapp';
+import { useSite, useWhatsapp } from './SiteContext';
 import { IconWhatsApp } from './Icons';
 import Reveal from './Reveal';
 
 export default function CtaBanner() {
+  const site = useSite();
+  const wa = useWhatsapp();
+  const cta = site.home.cta;
+
   return (
     <section className="pb-24">
       <div className="container-x">
@@ -16,28 +21,23 @@ export default function CtaBanner() {
               <path d="M5 19C5 10 10 5 20 4c-.5 10-5.5 15-15 15z" />
             </svg>
 
-            <h2 className="relative text-3xl font-black text-cream sm:text-4xl">
-              جاهز تبدأ رحلتك الصحية؟
-            </h2>
-            <p className="relative mx-auto mt-4 max-w-xl leading-8 text-cream/75">
-              اطلب الآن وخلّي حساب الماكروز علينا — نحن نحسب بالدقة، وأنت تركّز على تمرينك
-              ويومك.
-            </p>
+            <h2 className="relative text-3xl font-black text-cream sm:text-4xl">{cta.title}</h2>
+            <p className="relative mx-auto mt-4 max-w-xl leading-8 text-cream/75">{cta.sub}</p>
             <div className="relative mt-9 flex flex-wrap items-center justify-center gap-3">
               <a
-                href={whatsappLink(`مرحباً ${SITE.nameAr}! 👋 أريد أطلب وجبات.`)}
+                href={wa(`مرحباً ${site.nameAr}! 👋 أريد أطلب وجبات.`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 rounded-full bg-wa px-8 py-4 text-base font-black text-white transition hover:-translate-y-0.5 hover:brightness-110"
               >
                 <IconWhatsApp className="h-5 w-5" />
-                اطلب عبر واتساب
+                {cta.primaryLabel}
               </a>
               <Link
                 href="/menu"
                 className="rounded-full bg-cream px-8 py-4 text-base font-black text-forest transition hover:-translate-y-0.5 hover:bg-card"
               >
-                تصفح القائمة
+                {cta.secondaryLabel}
               </Link>
             </div>
           </div>

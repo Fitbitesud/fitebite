@@ -1,12 +1,16 @@
-import { SITE } from '@/lib/config';
-import { whatsappLink } from '@/lib/whatsapp';
+'use client';
+
 import { IconWhatsApp } from './Icons';
+import { useSite, useWhatsapp } from './SiteContext';
 
 /** زر واتساب عائم للتواصل السريع */
 export default function FloatingWhatsApp() {
+  const site = useSite();
+  const wa = useWhatsapp();
+
   return (
     <a
-      href={whatsappLink(`مرحباً ${SITE.nameAr}! 👋 أريد الاستفسار عن الوجبات.`)}
+      href={wa(`مرحباً ${site.nameAr}! 👋 أريد الاستفسار عن الوجبات.`)}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="تواصل معنا عبر واتساب"

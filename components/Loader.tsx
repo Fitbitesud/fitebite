@@ -16,6 +16,7 @@ import {
   STROKE_MAIN,
   STROKE_SWOOSH,
 } from './logo-paths';
+import { useSite } from './SiteContext';
 
 const RUN_MS = 3200;
 const EXIT_MS = 800;
@@ -26,6 +27,7 @@ const EXIT_MS = 800;
  * ثم الكلمة العربية وشريط التقدم قبل ستارة صاعدة تكشف الموقع.
  */
 export default function Loader() {
+  const site = useSite();
   const [stage, setStage] = useState<'run' | 'exit' | 'done'>('run');
   const [pct, setPct] = useState(0);
 
@@ -187,7 +189,7 @@ export default function Loader() {
               animate={{ y: 0 }}
               transition={{ delay: 1.75, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             >
-              FITBITE
+              {site.nameEn}
             </motion.span>
           </div>
           <motion.p
@@ -196,7 +198,7 @@ export default function Loader() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2.15, duration: 0.5 }}
           >
-            طعام صحي
+            {site.taglineAr}
           </motion.p>
 
           {/* شريط التقدم */}

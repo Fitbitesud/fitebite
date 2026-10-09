@@ -1,9 +1,15 @@
+'use client';
+
 import Link from 'next/link';
 import { IconCloche } from './Icons';
 import Reveal from './Reveal';
+import { useSite } from './SiteContext';
 
-/** لافتة الدخول إلى صفحة الباقات الجاهزة (بدل المُخصّص المحذوف) */
+/** لافتة الدخول إلى صفحة الباقات الجاهزة */
 export default function PackagesBanner() {
+  const site = useSite();
+  const b = site.home.pkgBanner;
+
   return (
     <section className="border-y border-sand bg-card/60 py-14">
       <div className="container-x">
@@ -14,17 +20,15 @@ export default function PackagesBanner() {
                 <IconCloche className="h-6 w-6" />
               </span>
               <div>
-                <b className="block text-lg font-black text-forest">تفضّل الجاهز؟</b>
-                <p className="mt-1 text-xs font-bold leading-6 text-muted">
-                  ست باقات شهرية بأسعار وماكروز معلنة — اختر باقتك ويبدأ اشتراكك من اليوم.
-                </p>
+                <b className="block text-lg font-black text-forest">{b.title}</b>
+                <p className="mt-1 text-xs font-bold leading-6 text-muted">{b.sub}</p>
               </div>
             </div>
             <Link
               href="/packages"
               className="shrink-0 rounded-full bg-forest px-7 py-3.5 text-sm font-black text-cream shadow-soft transition hover:-translate-y-0.5 hover:bg-forest-deep"
             >
-              تصفح الباقات الجاهزة
+              {b.button}
             </Link>
           </div>
         </Reveal>

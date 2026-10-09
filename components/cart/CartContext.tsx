@@ -15,6 +15,7 @@ import { MENU_SYNC } from '@/lib/menu';
 import type { CartLine, OrderTotals } from '@/lib/types';
 import { computeTotals } from '@/lib/whatsapp';
 import { IconCheck } from '../Icons';
+import { useSite } from '../SiteContext';
 
 const STORAGE_KEY = 'fitbite_cart_v1';
 
@@ -38,6 +39,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [hydrated, setHydrated] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const site = useSite();
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -101,7 +103,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [cart],
   );
 
-  const totals = useMemo(() => computeTotals(lines), [lines]);
+  const totals = useMemo(() => computeTotals(lines, site), [lines, site]);
   const qtyOf = useCallback((id: string) => cart[id] ?? 0, [cart]);
 
   const value = useMemo<CartContextValue>(

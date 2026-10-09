@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { SITE } from '@/lib/config';
+import { useSite } from '../SiteContext';
 import { fmt, price } from '@/lib/format';
 import type { CustomerInfo } from '@/lib/types';
 import {
@@ -78,7 +78,8 @@ export default function CartDrawer() {
     clear();
   };
 
-  const remainingForFree = SITE.freeDeliveryAbove - totals.subtotal;
+  const site = useSite();
+  const remainingForFree = site.freeDeliveryAbove - totals.subtotal;
 
   return (
     <AnimatePresence>
@@ -211,7 +212,7 @@ export default function CartDrawer() {
                             </button>
                           </div>
                           <span className="mt-0.5 text-xs font-bold text-muted">
-                            {price(l.item.price)} للوحدة
+                            {price(l.item.price, site.currency)} للوحدة
                           </span>
                           <div className="mt-2 flex items-center justify-between">
                             <div className="flex items-center gap-2 rounded-full border border-sand bg-cream px-1.5 py-1">
@@ -234,7 +235,7 @@ export default function CartDrawer() {
                               </button>
                             </div>
                             <b className="text-sm font-black text-forest">
-                              {price(l.item.price * l.qty)}
+                              {price(l.item.price * l.qty, site.currency)}
                             </b>
                           </div>
                         </div>
@@ -246,26 +247,26 @@ export default function CartDrawer() {
                   <div className="space-y-2.5 rounded-2xl border border-sand bg-card p-4 text-sm font-bold">
                     <div className="flex justify-between text-muted">
                       <span>المجموع الفرعي</span>
-                      <span className="text-ink">{price(totals.subtotal)}</span>
+                      <span className="text-ink">{price(totals.subtotal, site.currency)}</span>
                     </div>
                     <div className="flex justify-between text-muted">
-                      <span>التوصيل داخل {SITE.city}</span>
+                      <span>التوصيل داخل {site.city}</span>
                       {totals.delivery === 0 ? (
                         <span className="font-black text-leaf">مجاني ✅</span>
                       ) : (
-                        <span className="text-ink">{price(totals.delivery)}</span>
+                        <span className="text-ink">{price(totals.delivery, site.currency)}</span>
                       )}
                     </div>
                     {totals.delivery > 0 && remainingForFree > 0 && (
                       <div className="rounded-xl bg-leaf/10 p-3">
                         <p className="text-xs font-extrabold text-forest">
-                          أضف بقيمة {price(remainingForFree)} للحصول على توصيل مجاني 🛵
+                          أضف بقيمة {price(remainingForFree, site.currency)} للحصول على توصيل مجاني 🛵
                         </p>
                         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sand">
                           <div
                             className="h-full rounded-full bg-leaf transition-all duration-500"
                             style={{
-                              width: `${Math.min(100, (totals.subtotal / SITE.freeDeliveryAbove) * 100)}%`,
+                              width: `${Math.min(100, (totals.subtotal / site.freeDeliveryAbove) * 100)}%`,
                             }}
                           />
                         </div>
@@ -273,7 +274,7 @@ export default function CartDrawer() {
                     )}
                     <div className="flex justify-between border-t border-sand pt-2.5 text-base font-black text-forest">
                       <span>الإجمالي</span>
-                      <span>{price(totals.total)}</span>
+                      <span>{price(totals.total, site.currency)}</span>
                     </div>
                     <div className="flex justify-between text-xs font-bold text-muted">
                       <span>🔥 إجمالي السعرات: {fmt(totals.kcal)} سعرة</span>
@@ -311,7 +312,7 @@ export default function CartDrawer() {
                         onChange={(e) => set({ region: e.target.value })}
                       >
                         <option value="">اختر منطقة التوصيل *</option>
-                        {SITE.regions.map((r) => (
+                        {site.regions.map((r) => (
                           <option key={r} value={r}>
                             {r}
                           </option>
@@ -368,7 +369,7 @@ export default function CartDrawer() {
                     className="flex w-full items-center justify-center gap-2.5 rounded-full bg-wa py-4 text-base font-black text-white shadow-soft transition hover:-translate-y-0.5 hover:brightness-110"
                   >
                     <IconWhatsApp className="h-5 w-5" />
-                    إتمام الطلب عبر واتساب — {price(totals.total)}
+                    إتمام الطلب عبر واتساب — {price(totals.total, site.currency)}
                   </button>
                   <p className="mt-2.5 text-center text-[11px] font-bold text-muted">
                     سيُفتح واتساب برسالة جاهزة تحتوي كل تفاصيل طلبك لإرسالها للرقم المسجّل.

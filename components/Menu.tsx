@@ -2,9 +2,8 @@
 
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { SITE } from '@/lib/config';
 import type { MenuData } from '@/lib/types';
-import { whatsappLink } from '@/lib/whatsapp';
+import { useSite, useWhatsapp } from './SiteContext';
 import {
   IconBox,
   IconBowl,
@@ -32,6 +31,8 @@ const CATEGORY_ICONS = {
 } as const;
 
 export default function Menu({ menu }: { menu: MenuData }) {
+  const site = useSite();
+  const wa = useWhatsapp();
   const [active, setActive] = useState(menu.categories[0]?.slug ?? '');
   const items = menu.items.filter((i) => i.categorySlug === active && i.available);
 
@@ -78,7 +79,7 @@ export default function Menu({ menu }: { menu: MenuData }) {
           <p className="text-sm font-bold text-muted">
             ما لقيت وجبة تناسب ماكروزك بالضبط؟ نجهّزها لك حسب طلبك —{' '}
             <a
-              href={whatsappLink(`مرحباً ${SITE.nameAr}، أريد وجبة مخصصة حسب ماكروز معين.`)}
+              href={wa(`مرحباً ${site.nameAr}، أريد وجبة مخصصة حسب ماكروز معين.`)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 font-black text-forest underline decoration-leaf decoration-2 underline-offset-4 hover:text-copper"

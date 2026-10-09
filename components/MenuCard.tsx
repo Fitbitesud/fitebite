@@ -1,14 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { SITE } from '@/lib/config';
 import { fmt } from '@/lib/format';
+import { useSite } from './SiteContext';
 import type { MenuItem } from '@/lib/types';
 import { useCart } from './cart/CartContext';
 import { IconFlame, IconMinus, IconPlus } from './Icons';
 
 export default function MenuCard({ item, index }: { item: MenuItem; index: number }) {
   const { qtyOf, add, inc, dec } = useCart();
+  const site = useSite();
   const qty = qtyOf(item._id);
 
   const macros = [
@@ -72,7 +73,7 @@ export default function MenuCard({ item, index }: { item: MenuItem; index: numbe
         <div className="mt-auto flex items-center justify-between pt-2">
           <div className="leading-none">
             <span className="text-xl font-black text-forest">{fmt(item.price)}</span>{' '}
-            <span className="text-[11px] font-bold text-muted">{SITE.currency}</span>
+            <span className="text-[11px] font-bold text-muted">{site.currency}</span>
           </div>
           {qty === 0 ? (
             <button

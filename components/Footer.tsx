@@ -1,6 +1,7 @@
+'use client';
+
 import Link from 'next/link';
-import { SITE } from '@/lib/config';
-import { whatsappLink } from '@/lib/whatsapp';
+import { useSite, useWhatsapp } from './SiteContext';
 import {
   IconClock,
   IconFacebook,
@@ -21,19 +22,20 @@ const QUICK_LINKS = [
   { href: '/#reviews', label: 'آراء العملاء' },
 ];
 
-const SOCIALS = [
-  { href: SITE.socials.instagram, Icon: IconInstagram, label: 'إنستغرام' },
-  { href: SITE.socials.facebook, Icon: IconFacebook, label: 'فيسبوك' },
-  { href: SITE.socials.tiktok, Icon: IconTiktok, label: 'تيك توك' },
-];
-
 export default function Footer() {
+  const site = useSite();
+  const wa = useWhatsapp();
+  const SOCIALS = [
+    { href: site.socials.instagram, Icon: IconInstagram, label: 'إنستغرام' },
+    { href: site.socials.facebook, Icon: IconFacebook, label: 'فيسبوك' },
+    { href: site.socials.tiktok, Icon: IconTiktok, label: 'تيك توك' },
+  ];
   return (
     <footer id="contact" className="scroll-mt-20 bg-forest-deep pt-16 text-cream/75">
       <div className="container-x grid gap-12 lg:grid-cols-4">
         <div>
           <Logo tone="cream" withTagline />
-          <p className="mt-5 text-sm leading-7">{SITE.description}</p>
+          <p className="mt-5 text-sm leading-7">{site.description}</p>
           <div className="mt-6 flex gap-2">
             {SOCIALS.map((s) => (
               <a
@@ -69,7 +71,7 @@ export default function Footer() {
         <div>
           <h4 className="mb-5 text-base font-black text-cream">ساعات العمل</h4>
           <ul className="space-y-2.5">
-            {SITE.hours.map((h) => (
+            {site.hours.map((h) => (
               <li
                 key={h.days}
                 className="flex items-center justify-between gap-4 rounded-xl bg-cream/5 px-4 py-3 text-sm font-bold"
@@ -84,14 +86,14 @@ export default function Footer() {
           </ul>
           <p className="mt-4 flex items-center gap-2 text-sm font-bold">
             <IconPin className="h-4 w-4 text-leaf" />
-            {SITE.address}
+            {site.address}
           </p>
         </div>
 
         <div>
           <h4 className="mb-5 text-base font-black text-cream">تواصل معنا</h4>
           <a
-            href={whatsappLink(`مرحباً ${SITE.nameAr}! 👋`)}
+            href={wa(`مرحباً ${site.nameAr}! 👋`)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 rounded-full bg-wa px-6 py-3.5 text-sm font-black text-white transition hover:brightness-110"
@@ -101,7 +103,7 @@ export default function Footer() {
           </a>
           <p className="mt-4 flex items-center gap-2 text-sm font-bold">
             <IconPhone className="h-4 w-4 text-leaf" />
-            <span dir="ltr">{SITE.whatsappDisplay}</span>
+            <span dir="ltr">{site.whatsappDisplay}</span>
           </p>
           <p className="mt-3 text-xs leading-6 text-cream/60">
             نرد على رسائل الواتساب خلال دقائق خلال ساعات العمل — طلبك يصل المطبخ مباشرة
@@ -112,9 +114,9 @@ export default function Footer() {
 
       <div className="mt-14 border-t border-cream/10 py-6">
         <div className="container-x flex flex-col items-center justify-between gap-3 text-xs font-bold sm:flex-row">
-          <span>© 2026 {SITE.nameAr} — كل الحقوق محفوظة.</span>
+          <span>© 2026 {site.nameAr} — كل الحقوق محفوظة.</span>
           <span className="flex items-center gap-1.5">
-            صُنع بحب في {SITE.city}
+            صُنع بحب في {site.city}
             <span className="text-leaf" aria-hidden="true">
               🌿
             </span>

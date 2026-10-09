@@ -3,16 +3,22 @@ import Link from 'next/link';
 import { IconArrowLeft, IconWhatsApp } from '@/components/Icons';
 import SectionHeading from '@/components/SectionHeading';
 import ReadyPackages from '@/components/subscriptions/ReadyPackages';
-import { SITE } from '@/lib/config';
 import { whatsappLink } from '@/lib/whatsapp';
+import { getReadyPackages } from '@/lib/subscriptions';
+import { getSite } from '@/lib/site-data';
 
-export const metadata: Metadata = {
-  title: 'الباقات الشهرية',
-  description: 'باقات فيتبايت الشهرية الجاهزة: تضخيم، تنشيف، ومحافظة — بأسعار وماكروز معلنة وضمان فيتبايت.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite();
+  return {
+    title: 'الباقات الشهرية',
+    description: `باقات ${site.nameAr} الشهرية الجاهزة: تضخيم، تنشيف، ومحافظة — بأسعار وماكروز معلنة وضمان فيتبايت.`,
+  };
+}
 
 /** صفحة الباقات الشهرية الجاهزة — يُدخل إليها من الهيدر والرئيسية */
-export default function PackagesPage() {
+export default async function PackagesPage() {
+  const [packages, site] = await Promise.all([getReadyPackages(), getSite()]);
+
   return (
     <div className="pb-24 pt-28">
       <div className="container-x mb-4">
@@ -29,19 +35,19 @@ export default function PackagesPage() {
         <SectionHeading
           eyebrow="الاشتراكات الشهرية"
           title="باقات جاهزة بأسعار معلنة"
-          sub="ست باقات تغطي أهداف التضخيم والتنشيف والمحافظة — اختر باقتك ويكتمل اشتراكك من الرئيسية في ثوانٍ."
+          sub="ست باقات تغطي أهداف التضخيم والتنشيف والمحافظة — اختر باقتك ويصل طلبك واتساب مباشرة."
         />
-        <ReadyPackages />
+        <ReadyPackages packages={packages} />
 
         <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
           <a
-            href={whatsappLink(`مرحباً ${SITE.nameAr}! 👋 أريد استفساراً عن الباقات الشهرية.`)}
+            href={whatsappLink(`مرحباً ${site.nameAr}! 👋 أريد استفساراً عن الباقات الشهرية.`, site)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-full bg-wa px-7 py-3.5 text-sm font-black text-white transition hover:-translate-y-0.5 hover:brightness-110"
+            className="flex items-center gap-2 rounded-full bg-wa px-7 py-3.5 text-sm font-black text-white shadow-soft transition hover:-translate-y-0.5 hover:brightness-110"
           >
             <IconWhatsApp className="h-4 w-4" />
-            استفسر عبر واتساب
+            استفسر عن الباقات عبر واتساب
           </a>
         </div>
       </div>

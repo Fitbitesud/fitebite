@@ -1,23 +1,27 @@
+'use client';
+
 import { fmt, price } from '@/lib/format';
 import {
   GOALS,
   GUARANTEE,
-  READY_PACKAGES,
   buildPackageOrderMessage,
   computeDailyMacros,
   computeQuote,
   mealsLabel,
   type ReadyPackage,
 } from '@/lib/subscriptions';
-import { whatsappLink } from '@/lib/whatsapp';
+import { useSite, useWhatsapp } from '../SiteContext';
 import { IconShield, IconWhatsApp } from '../Icons';
 import Reveal from '../Reveal';
 
 /** بطاقة باقة جاهزة — صورة + ماكروز + سعر، وزر طلب مباشر عبر واتساب */
 function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
+  const site = useSite();
+  const wa = useWhatsapp();
   const goal = GOALS.find((g) => g.id === pkg.goalId)!;
   const macros = computeDailyMacros(goal, pkg.kcal);
   const quote = computeQuote(goal, pkg.meals);
+  const monthly = pkg.priceMonthly ?? quote.monthly;
   const tiles = [
     { v: fmt(macros.kcal), l: 'سعرة' },
     { v: `${fmt(macros.protein)}غ`, l: 'بروتين' },
@@ -32,12 +36,7 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
           {pkg.badge}
         </span>
       )}
-      <img
-        src={pkg.image}
-        alt={pkg.name}
-        loading="lazy"
-        className="h-40 w-full rounded-2xl object-cover"
-      />
+      <img src={pkg.image} alt={pkg.name} loading="lazy" className="h-40 w-full rounded-2xl object-cover" />
       <div>
         <b className="block text-lg font-black text-forest">{pkg.name}</b>
         <p className="mt-1 text-xs font-bold leading-6 text-muted">{pkg.desc}</p>
@@ -62,10 +61,10 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
         ))}
       </div>
       <div className="mt-auto leading-none pt-1">
-        <span className="text-2xl font-black text-forest">{fmt(quote.monthly)}</span>
-        <span className="mr-1 text-[10px] font-bold text-muted">ج.س / شهرياً</span>
+        <span className="text-2xl font-black text-forest">{fmt(monthly)}</span>
+        <span className="mr-1 text-[10px] font-bold text-muted">{site.currency} / شهرياً</span>
         <span className="mt-1 block text-[11px] font-bold text-muted">
-          {price(quote.daily)} يومياً
+          {price(Math.round(monthly / 30), site.currency)} يومياً
           {quote.discount > 0 && <span className="text-leaf"> (خصم {quote.discount * 100}%)</span>}
         </span>
       </div>
@@ -74,7 +73,7 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
         مشمولة بضمان فيتبايت
       </span>
       <a
-        href={whatsappLink(buildPackageOrderMessage(pkg))}
+        href={wa(buildPackageOrderMessage(pkg, site, monthly))}
         target="_blank"
         rel="noopener noreferrer"
         className="flex w-full items-center justify-center gap-2 rounded-full bg-forest py-3 text-center text-sm font-black text-cream transition hover:bg-leaf"
@@ -87,11 +86,11 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
 }
 
 /** شبكة الباقات الشهرية الجاهزة + بانر الضمان (صفحة /packages) */
-export default function ReadyPackages() {
+export default function ReadyPackages({ packages }: { packages: ReadyPackage[] }) {
   return (
     <>
       <div className="grid gap-5 pt-3 sm:grid-cols-2 lg:grid-cols-3">
-        {READY_PACKAGES.map((p, i) => (
+        {packages.map((p, i) => (
           <Reveal key={p.id} delay={(i % 3) * 0.08} className="h-full">
             <ReadyPackageCard pkg={p} />
           </Reveal>

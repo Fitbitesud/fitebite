@@ -1,54 +1,49 @@
-import { SITE } from '@/lib/config';
+'use client';
+
+import { fillTokens } from '@/lib/site-data';
 import { IconBike, IconCart, IconWhatsApp } from './Icons';
 import Reveal from './Reveal';
 import SectionHeading from './SectionHeading';
+import { useSite } from './SiteContext';
 
-const STEPS = [
-  {
-    Icon: IconCart,
-    title: 'اختر وجباتك',
-    desc: 'تصفح القائمة وأضف ما يعجبك إلى السلة — السعرات والماكروز واضحة أمامك لكل وجبة.',
-  },
-  {
-    Icon: IconWhatsApp,
-    title: 'أكّد طلبك بضغطة',
-    desc: 'أكمل بياناتك واضغط «إتمام الطلب عبر واتساب» — تصلنا رسالة مفصّلة بطلبك فوراً.',
-  },
-  {
-    Icon: IconBike,
-    title: 'وجبتك توصلك طازجة',
-    desc: `نجهّز طلبك بنفس اليوم داخل مطبخنا في ${SITE.city} ويوصلك حتى باب البيت.`,
-  },
-];
+const STEP_ICONS = {
+  cart: IconCart,
+  whatsapp: IconWhatsApp,
+  bike: IconBike,
+} as const;
 
 export default function HowItWorks() {
+  const site = useSite();
+  const { howHeading: head, steps } = site.home;
+
   return (
     <section id="how" className="scroll-mt-20 py-24">
       <div className="container-x">
-        <SectionHeading
-          eyebrow="كيف تطلب"
-          title="ثلاث خطوات تفصلك عن وجبتك"
-          sub="طلبك يصل مطبخنا كرسالة واتساب مرتّبة بكل التفاصيل — بدون تطبيقات وبدون تعقيد."
-        />
+        <SectionHeading eyebrow={head.eyebrow} title={head.title} sub={head.sub} />
         <div className="relative grid gap-12 md:grid-cols-3 md:gap-8">
           <span
             className="absolute inset-x-[16%] top-10 hidden border-t-2 border-dashed border-sand md:block"
             aria-hidden="true"
           />
-          {STEPS.map((s, i) => (
-            <Reveal key={s.title} delay={i * 0.12}>
-              <div className="relative text-center">
-                <div className="relative mx-auto grid h-20 w-20 place-items-center rounded-full bg-forest text-cream shadow-soft">
-                  <s.Icon className="h-8 w-8" />
-                  <span className="absolute -right-2 -top-2 grid h-8 w-8 place-items-center rounded-full border-4 border-cream bg-orange text-sm font-black text-white">
-                    {i + 1}
-                  </span>
+          {steps.map((s, i) => {
+            const Icon = STEP_ICONS[(s.icon as keyof typeof STEP_ICONS) ?? 'cart'] ?? IconCart;
+            return (
+              <Reveal key={s.title} delay={i * 0.12}>
+                <div className="relative text-center">
+                  <div className="relative mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-forest text-cream shadow-soft">
+                    <Icon className="h-9 w-9" />
+                    <span className="absolute -right-2 -top-2 grid h-7 w-7 place-items-center rounded-full bg-orange text-xs font-black text-white shadow">
+                      {i + 1}
+                    </span>
+                  </div>
+                  <h3 className="mt-5 text-lg font-black text-forest">{s.title}</h3>
+                  <p className="mx-auto mt-2 max-w-xs text-sm leading-7 text-muted">
+                    {fillTokens(s.desc ?? '', site)}
+                  </p>
                 </div>
-                <h3 className="mt-5 text-xl font-black text-forest">{s.title}</h3>
-                <p className="mx-auto mt-3 max-w-xs text-sm leading-7 text-muted">{s.desc}</p>
-              </div>
-            </Reveal>
-          ))}
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

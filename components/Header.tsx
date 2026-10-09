@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useCart } from './cart/CartContext';
 import { IconCart, IconClose, IconMenuBars } from './Icons';
 import Logo from './Logo';
+import { useSite } from './SiteContext';
 
 const LINKS = [
   { href: '#home', label: 'الرئيسية' },
@@ -21,6 +22,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { totals, openCart } = useCart();
+  const site = useSite();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -43,7 +45,7 @@ export default function Header() {
       >
         <div className="container-x flex items-center justify-between">
           <Link href="/#home" aria-label="فيتبايت — الصفحة الرئيسية">
-            <Logo tone={dark ? 'cream' : 'forest'} withTagline={!scrolled} wordmark="FITBITE" />
+            <Logo tone={dark ? 'cream' : 'forest'} withTagline={!scrolled} wordmark={site.nameEn} />
           </Link>
 
           <nav className="hidden items-center gap-7 lg:flex" aria-label="التنقل الرئيسي">

@@ -1,4 +1,7 @@
+'use client';
+
 import { SITE } from '@/lib/config';
+import { useSite } from './SiteContext';
 import {
   DUMBBELL_TRANSFORM,
   FORK_PATHS,
@@ -72,6 +75,7 @@ export default function Logo({
 }) {
   const main = tone === 'cream' ? 'text-cream' : 'text-forest';
   const word = tone === 'cream' ? 'text-cream' : 'text-forest';
+  const site = useSite();
   return (
     <span className={`flex items-center gap-3 ${className}`}>
       <LogoMark className={`h-11 w-11 shrink-0 ${main}`} />
@@ -81,7 +85,7 @@ export default function Logo({
             className={`text-2xl font-black tracking-tight ${word}`}
             dir={wordmark ? 'ltr' : undefined}
           >
-            {wordmark ?? SITE.nameAr}
+            {wordmark ?? site.nameAr}
           </span>
           {withTagline && (
             <span
@@ -92,7 +96,7 @@ export default function Logo({
               <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="#7E9C4E" strokeWidth="2">
                 <path d="M5 19C5 10 10 5 20 4c-.5 10-5.5 15-15 15z" />
               </svg>
-              {SITE.taglineAr}
+              {site.taglineAr}
             </span>
           )}
         </span>

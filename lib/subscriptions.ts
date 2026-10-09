@@ -1,5 +1,8 @@
-import { asset, SITE } from './config';
+import { asset } from './config';
 import { fmt, price } from './format';
+import { getReadClient, isSanityConfigured } from './sanity/client';
+import { PACKAGES_QUERY } from './sanity/queries';
+import { DEFAULT_SITE, type SiteData } from './site-data';
 
 /** أهداف الاشتراكات */
 export type SubscriptionGoalId = 'bulking' | 'cutting' | 'maintain';
@@ -107,6 +110,9 @@ export interface ReadyPackage {
   desc: string;
   badge?: string;
   image: string;
+  /** سعر شهري يدوي من لوحة التحكم — إن تُرك فارغاً يُحسب تلقائياً */
+  priceMonthly?: number;
+  order?: number;
 }
 
 export const READY_PACKAGES: ReadyPackage[] = [
@@ -180,10 +186,10 @@ export function buildSubscriptionMessage(opts: {
   quote: SubscriptionQuote;
   name: string;
   phone: string;
-}): string {
+}, site: SiteData = DEFAULT_SITE): string {
   const { goal, meals, macros, quote, name, phone } = opts;
   const L: string[] = [];
-  L.push(`*📋 طلب اشتراك جديد من موقع ${SITE.nameAr}*`);
+  L.push(`*📋 طلب اشتراك جديد من موقع ${site.nameAr}*`);
   L.push('━━━━━━━━━━━━━━━');
   L.push(`🎯 الهدف: ${goal.name} (${goal.en})`);
   L.push(`🍽 عدد الوجبات: ${mealsLabel(meals)} يومياً`);
@@ -208,23 +214,45 @@ export function buildSubscriptionMessage(opts: {
   );
   L.push(`💰 *الإجمالي الشهري: ${price(quote.monthly)}*`);
   L.push('');
-  L.push(`_أُرسل تلقائياً من موقع ${SITE.nameAr}_ 🌿`);
+  L.push(`_أُرسل تلقائياً من موقع ${site.nameAr}_ 🌿`);
   return L.join('\n');
 }
 
+/** جلب الباقات الجاهزة — من Sanity إذا ضُبطت الوثائق، وإلا القائمة المحلية */
+export async function getReadyPackages(): Promise<ReadyPackage[]> {
+  if (isSanityConfigured) {
+    try {
+      const docs = await getReadClient().fetch<Array<Partial<ReadyPackage> & { _id: string }>>(
+        PACKAGES_QUERY
+      );
+      if (Array.isArray(docs) && docs.length) {
+        return docs.map((d) => ({ ...d, id: d.id ?? d._id }) as ReadyPackage);
+      }
+    } catch (err) {
+      console.error('Sanity packages fetch failed — falling back to local:', err);
+    }
+  }
+  return READY_PACKAGES;
+}
+
 /** رسالة واتساب جاهزة لطلب باقة شهرية جاهزة بالاسم والسعر والماكروز */
-export function buildPackageOrderMessage(pkg: ReadyPackage): string {
+export function buildPackageOrderMessage(
+  pkg: ReadyPackage,
+  site: SiteData = DEFAULT_SITE,
+  monthlyOverride?: number
+): string {
   const goal = GOALS.find((g) => g.id === pkg.goalId)!;
   const macros = computeDailyMacros(goal, pkg.kcal);
   const quote = computeQuote(goal, pkg.meals);
+  const monthly = monthlyOverride ?? pkg.priceMonthly ?? quote.monthly;
   return [
-    `طلب باقة شهرية جاهزة من ${SITE.nameAr} 🍽`,
+    `طلب باقة شهرية جاهزة من ${site.nameAr} 🍽`,
     `الباقة: ${pkg.name}`,
     `الهدف: ${goal.name}`,
     `الوجبات: ${mealsLabel(pkg.meals)} يومياً`,
     `السعرات اليومية: ${fmt(pkg.kcal)} سعرة`,
     `الماكروز اليومي: بروتين ${fmt(macros.protein)}غ | كاربوهيدرات ${fmt(macros.carbs)}غ | دهون ${fmt(macros.fat)}غ`,
-    `السعر الشهري: ${fmt(quote.monthly)} ${SITE.currency}`,
+    `السعر الشهري: ${fmt(monthly)} ${site.currency}`,
     '──────────',
     'الاسم: ',
     'المنطقة: ',

@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { asset, SITE } from '@/lib/config';
-import { whatsappLink } from '@/lib/whatsapp';
+import { fillTokens, imgUrl } from '@/lib/site-data';
+import { useSite, useWhatsapp } from './SiteContext';
 import { LogoMark } from './Logo';
 import {
   IconChart,
@@ -13,21 +13,24 @@ import {
   IconWhatsApp,
 } from './Icons';
 
+const STRIP_ICONS = {
+  cloche: IconCloche,
+  chart: IconChart,
+  flame: IconFlame,
+  leaf: IconLeaf,
+} as const;
+
 const MACROS = [
   { v: '520', l: 'سعرة' },
   { v: '45غ', l: 'بروتين' },
   { v: '58غ', l: 'كاربوهيدرات' },
 ];
 
-/** شريط وعود الهوية — مثل الشريط السفلي في البوستر الرسمي */
-const STRIP = [
-  { Icon: IconCloche, t: 'طعم شهي', s: 'وجودة عالية' },
-  { Icon: IconChart, t: 'ماكروز', s: 'محسوبة بدقة' },
-  { Icon: IconFlame, t: 'سعرات حرارية', s: 'دقيقة' },
-  { Icon: IconLeaf, t: 'بدون زيوت', s: 'أكل صحي 100%' },
-];
-
 export default function Hero() {
+  const site = useSite();
+  const wa = useWhatsapp();
+  const h = site.home;
+
   return (
     <section id="home" className="relative scroll-mt-20 overflow-hidden bg-forest pt-32 text-cream">
       {/* خلفية بسيطة: لون أخضر داكن مسطّح + إضاءة علوية خفيفة واحدة + توهج برتقالي متناسق */}
@@ -50,7 +53,7 @@ export default function Hero() {
             className="inline-flex items-center gap-2 rounded-full border border-cream/15 bg-cream/10 px-4 py-2 text-xs font-extrabold text-cream backdrop-blur"
           >
             <IconFlame className="h-4 w-4 text-orange-soft" />
-            وجبات طازجة تُطهى يومياً بدون زيوت مضافة
+            {h.heroBadge}
           </motion.span>
 
           <motion.h1
@@ -59,16 +62,14 @@ export default function Hero() {
             transition={{ delay: 0.2, duration: 0.6 }}
             className="mt-6 text-4xl font-black leading-[1.25] text-cream sm:text-5xl lg:text-[3.4rem]"
           >
-            طعام صحي يُحسب{' '}
+            {h.heroTitleLead}{' '}
             <span className="relative inline-block bg-gradient-to-l from-orange-soft via-orange to-copper bg-clip-text text-transparent">
-              بالغرام
+              {h.heroAccent}
               <svg viewBox="0 0 120 14" className="absolute -bottom-2 right-0 w-full" fill="none" aria-hidden="true">
                 <path d="M4 10 C30 4 90 4 116 8" stroke="#7E9C4E" strokeWidth="5" strokeLinecap="round" />
               </svg>
             </span>
-            ،
-            <br />
-            لا بالتقريب.
+            {h.heroTitleTail}
           </motion.h1>
 
           <motion.p
@@ -77,8 +78,7 @@ export default function Hero() {
             transition={{ delay: 0.32, duration: 0.6 }}
             className="mt-6 max-w-lg text-base leading-8 text-cream/70 sm:text-lg"
           >
-            وجبات محسوبة السعرات والماكروز، مشوية ومطهوة على البخار — حسب هدفك ضخامة أو
-            تنشيف — وتوصلك حتى باب البيت في {SITE.city}.
+            {fillTokens(h.heroParagraph, site)}
           </motion.p>
 
           <motion.div
@@ -91,19 +91,18 @@ export default function Hero() {
               href="/menu"
               className="rounded-full bg-copper px-8 py-4 text-base font-black text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-copper-dark"
             >
-              تصفح القائمة
+              {h.heroPrimaryLabel}
             </Link>
             <a
-              href={whatsappLink(`مرحباً ${SITE.nameAr}! 👋 أريد الاستفسار عن الوجبات.`)}
+              href={wa(`مرحباً ${site.nameAr}! 👋 أريد الاستفسار عن الوجبات.`)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-full bg-wa px-7 py-4 text-base font-black text-white shadow-lift transition hover:-translate-y-0.5 hover:brightness-110"
             >
               <IconWhatsApp className="h-5 w-5" />
-              اطلب عبر واتساب
+              {h.heroSecondaryLabel}
             </a>
           </motion.div>
-
         </div>
 
         {/* الصورة بإطار نظيف بسيط */}
@@ -116,11 +115,13 @@ export default function Hero() {
             className="absolute -top-7 right-6 z-10 flex items-center gap-2.5 rounded-2xl bg-cream px-4 py-2.5 shadow-lift"
           >
             <LogoMark className="h-10 w-10 text-forest" />
-            <span className="text-lg font-black leading-none text-forest">فيتبايت</span>
+            <span className="text-lg font-black leading-none text-forest" dir="ltr">
+              {site.nameEn}
+            </span>
           </motion.div>
           <motion.img
-            src={asset('/images/hero-bowl.jpg')}
-            alt="باول الدجاج المشوي من فيتبايت"
+            src={imgUrl(h.heroImage)}
+            alt={`${site.nameAr} — ${h.heroCardTitle}`}
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.25, duration: 0.8 }}
@@ -143,7 +144,7 @@ export default function Hero() {
             >
               <div className="flex items-center gap-2 text-xs font-black text-cream">
                 <IconFlame className="h-4 w-4 text-orange-soft" />
-                باول الدجاج المشوي
+                {h.heroCardTitle}
               </div>
               <div className="mt-2.5 flex gap-2 text-center">
                 {MACROS.map((m) => (
@@ -160,24 +161,27 @@ export default function Hero() {
 
       {/* شريط وعود الهوية أسفل الهبوط */}
       <div className="relative grid grid-cols-2 divide-x divide-x-reverse divide-y divide-cream/10 border-t border-cream/10 bg-forest-deep/70 backdrop-blur lg:grid-cols-4 lg:divide-y-0">
-        {STRIP.map((s, i) => (
-          <motion.div
-            key={s.t}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.08, duration: 0.5 }}
-            className="flex items-center gap-3.5 px-6 py-5"
-          >
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cream/20 bg-cream/5 text-leaf">
-              <s.Icon className="h-5 w-5" />
-            </span>
-            <span>
-              <b className="block text-sm font-black text-cream">{s.t}</b>
-              <span className="text-[11px] font-bold text-cream/60">{s.s}</span>
-            </span>
-          </motion.div>
-        ))}
+        {h.strip.map((s, i) => {
+          const Icon = STRIP_ICONS[(s.icon as keyof typeof STRIP_ICONS) ?? 'leaf'] ?? IconLeaf;
+          return (
+            <motion.div
+              key={s.title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              className="flex items-center gap-3.5 px-6 py-5"
+            >
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cream/20 bg-cream/5 text-leaf">
+                <Icon className="h-5 w-5" />
+              </span>
+              <span>
+                <b className="block text-sm font-black text-cream">{s.title}</b>
+                <span className="text-[11px] font-bold text-cream/60">{s.sub}</span>
+              </span>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
   );

@@ -9,8 +9,8 @@ import {
   type PendingComment,
   type SiteComment,
 } from '@/lib/comments';
-import { whatsappLink } from '@/lib/whatsapp';
 import { IconCheck, IconClock, IconStar, IconWhatsApp } from './Icons';
+import { useWhatsapp } from './SiteContext';
 import Reveal from './Reveal';
 import SectionHeading from './SectionHeading';
 
@@ -18,6 +18,7 @@ import SectionHeading from './SectionHeading';
 export default function Comments({ approved }: { approved: SiteComment[] }) {
   const [name, setName] = useState('');
   const [text, setText] = useState('');
+  const wa = useWhatsapp();
   const [sending, setSending] = useState(false);
   const [pending, setPending] = useState<PendingComment[]>(() => getPendingComments());
   const [lastLocal, setLastLocal] = useState<PendingComment | null>(null);
@@ -137,7 +138,7 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
               )}
               {lastLocal && (
                 <a
-                  href={whatsappLink(commentAdminMessage(lastLocal.name, lastLocal.text))}
+                  href={wa(commentAdminMessage(lastLocal.name, lastLocal.text))}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto flex items-center justify-center gap-2 rounded-full bg-wa px-6 py-3 text-sm font-black text-white transition hover:brightness-110"
