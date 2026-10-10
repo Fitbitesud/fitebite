@@ -198,6 +198,15 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   if (!Array.isArray(h.strip) || !h.strip.length) h.strip = DEFAULT_SITE.home.strip;
   if (!Array.isArray(h.features) || !h.features.length) h.features = DEFAULT_SITE.home.features;
   if (!Array.isArray(h.steps) || !h.steps.length) h.steps = DEFAULT_SITE.home.steps;
+  /* تطبيع رقم الواتساب: أرقام فقط، وبادئة محلية 0 تتحول للصيغة الدولية 249 */
+  const digits = (merged.whatsapp ?? '').replace(/\D/g, '');
+  if (digits) {
+    merged.whatsapp = digits.startsWith('00')
+      ? digits.slice(2)
+      : digits.startsWith('0')
+        ? `249${digits.slice(1)}`
+        : digits;
+  }
   return merged;
 }
 

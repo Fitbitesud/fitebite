@@ -4,8 +4,8 @@ import type { CartLine, CustomerInfo, OrderTotals } from './types';
 
 export function computeTotals(lines: CartLine[], site: SiteData = DEFAULT_SITE): OrderTotals {
   const count = lines.reduce((s, l) => s + l.qty, 0);
-  const kcal = lines.reduce((s, l) => s + l.item.macros.kcal * l.qty, 0);
-  const protein = lines.reduce((s, l) => s + l.item.macros.protein * l.qty, 0);
+  const kcal = lines.reduce((s, l) => s + (l.item.macros?.kcal ?? 0) * l.qty, 0);
+  const protein = lines.reduce((s, l) => s + (l.item.macros?.protein ?? 0) * l.qty, 0);
   const subtotal = lines.reduce((s, l) => s + l.item.price * l.qty, 0);
   const delivery = count === 0 || subtotal >= site.freeDeliveryAbove ? 0 : site.deliveryFee;
   return { count, kcal, protein, subtotal, delivery, total: subtotal + delivery };
@@ -53,7 +53,7 @@ export function buildOrderMessage(
   L.push('*🛒 تفاصيل الطلب*');
   lines.forEach((l, i) => {
     L.push(`${i + 1}) ${l.item.name} × ${l.qty}`);
-    L.push(`     سعر الوحدة: ${price(l.item.price, cur)} | 🔥 ${l.item.macros.kcal} سعرة`);
+    L.push(`     سعر الوحدة: ${price(l.item.price, cur)} | 🔥 ${l.item.macros?.kcal ?? 0} سعرة`);
   });
   L.push('━━━━━━━━━━━━━━━');
   L.push(`🍽 عدد الأصناف: ${fmt(totals.count)}`);

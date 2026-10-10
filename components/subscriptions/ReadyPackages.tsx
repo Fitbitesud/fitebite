@@ -11,6 +11,7 @@ import {
   type ReadyPackage,
 } from '@/lib/subscriptions';
 import { useSite, useWhatsapp } from '../SiteContext';
+import { imgUrl } from '@/lib/site-data';
 import { useLivePackages } from '../useLiveData';
 import { IconShield, IconWhatsApp } from '../Icons';
 import Reveal from '../Reveal';
@@ -37,7 +38,12 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
           {pkg.badge}
         </span>
       )}
-      <img src={pkg.image} alt={pkg.name} loading="lazy" className="h-40 w-full rounded-2xl object-cover" />
+      <img
+        src={imgUrl(pkg.image)}
+        alt={pkg.name}
+        loading="lazy"
+        className="h-40 w-full rounded-2xl object-cover"
+      />
       <div>
         <b className="block text-lg font-black text-forest">{pkg.name}</b>
         <p className="mt-1 text-xs font-bold leading-6 text-muted">{pkg.desc}</p>

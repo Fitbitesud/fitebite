@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { fmt } from '@/lib/format';
+import { imgUrl } from '@/lib/site-data';
 import { useSite } from './SiteContext';
 import type { MenuItem } from '@/lib/types';
 import { useCart } from './cart/CartContext';
@@ -11,12 +12,13 @@ export default function MenuCard({ item, index }: { item: MenuItem; index: numbe
   const { qtyOf, add, inc, dec } = useCart();
   const site = useSite();
   const qty = qtyOf(item._id);
+  const mc = item.macros ?? { kcal: 0, protein: 0, carbs: 0, fat: 0 };
 
   const macros = [
-    { v: item.macros.kcal, l: 'سعرة' },
-    { v: item.macros.protein, l: 'بروتين غ' },
-    { v: item.macros.carbs, l: 'كارب غ' },
-    { v: item.macros.fat, l: 'دهون غ' },
+    { v: mc.kcal, l: 'سعرة' },
+    { v: mc.protein, l: 'بروتين غ' },
+    { v: mc.carbs, l: 'كارب غ' },
+    { v: mc.fat, l: 'دهون غ' },
   ];
 
   return (
@@ -30,7 +32,7 @@ export default function MenuCard({ item, index }: { item: MenuItem; index: numbe
     >
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
-          src={item.image}
+          src={imgUrl(item.image)}
           alt={item.name}
           loading="lazy"
           className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
@@ -42,7 +44,7 @@ export default function MenuCard({ item, index }: { item: MenuItem; index: numbe
         )}
         <span className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-forest/85 px-3 py-1 text-[11px] font-bold text-cream backdrop-blur">
           <IconFlame className="h-3.5 w-3.5 text-leaf" />
-          {item.macros.kcal} سعرة
+          {mc.kcal} سعرة
         </span>
       </div>
 
@@ -51,7 +53,7 @@ export default function MenuCard({ item, index }: { item: MenuItem; index: numbe
         <p className="line-clamp-2 text-sm leading-6 text-muted">{item.description}</p>
 
         <div className="flex flex-wrap gap-1.5">
-          {item.tags.map((t) => (
+          {(item.tags ?? []).map((t) => (
             <span
               key={t}
               className="rounded-full bg-leaf/10 px-2.5 py-1 text-[10px] font-extrabold text-forest"
