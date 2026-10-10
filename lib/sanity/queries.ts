@@ -17,8 +17,8 @@ export const APPROVED_COMMENTS_QUERY = `*[_type == "comment" && approved] | orde
   _id, name, role, text, postedAt
 }`;
 
-/** إعدادات الموقع الكاملة (وثيقة singleton من نوع siteSettings) */
-export const SETTINGS_QUERY = `*[_type == "siteSettings"][0] {
+/** إعدادات الموقع — كل وثائق siteSettings مرتبة من الأقدم للأحدث (تُدمج في الكود والأحدث يحسم كل حقل) */
+export const SETTINGS_QUERY = `*[_type == "siteSettings"] | order(_updatedAt asc) {
   "nameAr": identity.nameAr,
   "nameEn": identity.nameEn,
   "taglineAr": identity.taglineAr,

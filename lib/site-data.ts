@@ -175,6 +175,37 @@ function cleanNulls<T>(v: T): T {
   return v;
 }
 
+/* ── دمج عدة وثائق إعدادات (الأقدم ← الأحدث): أحدث قيمة تحسم كل حقلاً ── */
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return Boolean(v) && typeof v === 'object' && !Array.isArray(v);
+}
+function deepMergeDocs(
+  base: Record<string, unknown>,
+  over: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...base };
+  for (const [k, v] of Object.entries(over)) {
+    if (v === undefined || v === null) continue;
+    if (isPlainObject(v) && isPlainObject(out[k])) {
+      out[k] = deepMergeDocs(out[k] as Record<string, unknown>, v);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+/** يدمج قائمة وثائق siteSettings (نتيجة SETTINGS_QUERY) في وثيقة واحدة نظيفة */
+export function mergeSettingsDocs(
+  docs: unknown,
+): (Partial<SiteData> & { home?: Partial<HomeContent> }) | null {
+  if (!Array.isArray(docs)) return null;
+  const cleaned = docs.map((d) => cleanNulls(d)).filter(isPlainObject);
+  if (!cleaned.length) return null;
+  return cleaned.reduce<Record<string, unknown>>((acc, d) => deepMergeDocs(acc, d), {}) as Partial<
+    SiteData
+  > & { home?: Partial<HomeContent> };
+}
+
 /** دمج سطحي عميق بسيط: قيم لوحة التحكم فوق الافتراضية، مع ضمان المصفوفات والكائنات */
 function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): SiteData {
   const doc = cleanNulls(raw);
@@ -194,7 +225,11 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
     },
   };
   if (!Array.isArray(merged.hours) || !merged.hours.length) merged.hours = DEFAULT_SITE.hours;
-  if (!Array.isArray(merged.regions) || !merged.regions.length) merged.regions = DEFAULT_SITE.regions;
+  /* المناطق: قصّ المسافات الزائدة (مثل "شارع المطار ") وحذف الفارغ */
+  merged.regions = Array.isArray(merged.regions)
+    ? merged.regions.map((r) => (typeof r === 'string' ? r.trim() : '')).filter(Boolean)
+    : [];
+  if (!merged.regions.length) merged.regions = DEFAULT_SITE.regions;
   const h = merged.home;
   if (!Array.isArray(h.strip) || !h.strip.length) h.strip = DEFAULT_SITE.home.strip;
   if (!Array.isArray(h.features) || !h.features.length) h.features = DEFAULT_SITE.home.features;
@@ -227,9 +262,8 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
 export async function getSite(): Promise<SiteData> {
   if (isSanityConfigured) {
     try {
-      const doc = await getReadClient().fetch<Partial<SiteData> & { home?: Partial<HomeContent> } | null>(
-        SETTINGS_QUERY
-      );
+      const docs = await getReadClient().fetch<unknown[]>(SETTINGS_QUERY);
+      const doc = mergeSettingsDocs(docs);
       if (doc) return mergeSite(doc);
     } catch (err) {
       console.error('Sanity settings fetch failed — falling back to local defaults:', err);

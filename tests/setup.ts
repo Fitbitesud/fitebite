@@ -18,8 +18,12 @@ g.__SANITY = { doc: null, error: null };
 mock.module('../lib/sanity/client', () => ({
   isSanityConfigured: true,
   getReadClient: () => ({
-    fetch: async () => {
+    fetch: async (query: string) => {
       if (g.__SANITY.error) throw g.__SANITY.error;
+      if (query.includes('siteSettings')) {
+        const doc = g.__SANITY.doc;
+        return doc == null ? [] : Array.isArray(doc) ? doc : [doc];
+      }
       return g.__SANITY.doc;
     },
   }),
