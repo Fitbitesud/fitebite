@@ -40,7 +40,4 @@ export const menuItem = defineType({
     defineField({name: 'available', title: 'متاح للطلب؟', type: 'boolean', initialValue: true}),
     defineField({name: 'order', title: 'ترتيب العرض', type: 'number', initialValue: 1}),
   ],
-  preview: {
-    select: {title: 'name', media: 'image'},
-  },
 })

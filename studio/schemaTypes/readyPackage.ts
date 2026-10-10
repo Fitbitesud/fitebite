@@ -43,7 +43,4 @@ export const readyPackage = defineType({
     }),
     defineField({name: 'order', title: 'ترتيب العرض', type: 'number', initialValue: 1}),
   ],
-  preview: {
-    select: {title: 'name', subtitle: 'goalId', media: 'image'},
-  },
 })
