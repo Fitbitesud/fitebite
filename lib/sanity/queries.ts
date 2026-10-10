@@ -4,7 +4,7 @@ export const MENU_QUERY = `{
   "categories": *[_type == "category" && defined(slug.current)] | order(order asc) {
     _id, "slug": slug.current, name, icon, order
   },
-  "items": *[_type == "menuItem" && available] | order(order asc) {
+  "items": *[_type == "menuItem" && available != false] | order(order asc) {
     _id, slug, name, description, price,
     "categorySlug": category->slug.current,
     "image": image.asset->url,
