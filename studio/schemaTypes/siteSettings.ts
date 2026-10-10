@@ -191,7 +191,4 @@ export const siteSettings = defineType({
       options: {collapsed: false},
     }),
   ],
-  preview: {
-    prepare: () => ({title: 'إعدادات الموقع (وثيقة واحدة)'}),
-  },
 })

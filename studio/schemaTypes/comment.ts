@@ -25,13 +25,4 @@ export const comment = defineType({
       initialValue: () => new Date().toISOString(),
     }),
   ],
-  preview: {
-    select: {title: 'name', subtitle: 'text', approved: 'approved'},
-    prepare({title, subtitle, approved}) {
-      return {
-        title: `${title} ${approved ? '✅' : '⏳'}`,
-        subtitle: String(subtitle ?? '').slice(0, 80),
-      }
-    },
-  },
 })
