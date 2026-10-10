@@ -11,8 +11,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { MENU_SYNC } from '@/lib/menu';
-import type { CartLine, OrderTotals } from '@/lib/types';
+import { MENU_SYNC, getMenu } from '@/lib/menu';
+import type { CartLine, MenuItem, OrderTotals } from '@/lib/types';
 import { computeTotals } from '@/lib/whatsapp';
 import { IconCheck } from '../Icons';
 import { useSite } from '../SiteContext';
@@ -35,9 +35,21 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+/** سلة محفوظة تالفة (null، أرقام سالبة، نصوص…) → نُبقي فقط الكميات الصحيحة الموجبة */
+function sanitizeCart(raw: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+  for (const [id, qty] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof qty === 'number' && Number.isInteger(qty) && qty > 0) out[id] = qty;
+  }
+  return out;
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [hydrated, setHydrated] = useState(false);
+  /* أصناف القائمة الحالية (من لوحة التحكم إن وُجدت، وإلا المحلية) — منها تُحسب أسعار السلة */
+  const [catalog, setCatalog] = useState<MenuItem[]>(MENU_SYNC.items);
   const [isOpen, setIsOpen] = useState(false);
   const site = useSite();
   const [toast, setToast] = useState<string | null>(null);
@@ -46,7 +58,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setCart(JSON.parse(raw) as Record<string, number>);
+      if (raw) setCart(sanitizeCart(JSON.parse(raw)));
     } catch {
       /* تجاهل سلة تالفة */
     }
@@ -57,6 +69,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
   }, [cart, hydrated]);
 
+  useEffect(() => {
+    let alive = true;
+    getMenu()
+      .then((m) => alive && Array.isArray(m?.items) && m.items.length && setCatalog(m.items))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -66,10 +88,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const add = useCallback(
     (id: string) => {
       setCart((c) => ({ ...c, [id]: (c[id] ?? 0) + 1 }));
-      const item = MENU_SYNC.items.find((i) => i._id === id);
+      const item = catalog.find((i) => i._id === id);
       if (item) showToast(`تمت إضافة «${item.name}» إلى السلة`);
     },
-    [showToast],
+    [showToast, catalog],
   );
 
   const inc = useCallback((id: string) => setCart((c) => ({ ...c, [id]: (c[id] ?? 0) + 1 })), []);
@@ -98,9 +120,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const lines = useMemo<CartLine[]>(
     () =>
       Object.entries(cart)
-        .map(([id, qty]) => ({ item: MENU_SYNC.items.find((i) => i._id === id), qty }))
+        .map(([id, qty]) => ({ item: catalog.find((i) => i._id === id), qty }))
         .filter((l): l is CartLine => Boolean(l.item)),
-    [cart],
+    [cart, catalog],
   );
 
   const totals = useMemo(() => computeTotals(lines, site), [lines, site]);
