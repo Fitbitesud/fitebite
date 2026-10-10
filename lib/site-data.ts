@@ -1,4 +1,5 @@
 import { asset, SITE } from './config';
+import { toLatinDigits } from './format';
 import { getReadClient, isSanityConfigured } from './sanity/client';
 import { SETTINGS_QUERY } from './sanity/queries';
 
@@ -199,14 +200,26 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   if (!Array.isArray(h.features) || !h.features.length) h.features = DEFAULT_SITE.home.features;
   if (!Array.isArray(h.steps) || !h.steps.length) h.steps = DEFAULT_SITE.home.steps;
   /* تطبيع رقم الواتساب: أرقام فقط، وبادئة محلية 0 تتحول للصيغة الدولية 249 */
-  const digits = (merged.whatsapp ?? '').replace(/\D/g, '');
+  const digits = toLatinDigits(String(merged.whatsapp ?? '')).replace(/\D/g, '');
   if (digits) {
     merged.whatsapp = digits.startsWith('00')
       ? digits.slice(2)
       : digits.startsWith('0')
         ? `249${digits.slice(1)}`
         : digits;
+  } else {
+    /* حقل فارغ في لوحة التحكم → نبقي الرقم الافتراضي بدل رابط wa.me/ فارغ */
+    merged.whatsapp = DEFAULT_SITE.whatsapp;
   }
+  /* الرقم المعروض يتبع الرقم المربوط ما لم يُكتب نص عرض صريح من لوحة التحكم */
+  const display = String(doc.whatsappDisplay ?? '').trim();
+  merged.whatsappDisplay = display
+    ? display
+    : merged.whatsapp === DEFAULT_SITE.whatsapp
+      ? DEFAULT_SITE.whatsappDisplay
+      : merged.whatsapp.startsWith('249')
+        ? `0${merged.whatsapp.slice(3)}`
+        : merged.whatsapp;
   return merged;
 }
 

@@ -226,7 +226,10 @@ export async function getReadyPackages(): Promise<ReadyPackage[]> {
         PACKAGES_QUERY
       );
       if (Array.isArray(docs) && docs.length) {
-        return docs.map((d) => ({ ...d, id: d.id ?? d._id }) as ReadyPackage);
+        const valid = docs
+          .map((d) => ({ ...d, id: d.id ?? d._id }) as ReadyPackage)
+          .filter((p) => GOALS.some((g) => g.id === p.goalId));
+        if (valid.length) return valid;
       }
     } catch (err) {
       console.error('Sanity packages fetch failed — falling back to local:', err);
@@ -241,17 +244,21 @@ export function buildPackageOrderMessage(
   site: SiteData = DEFAULT_SITE,
   monthlyOverride?: number
 ): string {
-  const goal = GOALS.find((g) => g.id === pkg.goalId)!;
-  const macros = computeDailyMacros(goal, pkg.kcal);
-  const quote = computeQuote(goal, pkg.meals);
+  const goal = GOALS.find((g) => g.id === pkg.goalId);
+  const macros = goal ? computeDailyMacros(goal, pkg.kcal) : null;
+  const quote = goal
+    ? computeQuote(goal, pkg.meals)
+    : { monthly: pkg.priceMonthly ?? 0 };
   const monthly = monthlyOverride ?? pkg.priceMonthly ?? quote.monthly;
   return [
     `طلب باقة شهرية جاهزة من ${site.nameAr} 🍽`,
     `الباقة: ${pkg.name}`,
-    `الهدف: ${goal.name}`,
+    `الهدف: ${goal?.name ?? pkg.goalId}`,
     `الوجبات: ${mealsLabel(pkg.meals)} يومياً`,
     `السعرات اليومية: ${fmt(pkg.kcal)} سعرة`,
-    `الماكروز اليومي: بروتين ${fmt(macros.protein)}غ | كاربوهيدرات ${fmt(macros.carbs)}غ | دهون ${fmt(macros.fat)}غ`,
+    ...(macros
+      ? [`الماكروز اليومي: بروتين ${fmt(macros.protein)}غ | كاربوهيدرات ${fmt(macros.carbs)}غ | دهون ${fmt(macros.fat)}غ`]
+      : []),
     `السعر الشهري: ${fmt(monthly)} ${site.currency}`,
     '──────────',
     'الاسم: ',

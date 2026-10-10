@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSite } from '../SiteContext';
-import { fmt, price } from '@/lib/format';
+import { fmt, price, toLatinDigits } from '@/lib/format';
 import type { CustomerInfo } from '@/lib/types';
 import {
   buildOrderMessage,
@@ -45,6 +45,16 @@ export default function CartDrawer() {
   const [lastLink, setLastLink] = useState('');
   const [orderNo, setOrderNo] = useState('');
 
+  const site = useSite();
+
+  /* بعد إرسال الطلب: إغلاق السلة بأي طريقة (✕ أو الخلفية) يعيد الشاشة لوضع السلة الطبيعي */
+  useEffect(() => {
+    if (!isOpen && step === 'success') {
+      setStep('cart');
+      setForm(EMPTY_FORM);
+    }
+  }, [isOpen, step]);
+
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => {
@@ -57,8 +67,8 @@ export default function CartDrawer() {
   const validate = (): boolean => {
     const e: Record<string, string> = {};
     if (form.name.trim().length < 3) e.name = 'الرجاء كتابة الاسم الكامل';
-    const digits = form.phone.replace(/[^\d+]/g, '');
-    if (!/^(\+?249|0)?9\d{8}$/.test(digits)) e.phone = 'رقم جوال سوداني غير صحيح — مثال: 0912345678';
+    const digits = toLatinDigits(form.phone).replace(/[^\d+]/g, '');
+    if (!/^(\+?249|00249|0)?9\d{8}$/.test(digits)) e.phone = 'رقم جوال سوداني غير صحيح — مثال: 0912345678';
     if (!form.region) e.region = 'اختر منطقة التوصيل';
     if (form.address.trim().length < 6) e.address = 'اكتب عنواناً واضحاً (رقم المنزل/أقرب معلم)';
     setErrors(e);
@@ -69,16 +79,18 @@ export default function CartDrawer() {
     if (lines.length === 0) return;
     if (!validate()) return;
     const no = makeOrderNo();
-    const msg = buildOrderMessage({ lines, customer: form, orderNo: no, totals });
-    const link = whatsappLink(msg);
+    const msg = buildOrderMessage(
+      { lines, customer: { ...form, phone: toLatinDigits(form.phone).trim() }, orderNo: no, totals },
+      site,
+    );
+    const link = whatsappLink(msg, site);
     setLastLink(link);
     setOrderNo(no);
-    openWhatsApp(msg);
+    openWhatsApp(msg, site);
     setStep('success');
     clear();
   };
 
-  const site = useSite();
   const remainingForFree = site.freeDeliveryAbove - totals.subtotal;
 
   return (

@@ -32,3 +32,6 @@ yarn-error.log*
 # tooling caches
 *.tsbuildinfo
 image-search/
+
+# test build output
+/tests/browser/.out/
