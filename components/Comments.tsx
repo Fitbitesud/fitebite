@@ -15,7 +15,7 @@ import { useLiveComments } from './useLiveData';
 import Reveal from './Reveal';
 import SectionHeading from './SectionHeading';
 
-/** خانة تعليقات الزوار أسفل الصفحة: المعتمدة منشورة، والجديد ينتظر موافقة الإدارة */
+/** خانة تعليقات الزوار أسفل الصفحة */
 export default function Comments({ approved }: { approved: SiteComment[] }) {
   const [name, setName] = useState('');
   const [text, setText] = useState('');
@@ -52,8 +52,8 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
       <div className="container-x">
         <SectionHeading
           eyebrow="آراء الزوار"
-          title="كلمتك تُنشر بعد موافقتنا"
-          sub="كل تعليق يمرّ على الإدارة أولاً للتأكد من جديته، ثم يُنشر هنا في الصفحة ليقرأه الجميع."
+          title="شاركنا رأيك"
+          sub="رأيك يهمّنا ويساعدنا على تطوير وجباتنا وخدمتنا باستمرار."
         />
 
         {/* التعليقات المعتمدة المنشورة */}
@@ -111,13 +111,13 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
               {submissionMode === 'sanity' && (
                 <p className="flex items-center gap-2 rounded-xl border border-leaf/30 bg-leaf/10 px-4 py-3 text-[11px] font-black text-forest">
                   <IconCheck className="h-4 w-4 text-leaf" />
-                  وصل تعليقك إلى لوحة التحكم، وسيظهر هنا بعد موافقة الإدارة.
+                  شكراً لك! وصلنا تعليقك بنجاح.
                 </p>
               )}
               {submissionMode === 'local' && (
                 <p className="flex items-center gap-2 rounded-xl border border-copper/30 bg-copper/10 px-4 py-3 text-[11px] font-black text-copper-dark">
                   <IconCheck className="h-4 w-4" />
-                  تعذّر إرساله إلى لوحة التحكم. أرسله للإدارة عبر رابط واتساب أدناه للمراجعة.
+                  تعذّر إرسال تعليقك الآن. يمكنك إرساله لنا عبر رابط واتساب أدناه.
                 </p>
               )}
               {submitError && (
@@ -125,9 +125,6 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
                   {submitError}
                 </p>
               )}
-              <p className="text-[11px] font-bold leading-6 text-muted">
-                لا يظهر أي تعليق للزوار إلا بعد موافقة الإدارة عليه.
-              </p>
             </form>
           </Reveal>
 
@@ -160,10 +157,6 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
                   </div>
                 ))
               )}
-              <span className="flex items-center gap-1.5 text-[10px] font-bold text-muted">
-                <IconCheck className="h-3.5 w-3.5 text-leaf" />
-                لا يُنشر أي تعليق قبل موافقة الإدارة عليه.
-              </span>
             </div>
           </Reveal>
         </div>

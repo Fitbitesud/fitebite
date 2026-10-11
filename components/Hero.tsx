@@ -133,7 +133,7 @@ export default function Hero() {
             transition={{ delay: 0.9, type: 'spring', stiffness: 200, damping: 14 }}
             className="absolute -top-4 left-8 rounded-full bg-copper px-4 py-2 text-xs font-black text-white shadow-lift"
           >
-            100% بدون زيوت مضافة
+            100% بدون زيوت ضارة
           </motion.span>
           <div className="absolute -bottom-10 right-4 animate-float sm:right-8">
             <motion.div
