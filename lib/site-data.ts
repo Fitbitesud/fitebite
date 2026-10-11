@@ -85,7 +85,7 @@ export const DEFAULT_SITE: SiteData = {
   regions: SITE.regions as unknown as string[],
   socials: SITE.socials as unknown as { instagram: string; facebook: string; tiktok: string },
   home: {
-    heroBadge: 'وجبات طازجة تُطهى يومياً بدون زيوت مضافة',
+    heroBadge: 'وجبات طازجة تُطهى يومياً بدون زيوت ضارة',
     heroTitleLead: 'طعام صحي يُحسب',
     heroAccent: 'بالغرام',
     heroTitleTail: '، لا بالتقريب.',
@@ -99,7 +99,7 @@ export const DEFAULT_SITE: SiteData = {
       { title: 'طعم شهي', sub: 'وجودة عالية', icon: 'cloche' },
       { title: 'ماكروز', sub: 'محسوبة بدقة', icon: 'chart' },
       { title: 'سعرات حرارية', sub: 'دقيقة', icon: 'flame' },
-      { title: 'بدون زيوت', sub: 'أكل صحي 100%', icon: 'leaf' },
+      { title: 'بدون زيوت ضارة', sub: 'أكل صحي 100%', icon: 'leaf' },
     ],
     featuresHeading: {
       eyebrow: 'لماذا فيتبايت',
@@ -114,7 +114,7 @@ export const DEFAULT_SITE: SiteData = {
       },
       {
         title: 'طهي صحي',
-        desc: 'وجباتنا تُحضّر بدون زيوت مضافة، باستخدام طرق طهي صحية مثل الشواء والبخار والقلي الهوائي.',
+        desc: 'وجباتنا تُحضّر بدون زيوت ضارة، باستخدام طرق طهي صحية مثل الشواء والبخار والقلي الهوائي.',
         icon: 'pot',
       },
       {
