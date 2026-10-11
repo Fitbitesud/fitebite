@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, arena/22ad5e11-fitebite, arena/8d42e0dd-fitebite]
+    branches: [main, arena/22ad5e11-fitebite]
   workflow_dispatch:
   # بناء يومي تلقائي لالتقاط تعديلات لوحة تحكم Sanity بدون دفع commit
   schedule:
