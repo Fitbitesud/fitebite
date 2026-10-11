@@ -17,34 +17,48 @@ export const APPROVED_COMMENTS_QUERY = `*[_type == "comment" && approved] | orde
   _id, name, role, text, postedAt
 }`;
 
-/** إعدادات الموقع — كل وثائق siteSettings مرتبة من الأقدم للأحدث (تُدمج في الكود والأحدث يحسم كل حقل) */
+/**
+ * إعدادات الموقع — كل وثائق siteSettings مرتبة من الأقدم للأحدث (تُدمج في الكود والأحدث يحسم كل حقل).
+ *
+ * كل حقل يُقرأ بـ coalesce(المسار المؤهل, الحقل العلوي) ليتحمّل شكلَي الوثيقة معاً:
+ *   • الشكل المتداخل الحالي في السكيما: identity / contact / home
+ *   • الشكل القديم المسطّح: الحقول نفسها في جذر الوثيقة (مثل heroImage و strip)
+ * فيعمل الموقع مع الوثائق القديمة والجديدة بلا تعديل في الكود — والخروج دائماً بالشكل
+ * الذي يتوقعه lib/site-data.ts مهما كان شكل الوثيقة.
+ * ملاحظة: socials و hours و regions في الجذر في الشكلين، فتُقرأ مباشرة بلا coalesce.
+ */
 export const SETTINGS_QUERY = `*[_type == "siteSettings"] | order(_updatedAt asc) {
-  "nameAr": identity.nameAr,
-  "nameEn": identity.nameEn,
-  "taglineAr": identity.taglineAr,
-  "description": identity.description,
-  "whatsapp": contact.whatsapp,
-  "whatsappDisplay": contact.whatsappDisplay,
-  "currency": contact.currency,
-  "deliveryFee": contact.deliveryFee,
-  "freeDeliveryAbove": contact.freeDeliveryAbove,
-  "city": contact.city,
-  "address": contact.address,
+  "nameAr": coalesce(identity.nameAr, nameAr),
+  "nameEn": coalesce(identity.nameEn, nameEn),
+  "taglineAr": coalesce(identity.taglineAr, taglineAr),
+  "description": coalesce(identity.description, description),
+  "whatsapp": coalesce(contact.whatsapp, whatsapp),
+  "whatsappDisplay": coalesce(contact.whatsappDisplay, whatsappDisplay),
+  "currency": coalesce(contact.currency, currency),
+  "deliveryFee": coalesce(contact.deliveryFee, deliveryFee),
+  "freeDeliveryAbove": coalesce(contact.freeDeliveryAbove, freeDeliveryAbove),
+  "city": coalesce(contact.city, city),
+  "address": coalesce(contact.address, address),
   socials,
   hours,
   regions,
   "home": {
-    heroBadge, heroTitleLead, heroAccent, heroTitleTail, heroParagraph,
-    heroPrimaryLabel, heroSecondaryLabel,
-    "heroImage": heroImage.asset->url,
-    heroCardTitle,
-    strip[] { title, sub, icon },
-    featuresHeading { eyebrow, title, sub },
-    features[] { title, desc, icon },
-    howHeading { eyebrow, title, sub },
-    steps[] { title, desc, icon },
-    cta { title, sub, primaryLabel, secondaryLabel },
-    pkgBanner { title, sub, button }
+    "heroBadge": coalesce(home.heroBadge, heroBadge),
+    "heroTitleLead": coalesce(home.heroTitleLead, heroTitleLead),
+    "heroAccent": coalesce(home.heroAccent, heroAccent),
+    "heroTitleTail": coalesce(home.heroTitleTail, heroTitleTail),
+    "heroParagraph": coalesce(home.heroParagraph, heroParagraph),
+    "heroPrimaryLabel": coalesce(home.heroPrimaryLabel, heroPrimaryLabel),
+    "heroSecondaryLabel": coalesce(home.heroSecondaryLabel, heroSecondaryLabel),
+    "heroImage": coalesce(home.heroImage.asset->url, heroImage.asset->url),
+    "heroCardTitle": coalesce(home.heroCardTitle, heroCardTitle),
+    "strip": coalesce(home.strip[]{title, sub, icon}, strip[]{title, sub, icon}),
+    "featuresHeading": coalesce(home.featuresHeading{eyebrow, title, sub}, featuresHeading{eyebrow, title, sub}),
+    "features": coalesce(home.features[]{title, desc, icon}, features[]{title, desc, icon}),
+    "howHeading": coalesce(home.howHeading{eyebrow, title, sub}, howHeading{eyebrow, title, sub}),
+    "steps": coalesce(home.steps[]{title, desc, icon}, steps[]{title, desc, icon}),
+    "cta": coalesce(home.cta{title, sub, primaryLabel, secondaryLabel}, cta{title, sub, primaryLabel, secondaryLabel}),
+    "pkgBanner": coalesce(home.pkgBanner{title, sub, button}, pkgBanner{title, sub, button})
   }
 }`;
 

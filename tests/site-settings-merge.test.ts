@@ -1,6 +1,20 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { DEFAULT_SITE, getSite, mergeSettingsDocs } from '../lib/site-data';
-import { setSanityDoc } from './helpers';
+import { setSanityDoc, setSanityError } from './helpers';
+
+/** يلتقط ما يُطبع على وحدة تحكم المتصفح أثناء التنفيذ (للفحص ثم الإعادة) */
+async function capturingConsole<T>(method: 'warn' | 'error', run: () => Promise<T>) {
+  const calls: unknown[][] = [];
+  const spy = spyOn(console, method).mockImplementation((...args: unknown[]) => {
+    calls.push(args);
+  });
+  try {
+    const result = await run();
+    return { result, calls };
+  } finally {
+    spy.mockRestore();
+  }
+}
 
 beforeEach(() => setSanityDoc(null));
 
@@ -133,5 +147,47 @@ describe('empty or invalid dashboard values fall back to defaults', () => {
     setSanityDoc({ hours: [] });
     site = await getSite();
     expect(site.hours).toEqual(DEFAULT_SITE.hours);
+  });
+});
+
+describe('getSite() — [site-settings] diagnostics', () => {
+  it('warns with the [site-settings] tag when the dashboard returns no usable settings', async () => {
+    setSanityDoc(null); // no siteSettings document published at all
+
+    const { result, calls } = await capturingConsole('warn', () => getSite());
+
+    expect(result).toEqual(DEFAULT_SITE);
+    expect(calls.length).toBe(1);
+    expect(String(calls[0][0])).toContain('[site-settings]');
+    expect(String(calls[0][0])).toContain('no siteSettings values');
+  });
+
+  it('warns the same way for a published document with no filled-in fields', async () => {
+    setSanityDoc({}); // the query projects every field → an empty result object
+
+    const { result, calls } = await capturingConsole('warn', () => getSite());
+
+    expect(result).toEqual(DEFAULT_SITE);
+    expect(calls.some((args) => String(args[0]).startsWith('[site-settings]'))).toBe(true);
+  });
+
+  it('tags a failed Sanity fetch with [site-settings] and still serves the defaults', async () => {
+    setSanityError(new Error('cdn unreachable'));
+
+    const { result, calls } = await capturingConsole('error', () => getSite());
+
+    expect(result).toEqual(DEFAULT_SITE);
+    expect(calls.some((args) => String(args[0]).startsWith('[site-settings]'))).toBe(true);
+  });
+
+  it('stays silent when the dashboard returns usable values', async () => {
+    setSanityDoc({ nameAr: 'فيتبايت الجديدة' });
+
+    const warn = await capturingConsole('warn', () => getSite());
+    const error = await capturingConsole('error', () => getSite());
+
+    expect(warn.result.nameAr).toBe('فيتبايت الجديدة');
+    expect(warn.calls).toEqual([]);
+    expect(error.calls).toEqual([]);
   });
 });

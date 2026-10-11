@@ -93,3 +93,23 @@ public/logo-mark.svg  علامة الشعار (SVG متجهي بدون نص)
 1. داخل Sanity Studio: اضغط **Publish** على أي وثيقة جديدة أو معدّلة (المسودات لا تظهر في الموقع).
 2. بيانات الموقع والقائمة والباقات والتعليقات المعتمدة تُجلب من Sanity في المتصفح بعد أول رسم؛ حدّث الصفحة لرؤية التغييرات المنشورة. ويمكن تشغيل «Deploy to GitHub Pages» يدوياً من Actions، مع بناء يومي احتياطي الساعة 03:00 UTC.
 3. معرّف Sanity العام `zes52trp` مضمّن في `lib/sanity/client.ts`، ومجموعة البيانات الافتراضية `production`؛ لا تُضف أسراراً أو ملفات env لهذا الجلب العام.
+
+## قائمة فحص: لوحة التحكم تُحفظ لكن لا تظهر على الموقع
+
+`SETTINGS_QUERY` في `lib/sanity/queries.ts` يقرأ **كل حقل** بـ `coalesce(المسار المتداخل, الحقل العلوي)`، فيتحمّل
+شكلَي وثيقة `siteSettings` معاً: الشكل الحالي المتداخل (`identity` / `contact` / `home`) والشكل القديم المسطّح
+(الحقول نفسها في جذر الوثيقة). والمصفوفات والمستندات الفرعية بنفس النمط:
+`coalesce(home.heroImage.asset->url, heroImage.asset->url)` و `coalesce(home.strip[]{title,sub,icon}, strip[]{title,sub,icon})`
+و`coalesce(home.cta{title,sub,primaryLabel,secondaryLabel}, cta{title,sub,primaryLabel,secondaryLabel})`.
+الخروج دائماً بالشكل الذي يتوقعه `lib/site-data.ts` مهما كان شكل الوثيقة.
+
+راجع هذه القائمة بالترتيب قبل فتح أي بلاغ:
+
+- [ ] الوثيقة **منشورة** (Publish) لا مسودة — الاستعلام يقرأ الوثائق المنشورة فقط.
+- [ ] الحقل مملوء بقيمة حقيقية: النص الفارغ/المسافات والرقم السالب يعود للقيمة الافتراضية في `lib/site-data.ts` (سلوك مقصود).
+- [ ] صورة الهبوط مرفوعة في حقل الصورة نفسه؛ الرابط يُقرأ بـ `asset->url` (يبدأ بـ `https://cdn.sanity.io`).
+- [ ] عند وجود أكثر من وثيقة `siteSettings`: الأحدث حسب `_updatedAt` يحسم كل حقل، والأقدم يكمل الحقول التي لم تُعدَّل.
+- [ ] وحدة تحكم المتصفح: ابحث عن الوسم `[site-settings]` — كل رسائل `getSite` تبدأ به، وهي:
+  - «no siteSettings values came back from Sanity» → لم يصل أي حقل قابل للاستخدام (وثيقة غير منشورة، أو فارغة، أو بشكل غير معروف).
+  - «Sanity settings fetch failed» → فشل الجلب (شبكة/CORS) وتم الرجوع للقيم الافتراضية.
+- [ ] بعد النشر: حدّث الصفحة (الجلب يتم في المتصفح بعد أول رسم)، أو شغّل «Deploy to GitHub Pages» من Actions.
