@@ -4,10 +4,10 @@ import { useState, type FormEvent } from 'react';
 import {
   commentAdminMessage,
   getPendingComments,
-  savePendingComment,
   submitComment,
   type PendingComment,
   type SiteComment,
+  type SubmitMode,
 } from '@/lib/comments';
 import { IconCheck, IconClock, IconStar, IconWhatsApp } from './Icons';
 import { useWhatsapp } from './SiteContext';
@@ -23,8 +23,8 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
   const liveApproved = useLiveComments(approved);
   const [sending, setSending] = useState(false);
   const [pending, setPending] = useState<PendingComment[]>(() => getPendingComments());
-  const [lastLocal, setLastLocal] = useState<PendingComment | null>(null);
-  const [sentToSanity, setSentToSanity] = useState(false);
+  const [submissionMode, setSubmissionMode] = useState<SubmitMode | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -32,17 +32,19 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
     const t = text.trim();
     if (!n || !t || sending) return;
     setSending(true);
-    const mode = await submitComment(n, t);
-    if (mode === 'sanity') {
-      setSentToSanity(true);
-    } else {
-      const entry = savePendingComment(n, t);
-      setPending((p) => [...p, entry]);
-      setLastLocal(entry);
+    setSubmissionMode(null);
+    setSubmitError(null);
+    try {
+      const result = await submitComment(n, t);
+      setSubmissionMode(result.mode);
+      if (result.mode === 'local') setPending((p) => [...p, result.pending]);
+      setName('');
+      setText('');
+    } catch {
+      setSubmitError('تعذّر حفظ التعليق. حاول مرة أخرى.');
+    } finally {
+      setSending(false);
     }
-    setName('');
-    setText('');
-    setSending(false);
   };
 
   return (
@@ -106,48 +108,57 @@ export default function Comments({ approved }: { approved: SiteComment[] }) {
               >
                 {sending ? 'جارٍ الإرسال…' : 'أرسل التعليق'}
               </button>
-              {sentToSanity && (
+              {submissionMode === 'sanity' && (
                 <p className="flex items-center gap-2 rounded-xl border border-leaf/30 bg-leaf/10 px-4 py-3 text-[11px] font-black text-forest">
                   <IconCheck className="h-4 w-4 text-leaf" />
-                  وصل تعليقك إلى لوحة التحكم، وسيُنشر هنا بعد موافقة الإدارة.
+                  وصل تعليقك إلى لوحة التحكم، وسيظهر هنا بعد موافقة الإدارة.
+                </p>
+              )}
+              {submissionMode === 'local' && (
+                <p className="flex items-center gap-2 rounded-xl border border-copper/30 bg-copper/10 px-4 py-3 text-[11px] font-black text-copper-dark">
+                  <IconCheck className="h-4 w-4" />
+                  تعذّر إرساله إلى لوحة التحكم. أرسله للإدارة عبر رابط واتساب أدناه للمراجعة.
+                </p>
+              )}
+              {submitError && (
+                <p role="alert" className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-[11px] font-black text-red-800">
+                  {submitError}
                 </p>
               )}
               <p className="text-[11px] font-bold leading-6 text-muted">
-                بعد الإرسال يصل تعليقك للإدارة للمراجعة، ويُنشر هنا بعد الموافقة.
+                لا يظهر أي تعليق للزوار إلا بعد موافقة الإدارة عليه.
               </p>
             </form>
           </Reveal>
 
-          {/* حالة التعليقات المرسلة من هذا الجهاز (قبل ربط Sanity) */}
+          {/* التعليقات المحفوظة محلياً عند تعذّر الإرسال المباشر */}
           <Reveal delay={0.1}>
             <div className="flex h-full flex-col gap-3 rounded-3xl border border-sand bg-cream/60 p-6">
-              <b className="text-sm font-black text-forest">تعليقاتك المرسلة</b>
+              <b className="text-sm font-black text-forest">تعليقاتك المحفوظة على هذا الجهاز</b>
               {pending.length === 0 ? (
                 <p className="text-xs font-bold leading-7 text-muted">
-                  لا توجد تعليقات مرسلة من هذا الجهاز بعد — أول تعليق لك يظهر هنا بحالته حتى
-                  الموافقة عليه ونشره.
+                  لا توجد تعليقات محفوظة محلياً من هذا الجهاز. إذا تعذّر الإرسال المباشر، سيظهر
+                  تعليقك هنا مع رابط لإرساله للإدارة عبر واتساب.
                 </p>
               ) : (
                 pending.map((p) => (
                   <div key={p._id} className="rounded-2xl border border-sand bg-card p-4">
                     <div className="flex items-center gap-2 text-[11px] font-black text-copper-dark">
                       <IconClock className="h-3.5 w-3.5" />
-                      بانتظار موافقة الإدارة
+                      محفوظ على هذا الجهاز
                     </div>
                     <p className="mt-2 text-xs font-bold leading-6 text-ink/80">«{p.text}»</p>
+                    <a
+                      href={wa(commentAdminMessage(p.name, p.text))}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-black text-wa hover:underline"
+                    >
+                      <IconWhatsApp className="h-3.5 w-3.5" />
+                      إرسال هذا التعليق للإدارة عبر واتساب
+                    </a>
                   </div>
                 ))
-              )}
-              {lastLocal && (
-                <a
-                  href={wa(commentAdminMessage(lastLocal.name, lastLocal.text))}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-auto flex items-center justify-center gap-2 rounded-full bg-wa px-6 py-3 text-sm font-black text-white transition hover:brightness-110"
-                >
-                  <IconWhatsApp className="h-4 w-4" />
-                  إرسال التعليق للإدارة عبر واتساب
-                </a>
               )}
               <span className="flex items-center gap-1.5 text-[10px] font-bold text-muted">
                 <IconCheck className="h-3.5 w-3.5 text-leaf" />

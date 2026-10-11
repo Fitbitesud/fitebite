@@ -71,7 +71,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let alive = true;
-    getMenu()
+    getMenu({ fresh: true })
       .then((m) => alive && Array.isArray(m?.items) && m.items.length && setCatalog(m.items))
       .catch(() => {});
     return () => {

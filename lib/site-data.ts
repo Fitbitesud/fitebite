@@ -1,6 +1,6 @@
 import { BASE_PATH, SITE } from './config';
 import { toLatinDigits } from './format';
-import { getReadClient, isSanityConfigured } from './sanity/client';
+import { getReadClient, isSanityConfigured, type ReadClientOptions } from './sanity/client';
 import { SETTINGS_QUERY } from './sanity/queries';
 
 /**
@@ -321,10 +321,10 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
  * جلب إعدادات الموقع كاملة — من Sanity إذا ضُبط، وإلا الافتراضية.
  * كل رسائل الإعدادات موسومة بـ [site-settings] لتُصفّى بسهولة في وحدة تحكم المتصفح.
  */
-export async function getSite(): Promise<SiteData> {
+export async function getSite(options: ReadClientOptions = {}): Promise<SiteData> {
   if (isSanityConfigured) {
     try {
-      const docs = await getReadClient().fetch<unknown[]>(SETTINGS_QUERY);
+      const docs = await getReadClient(options).fetch<unknown[]>(SETTINGS_QUERY);
       const doc = mergeSettingsDocs(docs);
       if (doc && Object.keys(doc).length) return mergeSite(doc);
       /* وصل الاستعلام بلا أي قيمة قابلة للاستخدام: وثيقة غير منشورة، أو فارغة، أو بشكل غير معروف */

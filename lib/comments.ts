@@ -1,22 +1,16 @@
 /**
- * طبقة تعليقات الزوار — مصممة للاستبدال بـ Sanity لاحقاً بدون تغيير الواجهة.
- * ─────────────────────────────────────────────────────────────
- * الوضع الحالي (قبل ربط Sanity):
- *  - التعليقات المعتمدة المنشورة = بذور محلية (البذور أدناه).
- *  - تعليق الزائر الجديد يُحفظ في متصفحه بحالة «بانتظار الموافقة»،
- *    ويُرسَل نصّه للإدارة عبر واتساب للمراجعة.
- *
- * للربط مع Sanity:
- *  1) أنشئ نوع محتوى باسم comment بحقول: name (string)، text (text)،
- *     postedAt (datetime)، approved (boolean، افتراضي false).
- *  2) استبدل جسم getApprovedComments بـ:
- *       client.fetch(`*[_type == "comment" && approved] | order(postedAt desc){ _id, name, text, postedAt }`)
- *  3) استبدل جسم submitComment بـ:
- *       client.create({ _type: 'comment', name, text, approved: false, postedAt: new Date().toISOString() })
- *     → يظهر التعليق عندك في Sanity بحالة غير موافَق عليها، وبعد تفعيل approved يُنشر هنا تلقائياً.
+ * تعليقات الزوار:
+ * - يعرض الموقع التعليقات المنشورة والمعتمدة من Sanity فقط.
+ * - تُرسل التعليقات الجديدة إلى Sanity كمسودات غير منشورة وغير معتمدة إذا ضُبط توكن الكتابة.
+ * - عند غياب التوكن أو فشل الإرسال، تُحفظ محلياً ويظهر رابط لإرسالها للإدارة عبر واتساب.
  */
 
-import { getReadClient, getWriteClient, isSanityConfigured } from './sanity/client';
+import {
+  getReadClient,
+  getWriteClient,
+  isSanityConfigured,
+  type ReadClientOptions,
+} from './sanity/client';
 import { APPROVED_COMMENTS_QUERY } from './sanity/queries';
 
 export interface SiteComment {
@@ -27,7 +21,7 @@ export interface SiteComment {
   postedAt?: string;
 }
 
-/** التعليقات المعتمدة المنشورة حالياً (ستُستبدل باستعلام Sanity) */
+/** تعليقات احتياطية عند غياب Sanity أو تعذّر الاتصال به. */
 export const APPROVED_COMMENTS: SiteComment[] = [
   {
     _id: 'seed-1',
@@ -49,12 +43,12 @@ export const APPROVED_COMMENTS: SiteComment[] = [
   },
 ];
 
-/** جلب التعليقات المعتمدة — من Sanity إذا ضُبط المشروع، وإلا البذور المحلية */
-export async function getApprovedComments(): Promise<SiteComment[]> {
+/** جلب التعليقات المعتمدة — نتيجة فارغة تعني أنه لا توجد تعليقات منشورة حالياً. */
+export async function getApprovedComments(options: ReadClientOptions = {}): Promise<SiteComment[]> {
   if (isSanityConfigured) {
     try {
-      const list = await getReadClient().fetch<SiteComment[]>(APPROVED_COMMENTS_QUERY);
-      if (Array.isArray(list) && list.length) return list;
+      const list = await getReadClient(options).fetch<SiteComment[]>(APPROVED_COMMENTS_QUERY);
+      if (Array.isArray(list)) return list;
     } catch (err) {
       console.error('Sanity comments fetch failed — falling back to local seeds:', err);
     }
@@ -62,30 +56,7 @@ export async function getApprovedComments(): Promise<SiteComment[]> {
   return APPROVED_COMMENTS;
 }
 
-/** نشر تعليق زائر: يُنشأ في Sanity بحالة غير موافَق عليها، أو محلياً إذا لم يُضبط التوكن */
-export type SubmitMode = 'sanity' | 'local';
-
-export async function submitComment(name: string, text: string): Promise<SubmitMode> {
-  const write = getWriteClient();
-  if (write) {
-    try {
-      await write.create({
-        _type: 'comment',
-        name,
-        text,
-        approved: false,
-        postedAt: new Date().toISOString(),
-      });
-      return 'sanity';
-    } catch (err) {
-      console.error('Sanity comment create failed — falling back to local:', err);
-    }
-  }
-  savePendingComment(name, text);
-  return 'local';
-}
-
-/* ── التعليقات المعلقة (جهاز الزائر فقط، حتى ربط Sanity) ── */
+/* ── التعليقات المحلية عند تعذّر الإرسال المباشر إلى Sanity ── */
 
 export interface PendingComment extends SiteComment {
   sentAt: string;
@@ -93,10 +64,64 @@ export interface PendingComment extends SiteComment {
 
 const STORAGE_KEY = 'fitbite.pendingComments';
 
+export type SubmitMode = 'sanity' | 'local';
+export type SubmitResult =
+  | { mode: 'sanity' }
+  | { mode: 'local'; pending: PendingComment };
+
+/**
+ * إنشاء مسودة تعليق غير منشورة في Sanity، لدعم الأدوار التي تسمح بإنشاء المسودات دون النشر،
+ * أو حفظه محلياً عند غياب التوكن/فشل الشبكة.
+ */
+export async function submitComment(name: string, text: string): Promise<SubmitResult> {
+  const cleanName = name.trim();
+  const cleanText = text.trim();
+  if (!cleanName || !cleanText || cleanName.length > 40 || cleanText.length > 400) {
+    throw new Error('Invalid comment');
+  }
+
+  const write = getWriteClient();
+  if (write) {
+    try {
+      await write.create({
+        // The drafts. prefix makes this a Sanity draft rather than a published document.
+        _id: `drafts.comment-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        _type: 'comment',
+        name: cleanName,
+        text: cleanText,
+        approved: false,
+        postedAt: new Date().toISOString(),
+      });
+      return { mode: 'sanity' };
+    } catch (err) {
+      console.error('Sanity comment create failed — falling back to local:', err);
+    }
+  }
+  return { mode: 'local', pending: savePendingComment(cleanName, cleanText) };
+}
+
+function isPendingComment(value: unknown): value is PendingComment {
+  if (!value || typeof value !== 'object') return false;
+  const comment = value as Partial<PendingComment>;
+  return (
+    typeof comment._id === 'string' &&
+    typeof comment.name === 'string' &&
+    typeof comment.text === 'string' &&
+    typeof comment.sentAt === 'string'
+  );
+}
+
 export function getPendingComments(): PendingComment[] {
   if (typeof window === 'undefined') return [];
   try {
-    return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '[]') as PendingComment[];
+    const parsed: unknown = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '[]');
+    if (!Array.isArray(parsed)) return [];
+    const seen = new Set<string>();
+    return parsed.filter(isPendingComment).filter((comment) => {
+      if (seen.has(comment._id)) return false;
+      seen.add(comment._id);
+      return true;
+    });
   } catch {
     return [];
   }
@@ -104,13 +129,19 @@ export function getPendingComments(): PendingComment[] {
 
 export function savePendingComment(name: string, text: string): PendingComment {
   const entry: PendingComment = {
-    _id: `pending-${Date.now()}`,
-    name,
-    text,
+    _id: `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name: name.trim().slice(0, 40),
+    text: text.trim().slice(0, 400),
     sentAt: new Date().toISOString(),
   };
-  const list = [...getPendingComments(), entry];
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  if (typeof window !== 'undefined') {
+    try {
+      const list = [...getPendingComments(), entry];
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    } catch {
+      // Keep the entry in component state even if browser storage is unavailable or full.
+    }
+  }
   return entry;
 }
 

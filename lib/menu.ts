@@ -1,5 +1,5 @@
 import { asset } from './config';
-import { getReadClient, isSanityConfigured } from './sanity/client';
+import { getReadClient, isSanityConfigured, type ReadClientOptions } from './sanity/client';
 import { MENU_QUERY } from './sanity/queries';
 import type { MenuData } from './types';
 
@@ -9,7 +9,7 @@ import type { MenuData } from './types';
  * للربط مع Sanity لاحقاً: استبدل جسم getMenu() بـ:
  *
  *   import { createClient } from 'next-sanity';
- *   const client = createClient({ projectId, dataset, apiVersion: '2026-01-01', useCdn: true });
+ *   const client = createClient({ projectId, dataset, apiVersion: '2025-02-19', useCdn: true });
  *
  *   const items = await client.fetch<MenuData>(`
  *     {
@@ -288,10 +288,10 @@ const MENU: MenuData = {
 /** جلب القائمة — من Sanity إذا ضُبط المشروع، وإلا فالبيانات المحلية.
  *  البيانات الجزئية (تصنيفات بدون أصناف أو العكس) لا تُسقط كل شيء:
  *  يُعرض الجزء المنشور في لوحة التحكم ويُكمَّل الباقي من البيانات المحلية. */
-export async function getMenu(): Promise<MenuData> {
+export async function getMenu(options: ReadClientOptions = {}): Promise<MenuData> {
   if (isSanityConfigured) {
     try {
-      const data = await getReadClient().fetch<Partial<MenuData>>(MENU_QUERY);
+      const data = await getReadClient(options).fetch<Partial<MenuData>>(MENU_QUERY);
       const categories = Array.isArray(data?.categories) ? data.categories : [];
       const items = Array.isArray(data?.items) ? data.items : [];
       if (categories.length || items.length) {

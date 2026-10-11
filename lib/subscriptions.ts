@@ -1,6 +1,6 @@
 import { asset } from './config';
 import { fmt, price } from './format';
-import { getReadClient, isSanityConfigured } from './sanity/client';
+import { getReadClient, isSanityConfigured, type ReadClientOptions } from './sanity/client';
 import { PACKAGES_QUERY } from './sanity/queries';
 import { DEFAULT_SITE, type SiteData } from './site-data';
 
@@ -110,8 +110,8 @@ export interface ReadyPackage {
   desc: string;
   badge?: string;
   image: string;
-  /** سعر شهري يدوي من لوحة التحكم — إن تُرك فارغاً يُحسب تلقائياً */
-  priceMonthly?: number;
+  /** السعر الشهري المطلوب إدخاله يدوياً في لوحة التحكم */
+  priceMonthly: number;
   order?: number;
 }
 
@@ -122,6 +122,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     goalId: 'bulking',
     meals: 4,
     kcal: 3400,
+    priceMonthly: 1_440_000,
     desc: 'فائض سعرات عالٍ بأربع وجبات تغطي يوم تمرين شاق بالكامل.',
     badge: 'الأقوى للضخامة',
     image: asset('/images/grill-plate.jpg'),
@@ -132,6 +133,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     goalId: 'bulking',
     meals: 3,
     kcal: 3000,
+    priceMonthly: 1_080_000,
     desc: 'ثلاث وجبات متوازنة لبناء عضلي ثابت بدون أي تحضير منزلي.',
     image: asset('/images/mealprep-box.jpg'),
   },
@@ -141,6 +143,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     goalId: 'cutting',
     meals: 3,
     kcal: 2400,
+    priceMonthly: 990_000,
     desc: 'عجز محسوب مع بروتين مرتفع يحفظ العضل أثناء التخسيس.',
     badge: 'الأكثر اختياراً',
     image: asset('/images/green-salad.jpg'),
@@ -151,6 +154,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     goalId: 'cutting',
     meals: 2,
     kcal: 2000,
+    priceMonthly: 660_000,
     desc: 'وجبتا اليوم الأعلى تأثيراً بأقل سعرات — مثالية للموظفين.',
     image: asset('/images/quinoa-salad.jpg'),
   },
@@ -160,6 +164,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     goalId: 'maintain',
     meals: 2,
     kcal: 2600,
+    priceMonthly: 600_000,
     desc: 'توازن يحافظ على وزنك وطاقتك مع نمط حياة رياضي.',
     image: asset('/images/hero-bowl.jpg'),
   },
@@ -169,6 +174,7 @@ export const READY_PACKAGES: ReadyPackage[] = [
     goalId: 'maintain',
     meals: 1,
     kcal: 2200,
+    priceMonthly: 300_000,
     desc: 'وجبة واحدة متكاملة تُدخل عادة الأكل الصحي بدون التزام كبير.',
     image: asset('/images/smoothies.jpg'),
   },
@@ -219,11 +225,17 @@ export function buildSubscriptionMessage(opts: {
 }
 
 /**
- * تهيئة باقة جزئية من لوحة التحكم حتى تظهر بدل إسقاطها:
- * هدف غير مضبوط/غير معروف → «محافظة»، وجبات أو سعرات ناقصة → قيم وسطية،
- * والسعر الشهري يُترك للحساب التلقائي إن لم يُدخل.
+ * تهيئة باقة جزئية من لوحة التحكم حتى تظهر بدل إسقاطها.
+ * أي حقل غير أساسي يحصل على قيمة افتراضية، لكن السعر الشهري مطلوب يدوياً؛
+ * الباقة التي لا تملك سعراً صالحاً لا تُعرض ولا يُحسب سعرها تلقائياً.
  */
-function coerceReadyPackage(d: Partial<ReadyPackage> & { _id: string }): ReadyPackage {
+function coerceReadyPackage(d: Partial<ReadyPackage> & { _id: string }): ReadyPackage | null {
+  const priceMonthly =
+    typeof d.priceMonthly === 'number' && Number.isFinite(d.priceMonthly) && d.priceMonthly > 0
+      ? d.priceMonthly
+      : undefined;
+  if (priceMonthly === undefined) return null;
+
   const mealsRaw = typeof d.meals === 'number' && Number.isFinite(d.meals) ? Math.round(d.meals) : 3;
   return {
     id: d.id ?? d._id,
@@ -234,24 +246,25 @@ function coerceReadyPackage(d: Partial<ReadyPackage> & { _id: string }): ReadyPa
     desc: typeof d.desc === 'string' ? d.desc : '',
     badge: typeof d.badge === 'string' && d.badge.trim() ? d.badge : undefined,
     image: typeof d.image === 'string' ? d.image : '',
-    priceMonthly:
-      typeof d.priceMonthly === 'number' && Number.isFinite(d.priceMonthly) && d.priceMonthly > 0
-        ? d.priceMonthly
-        : undefined,
+    priceMonthly,
     order: d.order,
   };
 }
 
 /** جلب الباقات الجاهزة — من Sanity إذا ضُبطت الوثائق، وإلا القائمة المحلية */
-export async function getReadyPackages(): Promise<ReadyPackage[]> {
+export async function getReadyPackages(options: ReadClientOptions = {}): Promise<ReadyPackage[]> {
   if (isSanityConfigured) {
     try {
-      const docs = await getReadClient().fetch<Array<Partial<ReadyPackage> & { _id: string }>>(
+      const docs = await getReadClient(options).fetch<Array<Partial<ReadyPackage> & { _id: string }>>(
         PACKAGES_QUERY
       );
-      if (Array.isArray(docs) && docs.length) {
-        const valid = docs.filter((d) => d && d._id).map(coerceReadyPackage);
+      if (Array.isArray(docs)) {
+        const valid = docs
+          .filter((d) => d && d._id)
+          .map(coerceReadyPackage)
+          .filter((pkg): pkg is ReadyPackage => pkg !== null);
         if (valid.length) return valid;
+        if (docs.length) return [];
       }
     } catch (err) {
       console.error('Sanity packages fetch failed — falling back to local:', err);
@@ -264,14 +277,10 @@ export async function getReadyPackages(): Promise<ReadyPackage[]> {
 export function buildPackageOrderMessage(
   pkg: ReadyPackage,
   site: SiteData = DEFAULT_SITE,
-  monthlyOverride?: number
 ): string {
   const goal = GOALS.find((g) => g.id === pkg.goalId);
   const macros = goal ? computeDailyMacros(goal, pkg.kcal) : null;
-  const quote = goal
-    ? computeQuote(goal, pkg.meals)
-    : { monthly: pkg.priceMonthly ?? 0 };
-  const monthly = monthlyOverride ?? pkg.priceMonthly ?? quote.monthly;
+  const monthly = pkg.priceMonthly;
   return [
     `طلب باقة شهرية جاهزة من ${site.nameAr} 🍽`,
     `الباقة: ${pkg.name}`,

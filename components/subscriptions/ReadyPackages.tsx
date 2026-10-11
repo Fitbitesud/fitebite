@@ -1,12 +1,11 @@
 'use client';
 
-import { fmt, price } from '@/lib/format';
+import { fmt } from '@/lib/format';
 import {
   GOALS,
   GUARANTEE,
   buildPackageOrderMessage,
   computeDailyMacros,
-  computeQuote,
   mealsLabel,
   type ReadyPackage,
 } from '@/lib/subscriptions';
@@ -22,8 +21,7 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
   const wa = useWhatsapp();
   const goal = GOALS.find((g) => g.id === pkg.goalId)!;
   const macros = computeDailyMacros(goal, pkg.kcal);
-  const quote = computeQuote(goal, pkg.meals);
-  const monthly = pkg.priceMonthly ?? quote.monthly;
+  const monthly = pkg.priceMonthly;
   const tiles = [
     { v: fmt(macros.kcal), l: 'سعرة' },
     { v: `${fmt(macros.protein)}غ`, l: 'بروتين' },
@@ -70,17 +68,13 @@ function ReadyPackageCard({ pkg }: { pkg: ReadyPackage }) {
       <div className="mt-auto leading-none pt-1">
         <span className="text-2xl font-black text-forest">{fmt(monthly)}</span>
         <span className="mr-1 text-[10px] font-bold text-muted">{site.currency} / شهرياً</span>
-        <span className="mt-1 block text-[11px] font-bold text-muted">
-          {price(Math.round(monthly / 30), site.currency)} يومياً
-          {quote.discount > 0 && <span className="text-leaf"> (خصم {quote.discount * 100}%)</span>}
-        </span>
       </div>
       <span className="flex items-center gap-1.5 text-[10px] font-black text-leaf">
         <IconShield className="h-3.5 w-3.5" />
         مشمولة بضمان فيتبايت
       </span>
       <a
-        href={wa(buildPackageOrderMessage(pkg, site, monthly))}
+        href={wa(buildPackageOrderMessage(pkg, site))}
         target="_blank"
         rel="noopener noreferrer"
         className="flex w-full items-center justify-center gap-2 rounded-full bg-forest py-3 text-center text-sm font-black text-cream transition hover:bg-leaf"
@@ -97,13 +91,19 @@ export default function ReadyPackages({ packages }: { packages: ReadyPackage[] }
   const live = useLivePackages(packages);
   return (
     <>
-      <div className="grid gap-5 pt-3 sm:grid-cols-2 lg:grid-cols-3">
-        {live.map((p, i) => (
-          <Reveal key={p.id} delay={(i % 3) * 0.08} className="h-full">
-            <ReadyPackageCard pkg={p} />
-          </Reveal>
-        ))}
-      </div>
+      {live.length > 0 ? (
+        <div className="grid gap-5 pt-3 sm:grid-cols-2 lg:grid-cols-3">
+          {live.map((p, i) => (
+            <Reveal key={p.id} delay={(i % 3) * 0.08} className="h-full">
+              <ReadyPackageCard pkg={p} />
+            </Reveal>
+          ))}
+        </div>
+      ) : (
+        <p className="mx-auto mt-6 max-w-lg rounded-2xl border border-sand bg-card px-6 py-5 text-center text-sm font-bold leading-7 text-muted">
+          لا توجد باقات منشورة بسعر شهري. أدخل السعر يدوياً في لوحة التحكم لتظهر الباقة هنا.
+        </p>
+      )}
 
       <Reveal delay={0.1}>
         <div className="mt-10 flex items-start gap-4 rounded-2xl border border-leaf/30 bg-leaf/10 p-5">
