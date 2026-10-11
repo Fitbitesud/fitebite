@@ -30,6 +30,18 @@ export const siteSettings = defineType({
       fields: [
         defineField({name: 'nameAr', title: 'الاسم بالعربية', type: 'string'}),
         defineField({name: 'nameEn', title: 'الاسم بالإنجليزية (الشريط)', type: 'string'}),
+        defineField({
+          name: 'logo',
+          title: 'شعار الشريط العلوي (PNG)',
+          type: 'image',
+          description: 'ارفع صورة PNG بخلفية شفافة. ستظهر هذه الصورة في الشريط العلوي للموقع.',
+          options: {hotspot: true, accept: 'image/png'},
+          validation: (rule) =>
+            rule.custom((value: any) => {
+              if (!value?.asset?._ref) return true
+              return value.asset._ref.endsWith('-png') || 'يجب أن يكون الشعار بصيغة PNG'
+            }),
+        }),
         defineField({name: 'taglineAr', title: 'السطر التعريفي', type: 'string'}),
         defineField({name: 'description', title: 'وصف الموقع (SEO والتذييل)', type: 'text', rows: 3}),
       ],

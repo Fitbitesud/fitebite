@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useCart } from './cart/CartContext';
 import { IconCart, IconClose, IconMenuBars } from './Icons';
@@ -13,16 +14,18 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const { totals, openCart } = useCart();
   const site = useSite();
+  const pathname = usePathname();
+  const isHome = pathname === '/' || pathname === '';
 
   /* عناوين التنقل تتبع نصوص الأقسام المضبوطة في لوحة التحكم */
   const LINKS = [
-    { href: '#home', label: 'الرئيسية' },
-    { href: '#features', label: site.home.featuresHeading.eyebrow },
+    { href: '/#home', label: 'الرئيسية' },
+    { href: '/#features', label: site.home.featuresHeading.eyebrow },
     { href: '/menu', label: 'القائمة' },
     { href: '/packages', label: 'الباقات' },
-    { href: '#how', label: site.home.howHeading.eyebrow },
-    { href: '#comments', label: 'آراء الزوار' },
-    { href: '#contact', label: 'تواصل معنا' },
+    { href: '/#how', label: site.home.howHeading.eyebrow },
+    { href: '/#comments', label: 'آراء الزوار' },
+    { href: '/#contact', label: 'تواصل معنا' },
   ];
 
   useEffect(() => {
@@ -33,7 +36,7 @@ export default function Header() {
   }, []);
 
   /* أعلى الصفحة: الهيدر فوق الهبوط الداكن → ألوان فاتحة */
-  const dark = !scrolled && !open;
+  const dark = isHome && !scrolled && !open;
 
   return (
     <>
@@ -51,7 +54,7 @@ export default function Header() {
 
           <nav className="hidden items-center gap-7 lg:flex" aria-label="التنقل الرئيسي">
             {LINKS.map((l) => {
-              const Tag = l.href.startsWith('/') ? Link : 'a';
+              const Tag = Link;
               return (
                 <Tag
                   key={l.href}
@@ -117,7 +120,7 @@ export default function Header() {
             aria-label="قائمة الجوال"
           >
             {LINKS.map((l) => {
-              const Tag = l.href.startsWith('/') ? Link : 'a';
+              const Tag = Link;
               return (
                 <Tag
                   key={l.href}
