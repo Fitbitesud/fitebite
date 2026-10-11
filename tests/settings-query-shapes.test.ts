@@ -98,7 +98,7 @@ const projectedHomeKeys = (query: string) => {
   return [...block.matchAll(/"(\w+)":/g)].map((m) => m[1]);
 };
 
-const TOP_LEVEL_KEYS = [...Object.keys(IDENTITY), ...Object.keys(CONTACT), 'socials', 'hours', 'regions'];
+const TOP_LEVEL_KEYS = ['nameAr', 'nameEn', 'logo', 'taglineAr', 'description', ...Object.keys(CONTACT), 'socials', 'hours', 'regions'];
 const HOME_KEYS = Object.keys(HOME);
 
 describe('SETTINGS_QUERY tolerates both document shapes', () => {
@@ -149,7 +149,7 @@ describe('SETTINGS_QUERY tolerates both document shapes', () => {
     const [doc] = await runQuery([MIXED_DOC, ASSET]);
 
     /* The query always answers in one shape: flat scalars + a nested `home` block */
-    expect(doc).toEqual({ ...IDENTITY, ...CONTACT, ...ROOT, home: { ...HOME, heroImage: ASSET.url } });
+    expect(doc).toEqual({ ...IDENTITY, logo: null, ...CONTACT, ...ROOT, home: { ...HOME, heroImage: ASSET.url } });
     expect(doc.home.steps).toEqual(HOME.steps);
   });
 
