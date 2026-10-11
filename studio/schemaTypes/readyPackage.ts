@@ -37,9 +37,10 @@ export const readyPackage = defineType({
     defineField({name: 'image', title: 'صورة الباقة', type: 'image', options: {hotspot: true}}),
     defineField({
       name: 'priceMonthly',
-      title: 'سعر شهري يدوي (اختياري)',
+      title: 'السعر الشهري (يدوي ومطلوب)',
       type: 'number',
-      description: 'اتركه فارغاً ليُحسب السعر تلقائياً من هدف الباقة وعدد وجباتها',
+      validation: (r) => r.required().min(1),
+      description: 'أدخل السعر الشهري يدوياً؛ لا يوجد حساب تلقائي للسعر أو خصم.',
     }),
     defineField({name: 'order', title: 'ترتيب العرض', type: 'number', initialValue: 1}),
   ],

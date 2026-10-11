@@ -2,16 +2,16 @@ import {defineField, defineType} from 'sanity'
 
 /**
  * تعليقات الزوار: تصل هنا بحالة «غير موافَق عليها»،
- * وعند تفعيل approved تُنشر تلقائياً في الموقع.
+ * وبعد الموافقة ونشر الوثيقة تظهر للزوار في الموقع.
  */
 export const comment = defineType({
   name: 'comment',
   title: 'تعليقات الزوار',
   type: 'document',
   fields: [
-    defineField({name: 'name', title: 'اسم الزائر', type: 'string', validation: (r) => r.required()}),
+    defineField({name: 'name', title: 'اسم الزائر', type: 'string', validation: (r) => r.required().max(40)}),
     defineField({name: 'role', title: 'صفة اختيارية (مثال: رياضي)', type: 'string'}),
-    defineField({name: 'text', title: 'نص التعليق', type: 'text', rows: 4, validation: (r) => r.required()}),
+    defineField({name: 'text', title: 'نص التعليق', type: 'text', rows: 4, validation: (r) => r.required().max(400)}),
     defineField({
       name: 'approved',
       title: 'موافَق عليه (يُنشر في الموقع)',

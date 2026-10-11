@@ -11,14 +11,29 @@
  */
 import { mock } from 'bun:test';
 
-type SanityState = { doc: unknown; error: unknown };
+type SanityState = {
+  doc: unknown;
+  error: unknown;
+  readModes: boolean[];
+  writeEnabled: boolean;
+  writeError: unknown;
+  createdComments: unknown[];
+};
 const g = globalThis as unknown as { __SANITY: SanityState };
-g.__SANITY = { doc: null, error: null };
+g.__SANITY = {
+  doc: null,
+  error: null,
+  readModes: [],
+  writeEnabled: false,
+  writeError: null,
+  createdComments: [],
+};
 
 mock.module('../lib/sanity/client', () => ({
   isSanityConfigured: true,
-  getReadClient: () => ({
+  getReadClient: (options: { fresh?: boolean } = {}) => ({
     fetch: async (query: string) => {
+      g.__SANITY.readModes.push(Boolean(options.fresh));
       if (g.__SANITY.error) throw g.__SANITY.error;
       if (query.includes('siteSettings')) {
         const doc = g.__SANITY.doc;
@@ -27,7 +42,16 @@ mock.module('../lib/sanity/client', () => ({
       return g.__SANITY.doc;
     },
   }),
-  getWriteClient: () => null,
+  getWriteClient: () =>
+    g.__SANITY.writeEnabled
+      ? {
+          create: async (document: unknown) => {
+            if (g.__SANITY.writeError) throw g.__SANITY.writeError;
+            g.__SANITY.createdComments.push(document);
+            return { _id: `comment-${g.__SANITY.createdComments.length}` };
+          },
+        }
+      : null,
   SANITY_PROJECT_ID: 'test',
   SANITY_DATASET: 'test',
   SANITY_API_VERSION: 'test',

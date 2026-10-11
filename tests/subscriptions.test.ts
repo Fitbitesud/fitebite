@@ -115,25 +115,19 @@ describe('buildSubscriptionMessage', () => {
 });
 
 describe('buildPackageOrderMessage — ready packages', () => {
-  it('every built-in package yields a message with its own monthly price', () => {
+  it('every built-in package has an explicit monthly price used in its order message', () => {
     for (const p of READY_PACKAGES) {
-      const q = computeQuote(goal(p.goalId), p.meals);
       const msg = buildPackageOrderMessage(p, SITE);
+      expect(p.priceMonthly).toBeGreaterThan(0);
       expect(msg).toContain(`الباقة: ${p.name}`);
-      expect(msg).toContain(`السعر الشهري: ${fmt(q.monthly)} ج.س`);
+      expect(msg).toContain(`السعر الشهري: ${fmt(p.priceMonthly)} ج.س`);
+      expect(msg).not.toContain('خصم');
     }
   });
 
-  it('a dashboard price override wins over the computed price', () => {
-    const p = READY_PACKAGES[0];
-    expect(buildPackageOrderMessage({ ...p, priceMonthly: 999_000 }, SITE)).toContain('السعر الشهري: 999,000 ج.س');
-    expect(buildPackageOrderMessage(p, SITE, 123_000)).toContain('السعر الشهري: 123,000 ج.س');
-  });
-
-  it('a missing (null) dashboard price falls back to the computed price', () => {
-    const p = { ...READY_PACKAGES[0], priceMonthly: null as unknown as undefined };
-    const q = computeQuote(goal(p.goalId), p.meals);
-    expect(buildPackageOrderMessage(p, SITE)).toContain(`السعر الشهري: ${fmt(q.monthly)} ج.س`);
+  it('a dashboard monthly price is preserved exactly as entered', () => {
+    const customPrice = { ...READY_PACKAGES[0], priceMonthly: 999_123 };
+    expect(buildPackageOrderMessage(customPrice, SITE)).toContain('السعر الشهري: 999,123 ج.س');
   });
 
   it('an unknown goalId (bad dashboard data) does not crash the page', () => {

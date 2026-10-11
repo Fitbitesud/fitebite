@@ -6,8 +6,8 @@ import { getSite, DEFAULT_SITE, type SiteData } from '@/lib/site-data';
 /**
  * مزوّد إعدادات الموقع:
  *  - القيمة الأولية تُحقن من الخادم وقت البناء (أول رسم + SEO).
- *  - ثم يُعاد الجلب من Sanity في المتصفح فوراً — أي Publish من لوحة التحكم
- *    ينعكس على النصوص والأرقام والروابط بمجرد تحديث الصفحة بدون إعادة بناء.
+ *  - ثم يُعاد الجلب مباشرة من Sanity API في المتصفح، متجاوزاً CDN حتى لا تتأخر
+ *    إعدادات لوحة التحكم بسبب كاش النسخة الموزعة.
  */
 const SiteContext = createContext<SiteData>(DEFAULT_SITE);
 
@@ -16,7 +16,7 @@ export function SiteProvider({ value, children }: { value: SiteData; children: R
 
   useEffect(() => {
     let alive = true;
-    getSite()
+    getSite({ fresh: true })
       .then((s) => alive && setSite(s))
       .catch(() => {});
     return () => {

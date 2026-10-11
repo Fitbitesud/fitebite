@@ -82,7 +82,7 @@ export default function Menu({ menu }: { menu: MenuData }) {
         {items.length === 0 && (
           <p className="mx-auto mt-10 max-w-md rounded-2xl border border-sand bg-card px-6 py-5 text-center text-sm font-bold leading-7 text-muted">
             لا أصناف منشورة في هذا التصنيف بعد — أضفها من لوحة التحكم (أصناف القائمة)
-            وستظهر هنا فور الضغط على Publish.
+            ثم حدّث الصفحة بعد الضغط على Publish.
           </p>
         )}
 

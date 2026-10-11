@@ -18,6 +18,8 @@ for `vi.mock` / `jest.mock`.
 | `cart-totals.test.ts` | `computeTotals`: subtotal, delivery fee, free-delivery boundary (exactly 40,000), kcal/protein, edge cases |
 | `whatsapp-message.test.ts` | Order message content, numbers adding up, link/recipient, URL-encoding, `openWhatsApp`, order number |
 | `whatsapp-number.test.ts` | Which number is used: config default vs Sanity dashboard, normalisation (`0…`, `+249…`, `00249…`, Arabic digits, empty field), display number |
+| `live-fetch-freshness.test.ts` | Live dashboard refreshes bypass the CDN; static-build reads keep the cached client |
+| `comments.test.ts` | Approved-only reads, Sanity moderation writes, local/WhatsApp fallback, and malformed storage |
 | `subscriptions.test.ts` | Package/subscription pricing, discounts, macros, package WhatsApp message |
 | `browser/cart.browser.test.ts` | The real cart + drawer + menu in headless Chromium: add/remove, totals on screen, saved-cart corruption, form validation, the exact WhatsApp link opened, second order |
 

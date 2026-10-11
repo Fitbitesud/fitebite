@@ -32,8 +32,29 @@ export const line = (item: MenuItem, qty: number): CartLine => ({ item, qty });
 export const SITE: SiteData = { ...DEFAULT_SITE, deliveryFee: 2000, freeDeliveryAbove: 40000 };
 
 export const setSanityDoc = (doc: unknown) => {
-  (globalThis as any).__SANITY = { doc, error: null };
+  (globalThis as any).__SANITY = {
+    doc,
+    error: null,
+    readModes: [],
+    writeEnabled: false,
+    writeError: null,
+    createdComments: [],
+  };
 };
 export const setSanityError = (error: unknown) => {
-  (globalThis as any).__SANITY = { doc: null, error };
+  (globalThis as any).__SANITY = {
+    doc: null,
+    error,
+    readModes: [],
+    writeEnabled: false,
+    writeError: null,
+    createdComments: [],
+  };
 };
+export const getSanityReadModes = (): boolean[] => (globalThis as any).__SANITY.readModes;
+export const enableSanityCommentWrites = (error: unknown = null) => {
+  const sanity = (globalThis as any).__SANITY;
+  sanity.writeEnabled = true;
+  sanity.writeError = error;
+};
+export const getSanityCreatedComments = (): unknown[] => (globalThis as any).__SANITY.createdComments;

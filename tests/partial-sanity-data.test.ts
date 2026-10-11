@@ -4,7 +4,7 @@
  */
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { getMenu, MENU_SYNC } from '../lib/menu';
-import { getReadyPackages, GOALS, READY_PACKAGES } from '../lib/subscriptions';
+import { getReadyPackages, READY_PACKAGES } from '../lib/subscriptions';
 import { imgUrl } from '../lib/site-data';
 import { setSanityDoc, setSanityError } from './helpers';
 
@@ -57,20 +57,16 @@ describe('getMenu — partial dashboard data is kept, not dropped', () => {
 });
 
 describe('getReadyPackages — partial dashboard documents are normalised, not dropped', () => {
-  it('a package with only a name is shown with sensible defaults', async () => {
+  it('a package without a manually entered monthly price is not shown', async () => {
     setSanityDoc([{ _id: 'p1', name: 'باقة جديدة' }]);
-    const packages = await getReadyPackages();
-    expect(packages).toHaveLength(1);
-    expect(packages[0].name).toBe('باقة جديدة');
-    expect(GOALS.some((g) => g.id === packages[0].goalId)).toBe(true);
-    expect(packages[0].goalId).toBe('maintain');
-    expect(packages[0].meals).toBeGreaterThanOrEqual(1);
-    expect(packages[0].meals).toBeLessThanOrEqual(4);
-    expect(packages[0].kcal).toBeGreaterThan(0);
+
+    expect(await getReadyPackages()).toEqual([]);
   });
 
   it('an unknown goal id does not hide the package', async () => {
-    setSanityDoc([{ _id: 'p2', name: 'باقة', goalId: 'not-a-goal', meals: 2, kcal: 2000 }]);
+    setSanityDoc([
+      { _id: 'p2', name: 'باقة', goalId: 'not-a-goal', meals: 2, kcal: 2000, priceMonthly: 250000 },
+    ]);
     const packages = await getReadyPackages();
     expect(packages).toHaveLength(1);
     expect(packages[0].meals).toBe(2);
