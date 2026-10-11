@@ -8,21 +8,22 @@ import { IconCart, IconClose, IconMenuBars } from './Icons';
 import Logo from './Logo';
 import { useSite } from './SiteContext';
 
-const LINKS = [
-  { href: '#home', label: 'الرئيسية' },
-  { href: '#features', label: 'لماذا فيتبايت' },
-  { href: '/menu', label: 'القائمة' },
-  { href: '/packages', label: 'الباقات' },
-  { href: '#how', label: 'كيف تطلب' },
-  { href: '#reviews', label: 'آراء العملاء' },
-  { href: '#contact', label: 'تواصل معنا' },
-];
-
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { totals, openCart } = useCart();
   const site = useSite();
+
+  /* عناوين التنقل تتبع نصوص الأقسام المضبوطة في لوحة التحكم */
+  const LINKS = [
+    { href: '#home', label: 'الرئيسية' },
+    { href: '#features', label: site.home.featuresHeading.eyebrow },
+    { href: '/menu', label: 'القائمة' },
+    { href: '/packages', label: 'الباقات' },
+    { href: '#how', label: site.home.howHeading.eyebrow },
+    { href: '#comments', label: 'آراء الزوار' },
+    { href: '#contact', label: 'تواصل معنا' },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -44,7 +45,7 @@ export default function Header() {
         }`}
       >
         <div className="container-x flex items-center justify-between">
-          <Link href="/#home" aria-label="فيتبايت — الصفحة الرئيسية">
+          <Link href="/#home" aria-label={`${site.nameAr} — الصفحة الرئيسية`}>
             <Logo tone={dark ? 'cream' : 'forest'} withTagline={!scrolled} wordmark={site.nameEn} />
           </Link>
 

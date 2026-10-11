@@ -1,4 +1,4 @@
-import { asset, SITE } from './config';
+import { BASE_PATH, SITE } from './config';
 import { toLatinDigits } from './format';
 import { getReadClient, isSanityConfigured } from './sanity/client';
 import { SETTINGS_QUERY } from './sanity/queries';
@@ -206,6 +206,23 @@ export function mergeSettingsDocs(
   > & { home?: Partial<HomeContent> };
 }
 
+/** رقم صالح غير سالب من لوحة التحكم، وإلا القيمة الافتراضية */
+const toSafeNumber = (v: unknown, fallback: number): number =>
+  typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : fallback;
+
+/** نص غير فارغ من لوحة التحكم، وإلا القيمة الافتراضية (حقل ممسوح/فارغ لا يُفرغ الموقع) */
+const toSafeString = (v: unknown, fallback: string): string =>
+  typeof v === 'string' && v.trim() ? v : fallback;
+
+/** استكمال النصوص الفارغة في كائنات العناوين (مثل cta وpkgBanner) من الافتراضية */
+function fillObjectStrings<T extends object>(current: T, def: T): T {
+  const out = { ...current } as Record<string, unknown>;
+  for (const [k, v] of Object.entries(def)) {
+    if (typeof v === 'string' && !(typeof out[k] === 'string' && out[k].trim())) out[k] = v;
+  }
+  return out as T;
+}
+
 /** دمج سطحي عميق بسيط: قيم لوحة التحكم فوق الافتراضية، مع ضمان المصفوفات والكائنات */
 function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): SiteData {
   const doc = cleanNulls(raw);
@@ -224,16 +241,49 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
       pkgBanner: { ...DEFAULT_SITE.home.pkgBanner, ...(dh.pkgBanner ?? {}) },
     },
   };
-  if (!Array.isArray(merged.hours) || !merged.hours.length) merged.hours = DEFAULT_SITE.hours;
+  const h = merged.home;
+  /* أي نص هبوط تُرك فارغاً في لوحة التحكم يعود للافتراضي بدل نصوص ناقصة */
+  const hRec = h as unknown as Record<string, unknown>;
+  for (const [k, v] of Object.entries(DEFAULT_SITE.home)) {
+    const cur = hRec[k];
+    if (typeof v === 'string' && !(typeof cur === 'string' && cur.trim())) hRec[k] = v;
+  }
+  h.featuresHeading = fillObjectStrings(h.featuresHeading, DEFAULT_SITE.home.featuresHeading);
+  h.howHeading = fillObjectStrings(h.howHeading, DEFAULT_SITE.home.howHeading);
+  h.cta = fillObjectStrings(h.cta, DEFAULT_SITE.home.cta);
+  h.pkgBanner = fillObjectStrings(h.pkgBanner, DEFAULT_SITE.home.pkgBanner);
+  if (!Array.isArray(h.strip) || !h.strip.length) h.strip = DEFAULT_SITE.home.strip;
+  if (!Array.isArray(h.features) || !h.features.length) h.features = DEFAULT_SITE.home.features;
+  if (!Array.isArray(h.steps) || !h.steps.length) h.steps = DEFAULT_SITE.home.steps;
   /* المناطق: قصّ المسافات الزائدة (مثل "شارع المطار ") وحذف الفارغ */
   merged.regions = Array.isArray(merged.regions)
     ? merged.regions.map((r) => (typeof r === 'string' ? r.trim() : '')).filter(Boolean)
     : [];
   if (!merged.regions.length) merged.regions = DEFAULT_SITE.regions;
-  const h = merged.home;
-  if (!Array.isArray(h.strip) || !h.strip.length) h.strip = DEFAULT_SITE.home.strip;
-  if (!Array.isArray(h.features) || !h.features.length) h.features = DEFAULT_SITE.home.features;
-  if (!Array.isArray(h.steps) || !h.steps.length) h.steps = DEFAULT_SITE.home.steps;
+  /* الهوية والأرقام: قيم فارغة أو غير صالحة تسقط على الافتراضية */
+  merged.nameAr = toSafeString(merged.nameAr, DEFAULT_SITE.nameAr);
+  merged.nameEn = toSafeString(merged.nameEn, DEFAULT_SITE.nameEn);
+  merged.taglineAr = toSafeString(merged.taglineAr, DEFAULT_SITE.taglineAr);
+  merged.description = toSafeString(merged.description, DEFAULT_SITE.description);
+  merged.currency = toSafeString(merged.currency, DEFAULT_SITE.currency);
+  merged.city = toSafeString(merged.city, DEFAULT_SITE.city);
+  merged.address = toSafeString(merged.address, DEFAULT_SITE.address);
+  merged.deliveryFee = toSafeNumber(merged.deliveryFee, DEFAULT_SITE.deliveryFee);
+  merged.freeDeliveryAbove = toSafeNumber(merged.freeDeliveryAbove, DEFAULT_SITE.freeDeliveryAbove);
+  /* ساعات العمل: تنظيف صفوف ناقصة، والغياب الكامل يعود للدوام الافتراضي */
+  merged.hours = (Array.isArray(merged.hours) ? merged.hours : [])
+    .map((row) => ({
+      days: typeof row?.days === 'string' ? row.days.trim() : '',
+      time: typeof row?.time === 'string' ? row.time.trim() : '',
+    }))
+    .filter((row) => row.days || row.time);
+  if (!merged.hours.length) merged.hours = DEFAULT_SITE.hours;
+  /* روابط السوشيال: أي رابط تُرك فارغاً يعود للرابط الافتراضي */
+  merged.socials = {
+    instagram: toSafeString(merged.socials.instagram, DEFAULT_SITE.socials.instagram),
+    facebook: toSafeString(merged.socials.facebook, DEFAULT_SITE.socials.facebook),
+    tiktok: toSafeString(merged.socials.tiktok, DEFAULT_SITE.socials.tiktok),
+  };
   /* تطبيع رقم الواتساب: أرقام فقط، وبادئة محلية 0 تتحول للصيغة الدولية 249 */
   const digits = toLatinDigits(String(merged.whatsapp ?? '')).replace(/\D/g, '');
   if (digits) {
@@ -272,9 +322,20 @@ export async function getSite(): Promise<SiteData> {
   return DEFAULT_SITE;
 }
 
-/** صورة من Sanity (رابط مطلق) أو من مجلد public (مسار نسبي) */
-export const imgUrl = (path: string): string =>
-  path && path.startsWith('http') ? path : asset(path || '/images/hero-bowl.jpg');
+/**
+ * صورة من Sanity (رابط مطلق يبدأ بـ http) أو من مجلد public (مسار نسبي).
+ * - مسار فارغ/مفقود → صورة الهبوط الافتراضية حتى لا تنكسر الواجهة.
+ * - مسار مبدوء بمسار الأساس (من استدعاء asset() سابقاً) يُعاد كما هو
+ *   حتى لا يُضاف مسار الأساس مرتين في بناء GitHub Pages (basePath=/fitebite).
+ */
+export function resolveImageUrl(path: string | null | undefined, basePath: string): string {
+  const p = path || '/images/hero-bowl.jpg';
+  if (p.startsWith('http')) return p;
+  if (basePath && p.startsWith(`${basePath}/`)) return p;
+  return `${basePath}${p}`;
+}
+
+export const imgUrl = (path?: string | null): string => resolveImageUrl(path, BASE_PATH);
 
 /** استبدال رموز مثل {city} بقيم الإعدادات */
 export const fillTokens = (text: string, site: SiteData): string =>

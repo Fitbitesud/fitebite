@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSite } from '../SiteContext';
 import { fmt, price, toLatinDigits } from '@/lib/format';
+import { imgUrl } from '@/lib/site-data';
 import type { CustomerInfo } from '@/lib/types';
 import {
   buildOrderMessage,
@@ -206,7 +207,7 @@ export default function CartDrawer() {
                         className="flex gap-3 rounded-2xl border border-sand bg-card p-3"
                       >
                         <img
-                          src={l.item.image}
+                          src={imgUrl(l.item.image)}
                           alt={l.item.name}
                           className="h-16 w-16 shrink-0 rounded-xl object-cover"
                         />

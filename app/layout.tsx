@@ -13,7 +13,7 @@ import Header from '@/components/Header';
 import Loader from '@/components/Loader';
 import { SiteProvider } from '@/components/SiteContext';
 import { asset } from '@/lib/config';
-import { getSite } from '@/lib/site-data';
+import { getSite, resolveImageUrl } from '@/lib/site-data';
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
@@ -30,7 +30,10 @@ export async function generateMetadata(): Promise<Metadata> {
       description: site.description,
       locale: 'ar_SD',
       type: 'website',
-      images: [asset('/images/hero-bowl.jpg')],
+      /* صورة المشاركة تتبع صورة الهبوط المضبوطة في لوحة التحكم.
+         نمررها بدون بادئة مسار الأساس: يضيفها Next تلقائياً عند الحل مقابل
+         metadataBase (مع بادئة يدوية تصبح مزدوجة في بناء GitHub Pages). */
+      images: [resolveImageUrl(site.home.heroImage, '')],
     },
     icons: { icon: asset('/logo-mark.svg') },
   };

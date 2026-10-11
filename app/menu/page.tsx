@@ -3,11 +3,15 @@ import Link from 'next/link';
 import { IconArrowLeft } from '@/components/Icons';
 import Menu from '@/components/Menu';
 import { getMenu } from '@/lib/menu';
+import { getSite } from '@/lib/site-data';
 
-export const metadata: Metadata = {
-  title: 'القائمة الكاملة',
-  description: 'كل وجبات فيتبايت الصحية مصنّفة وموثّقة بالسعرات والماكروز.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite();
+  return {
+    title: 'القائمة الكاملة',
+    description: `كل وجبات ${site.nameAr} الصحية مصنّفة وموثّقة بالسعرات والماكروز.`,
+  };
+}
 
 /** صفحة القائمة الكاملة — يُدخل إليها من زر «القائمة» في الرئيسية */
 export default async function MenuPage() {

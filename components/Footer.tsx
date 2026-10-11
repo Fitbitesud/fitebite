@@ -13,18 +13,18 @@ import {
 } from './Icons';
 import Logo from './Logo';
 
-const QUICK_LINKS = [
-  { href: '/#home', label: 'الرئيسية' },
-  { href: '/#features', label: 'لماذا فيتبايت' },
-  { href: '/menu', label: 'القائمة الكاملة' },
-  { href: '/packages', label: 'الباقات الشهرية' },
-  { href: '/#how', label: 'كيف تطلب' },
-  { href: '/#reviews', label: 'آراء العملاء' },
-];
-
 export default function Footer() {
   const site = useSite();
   const wa = useWhatsapp();
+  /* عناوين الروابط تتبع نصوص الأقسام المضبوطة في لوحة التحكم */
+  const QUICK_LINKS = [
+    { href: '/#home', label: 'الرئيسية' },
+    { href: '/#features', label: site.home.featuresHeading.eyebrow },
+    { href: '/menu', label: 'القائمة الكاملة' },
+    { href: '/packages', label: 'الباقات الشهرية' },
+    { href: '/#how', label: site.home.howHeading.eyebrow },
+    { href: '/#comments', label: 'آراء الزوار' },
+  ];
   const SOCIALS = [
     { href: site.socials.instagram, Icon: IconInstagram, label: 'إنستغرام' },
     { href: site.socials.facebook, Icon: IconFacebook, label: 'فيسبوك' },
