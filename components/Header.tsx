@@ -49,7 +49,8 @@ export default function Header() {
       >
         <div className="container-x flex items-center justify-between">
           <Link href="/#home" aria-label={`${site.nameAr} — الصفحة الرئيسية`}>
-            <Logo tone={dark ? 'cream' : 'forest'} withTagline={!scrolled} wordmark={site.nameEn} />
+            {/* اللون يتبع الخلفية: أعلى الصفحة الرئيسية داكن → شعار الخلفية الداكنة، وبعدها فاتح */}
+            <Logo tone={dark ? 'cream' : 'forest'} />
           </Link>
 
           <nav className="hidden items-center gap-7 lg:flex" aria-label="التنقل الرئيسي">

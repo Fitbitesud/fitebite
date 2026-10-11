@@ -1,7 +1,12 @@
 # dependencies
 /node_modules
+/studio/node_modules
 /.pnp
 .pnp.js
+
+# sanity studio
+/studio/dist
+/studio/.sanity
 
 # next.js
 /.next/

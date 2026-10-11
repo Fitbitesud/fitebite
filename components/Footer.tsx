@@ -34,7 +34,7 @@ export default function Footer() {
     <footer id="contact" className="scroll-mt-20 bg-forest-deep pt-16 text-cream/75">
       <div className="container-x grid gap-12 lg:grid-cols-4">
         <div>
-          <Logo tone="cream" withTagline />
+          <Logo tone="cream" />
           <p className="mt-5 text-sm leading-7">{site.description}</p>
           <div className="mt-6 flex gap-2">
             {SOCIALS.map((s) => (

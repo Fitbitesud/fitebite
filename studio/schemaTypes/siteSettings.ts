@@ -1,5 +1,64 @@
 import {defineField, defineType} from 'sanity'
 
+/* ── شعار الشريط العلوي: الصيغ المقبولة وفحص ملف الصورة ── */
+
+/** صيغ مقبولة في شعار الشريط (كلها مدعومة في تصدير الموقع الثابت) */
+const LOGO_FORMATS = ['png', 'svg', 'webp', 'jpg', 'jpeg']
+
+/** صيغ صور لا ندعمها في الشريط (الرفع ينجح لكن الصورة لا تظهر بعد التصدير) */
+const UNSUPPORTED_LOGO_FORMATS = [
+  'gif',
+  'bmp',
+  'tif',
+  'tiff',
+  'heic',
+  'heif',
+  'avif',
+  'ico',
+  'psd',
+  'eps',
+]
+
+const LOGO_FORMAT_ERROR =
+  'الصيغة غير مدعومة في الشريط. ارفع الشعار بصيغة PNG أو SVG أو WebP أو JPG.'
+
+type LogoImageValue = {
+  asset?: {_ref?: string; originalFilename?: string; url?: string} | null
+} | null
+
+/** امتداد الملف من نص: آخر مقطع بعد نقطة أو بعد شرطة (مثال: image-abc-480x480-png) */
+const trailingExtension = (raw?: string): string | null => {
+  if (typeof raw !== 'string' || !raw) return null
+  const clean = raw.split('?')[0].split('#')[0]
+  const token = /[.-]([a-z0-9]{2,5})$/i.exec(clean)?.[1]
+  return token ? token.toLowerCase() : null
+}
+
+/**
+ * تحقق حقل الشعار: يقبل PNG/SVG/WebP/JPG بأي أبعاد، ويرفض الصيغ غير المدعومة.
+ * نقرأ الصيغة من معرّف الأصل (asset) ثم من اسم الملف الأصلي ثم من الرابط، لأن معرّف
+ * Sanity للصور ينتهي بصيغة الملف المرفوع (image-<hash>-<width>x<height>-<format>).
+ * ملاحظة: هذا التحقق يعمل لحظة الحفظ في اللوحة؛ الملفات المرفوعة سابقاً لا تُعاد
+ * مراجعتها، فإن غُيّر الشرط لاحقاً أعد رفع الصورة.
+ */
+const validLogoAsset = (value: unknown) => {
+  const asset = (value as LogoImageValue)?.asset
+  if (!asset) return true // الحقل اختياري: بلا صورة يستخدم الموقع الشعار الافتراضي
+  const candidates = [asset._ref, asset.originalFilename, asset.url]
+    .map(trailingExtension)
+    .filter((ext): ext is string => Boolean(ext))
+  const format = candidates.find((ext) => /[a-z]/.test(ext)) // تجاهل مقاطع رقمية مثل 480x480
+  if (!format) return true // صيغة غير معروفة → نسمح (لا نعطّل الحفظ بسبب تخمين)
+  if (LOGO_FORMATS.includes(format)) return true
+  return UNSUPPORTED_LOGO_FORMATS.includes(format) ? LOGO_FORMAT_ERROR : true
+}
+
+/** خيارات مشتركة لحقلي شعار الشريط (فتح ملفات الصور المقبولة فقط في المنتقي) */
+const LOGO_IMAGE_OPTIONS = {
+  hotspot: true,
+  accept: 'image/png,image/svg+xml,image/webp,image/jpeg',
+}
+
 const ICON_LIST = [
   {title: 'غطاء طبق (cloche)', value: 'cloche'},
   {title: 'رسم بياني (chart)', value: 'chart'},
@@ -16,32 +75,39 @@ const ICON_LIST = [
 
 /**
  * إعدادات الموقع الكاملة — وثيقة واحدة تتحكم في:
- * الهوية، الأرقام، الروابط، الدوام والمناطق، وكل نصوص صفحة الهبوط.
+ * شعار الشريط العلوي وصورته للخلفية الداكنة، الهوية، الأرقام، الروابط،
+ * الدوام والمناطق، وكل نصوص صفحة الهبوط.
  */
 export const siteSettings = defineType({
   name: 'siteSettings',
-  title: 'إعدادات الموقع (كل النصوص والأرقام)',
+  title: 'إعدادات الموقع (الشعار والنصوص والأرقام)',
   type: 'document',
   fields: [
     defineField({
       name: 'identity',
-      title: 'الهوية',
+      title: 'الهوية والشعار',
       type: 'object',
       fields: [
-        defineField({name: 'nameAr', title: 'الاسم بالعربية', type: 'string'}),
-        defineField({name: 'nameEn', title: 'الاسم بالإنجليزية (الشريط)', type: 'string'}),
         defineField({
           name: 'logo',
-          title: 'شعار الشريط العلوي (PNG)',
+          title: 'شعار الشريط العلوي (خلفية فاتحة)',
           type: 'image',
-          description: 'ارفع صورة PNG بخلفية شفافة. ستظهر هذه الصورة في الشريط العلوي للموقع.',
-          options: {hotspot: true, accept: 'image/png'},
-          validation: (rule) =>
-            rule.custom((value: any) => {
-              if (!value?.asset?._ref) return true
-              return value.asset._ref.endsWith('-png') || 'يجب أن يكون الشعار بصيغة PNG'
-            }),
+          description:
+            'الصورة الأساسية للشعار: تظهر في الشريط العلوي على الخلفية الفاتحة (بعد التمرير، وفي صفحتي القائمة والباقات). الأفضل ملف بخلفية شفافة — PNG أو SVG أو WebP أو JPG.',
+          options: LOGO_IMAGE_OPTIONS,
+          validation: (rule) => rule.custom(validLogoAsset),
         }),
+        defineField({
+          name: 'logoDark',
+          title: 'شعار الشريط العلوي (خلفية داكنة) — اختياري',
+          type: 'image',
+          description:
+            'نسخة الشعار بالألوان الفاتحة تُستخدم فوق الخلفية الداكنة (أعلى الصفحة الرئيسية قبل التمرير، والتذييل). اتركه فارغاً ليُستخدم الشعار الأساسي في كل المواضع.',
+          options: LOGO_IMAGE_OPTIONS,
+          validation: (rule) => rule.custom(validLogoAsset),
+        }),
+        defineField({name: 'nameAr', title: 'الاسم بالعربية', type: 'string'}),
+        defineField({name: 'nameEn', title: 'الاسم بالإنجليزية (الشريط)', type: 'string'}),
         defineField({name: 'taglineAr', title: 'السطر التعريفي', type: 'string'}),
         defineField({name: 'description', title: 'وصف الموقع (SEO والتذييل)', type: 'text', rows: 3}),
       ],
