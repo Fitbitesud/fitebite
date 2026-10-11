@@ -308,15 +308,27 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   return merged;
 }
 
-/** جلب إعدادات الموقع كاملة — من Sanity إذا ضُبط، وإلا الافتراضية */
+/**
+ * جلب إعدادات الموقع كاملة — من Sanity إذا ضُبط، وإلا الافتراضية.
+ * كل رسائل الإعدادات موسومة بـ [site-settings] لتُصفّى بسهولة في وحدة تحكم المتصفح.
+ */
 export async function getSite(): Promise<SiteData> {
   if (isSanityConfigured) {
     try {
       const docs = await getReadClient().fetch<unknown[]>(SETTINGS_QUERY);
       const doc = mergeSettingsDocs(docs);
-      if (doc) return mergeSite(doc);
+      if (doc && Object.keys(doc).length) return mergeSite(doc);
+      /* وصل الاستعلام بلا أي قيمة قابلة للاستخدام: وثيقة غير منشورة، أو فارغة، أو بشكل غير معروف */
+      console.warn(
+        '[site-settings] no siteSettings values came back from Sanity — showing the local defaults. ' +
+          'Check that the document is published (drafts are never read) and its fields are filled in; ' +
+          'SETTINGS_QUERY accepts both the nested (identity/contact/home) and the flat root-level shape.',
+      );
     } catch (err) {
-      console.error('Sanity settings fetch failed — falling back to local defaults:', err);
+      console.error(
+        '[site-settings] Sanity settings fetch failed — showing the local defaults:',
+        err,
+      );
     }
   }
   return DEFAULT_SITE;
