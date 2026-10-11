@@ -218,6 +218,30 @@ export function buildSubscriptionMessage(opts: {
   return L.join('\n');
 }
 
+/**
+ * تهيئة باقة جزئية من لوحة التحكم حتى تظهر بدل إسقاطها:
+ * هدف غير مضبوط/غير معروف → «محافظة»، وجبات أو سعرات ناقصة → قيم وسطية،
+ * والسعر الشهري يُترك للحساب التلقائي إن لم يُدخل.
+ */
+function coerceReadyPackage(d: Partial<ReadyPackage> & { _id: string }): ReadyPackage {
+  const mealsRaw = typeof d.meals === 'number' && Number.isFinite(d.meals) ? Math.round(d.meals) : 3;
+  return {
+    id: d.id ?? d._id,
+    name: typeof d.name === 'string' && d.name.trim() ? d.name : 'باقة جاهزة',
+    goalId: GOALS.some((g) => g.id === d.goalId) ? (d.goalId as SubscriptionGoalId) : 'maintain',
+    meals: Math.min(4, Math.max(1, mealsRaw)),
+    kcal: typeof d.kcal === 'number' && Number.isFinite(d.kcal) && d.kcal > 0 ? d.kcal : 2400,
+    desc: typeof d.desc === 'string' ? d.desc : '',
+    badge: typeof d.badge === 'string' && d.badge.trim() ? d.badge : undefined,
+    image: typeof d.image === 'string' ? d.image : '',
+    priceMonthly:
+      typeof d.priceMonthly === 'number' && Number.isFinite(d.priceMonthly) && d.priceMonthly > 0
+        ? d.priceMonthly
+        : undefined,
+    order: d.order,
+  };
+}
+
 /** جلب الباقات الجاهزة — من Sanity إذا ضُبطت الوثائق، وإلا القائمة المحلية */
 export async function getReadyPackages(): Promise<ReadyPackage[]> {
   if (isSanityConfigured) {
@@ -226,9 +250,7 @@ export async function getReadyPackages(): Promise<ReadyPackage[]> {
         PACKAGES_QUERY
       );
       if (Array.isArray(docs) && docs.length) {
-        const valid = docs
-          .map((d) => ({ ...d, id: d.id ?? d._id }) as ReadyPackage)
-          .filter((p) => GOALS.some((g) => g.id === p.goalId));
+        const valid = docs.filter((d) => d && d._id).map(coerceReadyPackage);
         if (valid.length) return valid;
       }
     } catch (err) {

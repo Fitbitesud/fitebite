@@ -285,12 +285,21 @@ const MENU: MenuData = {
   ],
 };
 
-/** جلب القائمة — من Sanity إذا ضُبط المشروع، وإلا فالبيانات المحلية */
+/** جلب القائمة — من Sanity إذا ضُبط المشروع، وإلا فالبيانات المحلية.
+ *  البيانات الجزئية (تصنيفات بدون أصناف أو العكس) لا تُسقط كل شيء:
+ *  يُعرض الجزء المنشور في لوحة التحكم ويُكمَّل الباقي من البيانات المحلية. */
 export async function getMenu(): Promise<MenuData> {
   if (isSanityConfigured) {
     try {
-      const data = await getReadClient().fetch<MenuData>(MENU_QUERY);
-      if (data && data.categories?.length && data.items?.length) return data;
+      const data = await getReadClient().fetch<Partial<MenuData>>(MENU_QUERY);
+      const categories = Array.isArray(data?.categories) ? data.categories : [];
+      const items = Array.isArray(data?.items) ? data.items : [];
+      if (categories.length || items.length) {
+        return {
+          categories: categories.length ? (categories as MenuData['categories']) : MENU.categories,
+          items: items.length ? (items as MenuData['items']) : MENU.items,
+        };
+      }
     } catch (err) {
       console.error('Sanity menu fetch failed — falling back to local data:', err);
     }

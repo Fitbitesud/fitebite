@@ -63,7 +63,7 @@ export default function Loader() {
           onClick={() => setStage((s) => (s === 'run' ? 'exit' : s))}
           className="fixed inset-0 z-[100] flex cursor-pointer select-none flex-col items-center justify-center overflow-hidden bg-cream"
           exit={{ y: '-100%', transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } }}
-          aria-label="جارٍ تحميل فيتبايت"
+          aria-label={`جارٍ تحميل ${site.nameAr}`}
         >
           {/* زخرفة أوراق باهتة */}
           <svg
