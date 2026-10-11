@@ -1,83 +1,55 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { BASE_PATH } from '@/lib/config';
 import { useCart } from './cart/CartContext';
 import { IconCart, IconClose, IconMenuBars } from './Icons';
 import Logo from './Logo';
 import { useSite } from './SiteContext';
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { totals, openCart } = useCart();
   const site = useSite();
-  const pathname = usePathname();
-  const isHome = pathname === '/' || pathname === '';
 
-  /* عناوين التنقل تتبع نصوص الأقسام المضبوطة في لوحة التحكم */
+  /* روابط كاملة للتصدير الثابت: لا نعتمد على توجيه Next للـ hash في GitHub Pages.
+     trailingSlash يطابق إعداد next.config.mjs لصفحات القائمة والباقات. */
   const LINKS = [
-    { href: '/#home', label: 'الرئيسية' },
-    { href: '/#features', label: site.home.featuresHeading.eyebrow },
-    { href: '/menu', label: 'القائمة' },
-    { href: '/packages', label: 'الباقات' },
-    { href: '/#how', label: site.home.howHeading.eyebrow },
-    { href: '/#comments', label: 'آراء الزوار' },
-    { href: '/#contact', label: 'تواصل معنا' },
+    { href: `${BASE_PATH}/#home`, label: 'الرئيسية' },
+    { href: `${BASE_PATH}/#features`, label: site.home.featuresHeading.eyebrow },
+    { href: `${BASE_PATH}/menu/`, label: 'القائمة' },
+    { href: `${BASE_PATH}/packages/`, label: 'الباقات' },
+    { href: `${BASE_PATH}/#how`, label: site.home.howHeading.eyebrow },
+    { href: `${BASE_PATH}/#comments`, label: 'آراء الزوار' },
+    { href: `${BASE_PATH}/#contact`, label: 'تواصل معنا' },
   ];
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  /* أعلى الصفحة: الهيدر فوق الهبوط الداكن → ألوان فاتحة */
-  const dark = isHome && !scrolled && !open;
 
   return (
     <>
-      <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-          scrolled || open
-            ? 'bg-cream/90 py-2 shadow-soft backdrop-blur-md'
-            : 'bg-transparent py-4'
-        }`}
-      >
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-sand bg-cream py-2 shadow-soft">
         <div className="container-x flex items-center justify-between">
-          <Link href="/#home" aria-label={`${site.nameAr} — الصفحة الرئيسية`}>
-            <Logo tone={dark ? 'cream' : 'forest'} withTagline={!scrolled} wordmark={site.nameEn} />
-          </Link>
+          <a href={`${BASE_PATH}/#home`} aria-label={`${site.nameAr} — الصفحة الرئيسية`}>
+            <Logo tone="forest" />
+          </a>
 
           <nav className="hidden items-center gap-7 lg:flex" aria-label="التنقل الرئيسي">
-            {LINKS.map((l) => {
-              const Tag = Link;
-              return (
-                <Tag
-                  key={l.href}
-                  href={l.href}
-                  className={`group relative text-sm font-extrabold transition ${
-                    dark ? 'text-cream/85 hover:text-cream' : 'text-ink/75 hover:text-forest'
-                  }`}
-                >
-                  {l.label}
-                  <span className="absolute -bottom-1.5 right-0 h-0.5 w-0 rounded-full bg-copper transition-all duration-300 group-hover:w-full" />
-                </Tag>
-              );
-            })}
+            {LINKS.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                className="group relative text-sm font-extrabold text-ink/75 transition hover:text-forest"
+              >
+                {l.label}
+                <span className="absolute -bottom-1.5 right-0 h-0.5 w-0 rounded-full bg-copper transition-all duration-300 group-hover:w-full" />
+              </a>
+            ))}
           </nav>
 
           <div className="flex items-center gap-2">
             <button
               onClick={openCart}
-              className={`relative grid h-11 w-11 place-items-center rounded-full transition hover:shadow-lift ${
-                dark
-                  ? 'bg-cream text-forest hover:bg-card'
-                  : 'bg-forest text-cream hover:bg-forest-deep'
-              }`}
+              className="relative grid h-11 w-11 place-items-center rounded-full bg-forest text-cream transition hover:bg-forest-deep hover:shadow-lift"
               aria-label={`فتح سلة الطلبات (${totals.count} صنف)`}
             >
               <IconCart className="h-5 w-5" />
@@ -97,11 +69,7 @@ export default function Header() {
             </button>
             <button
               onClick={() => setOpen((o) => !o)}
-              className={`grid h-11 w-11 place-items-center rounded-full border transition lg:hidden ${
-                dark
-                  ? 'border-cream/25 bg-cream/10 text-cream'
-                  : 'border-sand bg-card text-forest'
-              }`}
+              className="grid h-11 w-11 place-items-center rounded-full border border-sand bg-card text-forest transition lg:hidden"
               aria-label="فتح القائمة"
             >
               {open ? <IconClose className="h-5 w-5" /> : <IconMenuBars className="h-5 w-5" />}
@@ -119,19 +87,16 @@ export default function Header() {
             className="fixed inset-x-0 top-[68px] z-40 border-b border-sand bg-cream/95 px-6 pb-4 pt-2 shadow-soft backdrop-blur-md lg:hidden"
             aria-label="قائمة الجوال"
           >
-            {LINKS.map((l) => {
-              const Tag = Link;
-              return (
-                <Tag
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setOpen(false)}
-                  className="block border-b border-sand/60 py-3.5 text-base font-extrabold text-ink/80 last:border-0 hover:text-forest"
-                >
-                  {l.label}
-                </Tag>
-              );
-            })}
+            {LINKS.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                className="block border-b border-sand/60 py-3.5 text-base font-extrabold text-ink/80 last:border-0 hover:text-forest"
+              >
+                {l.label}
+              </a>
+            ))}
           </motion.nav>
         )}
       </AnimatePresence>

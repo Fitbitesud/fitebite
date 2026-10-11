@@ -16,7 +16,7 @@ export function SiteProvider({ value, children }: { value: SiteData; children: R
 
   useEffect(() => {
     let alive = true;
-    getSite()
+    getSite(value)
       .then((s) => alive && setSite(s))
       .catch(() => {});
     return () => {

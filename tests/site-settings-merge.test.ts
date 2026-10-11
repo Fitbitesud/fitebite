@@ -180,6 +180,18 @@ describe('getSite() — [site-settings] diagnostics', () => {
     expect(calls.some((args) => String(args[0]).startsWith('[site-settings]'))).toBe(true);
   });
 
+  it('keeps the server settings when the browser fetch fails or finds no published document', async () => {
+    const serverSite = { ...DEFAULT_SITE, logo: 'https://cdn.sanity.io/images/project/production/logo.png', nameAr: 'شعار منشور' };
+
+    setSanityError(new Error('browser cannot reach CDN'));
+    const failed = await capturingConsole('error', () => getSite(serverSite));
+    expect(failed.result).toBe(serverSite);
+
+    setSanityDoc(null);
+    const empty = await capturingConsole('warn', () => getSite(serverSite));
+    expect(empty.result).toBe(serverSite);
+  });
+
   it('stays silent when the dashboard returns usable values', async () => {
     setSanityDoc({ nameAr: 'فيتبايت الجديدة' });
 
