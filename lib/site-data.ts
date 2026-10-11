@@ -46,7 +46,10 @@ export interface HomeContent {
 export interface SiteData {
   nameAr: string;
   nameEn: string;
+  /** شعار الشريط العلوي (والخلفية الفاتحة عموماً) — يُضبط من لوحة التحكم */
   logo: string;
+  /** نسخة الشعار للخلفية الداكنة (اختيارية) — فارغة تعني استخدام logo في كل المواضع */
+  logoDark: string;
   taglineAr: string;
   description: string;
   whatsapp: string;
@@ -67,6 +70,8 @@ export const DEFAULT_SITE: SiteData = {
   nameAr: SITE.nameAr,
   nameEn: 'FITBITE',
   logo: '/logo.png',
+  /* بلا صورة للخلفية الداكنة يستخدم الشريط الشعار الأساسي (انظر logoForTone) */
+  logoDark: '',
   taglineAr: SITE.taglineAr,
   description: SITE.description,
   whatsapp: SITE.whatsapp,
@@ -266,6 +271,7 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   merged.nameAr = toSafeString(merged.nameAr, DEFAULT_SITE.nameAr);
   merged.nameEn = toSafeString(merged.nameEn, DEFAULT_SITE.nameEn);
   merged.logo = toSafeString(merged.logo, DEFAULT_SITE.logo);
+  merged.logoDark = toSafeString(merged.logoDark, DEFAULT_SITE.logoDark);
   merged.taglineAr = toSafeString(merged.taglineAr, DEFAULT_SITE.taglineAr);
   merged.description = toSafeString(merged.description, DEFAULT_SITE.description);
   merged.currency = toSafeString(merged.currency, DEFAULT_SITE.currency);
@@ -351,6 +357,17 @@ export function resolveImageUrl(path: string | null | undefined, basePath: strin
 }
 
 export const imgUrl = (path?: string | null): string => resolveImageUrl(path, BASE_PATH);
+
+/**
+ * صورة الشعار المناسبة للخلفية — الحقلان المضبوطان في لوحة التحكم (identity.logo / identity.logoDark):
+ *  - `cream`  → الشريط فوق خلفية داكنة (أعلى الصفحة الرئيسية، والتذييل):
+ *               يستخدم شعار الخلفية الداكنة إن رُفع، وإلا الشعار الأساسي.
+ *  - `forest` → خلفية فاتحة (بقية الصفحات، وبعد التمرير): الشعار الأساسي دائماً.
+ */
+export const logoForTone = (
+  site: Pick<SiteData, 'logo' | 'logoDark'>,
+  tone: 'forest' | 'cream',
+): string => (tone === 'cream' && site.logoDark ? site.logoDark : site.logo);
 
 /** استبدال رموز مثل {city} بقيم الإعدادات */
 export const fillTokens = (text: string, site: SiteData): string =>

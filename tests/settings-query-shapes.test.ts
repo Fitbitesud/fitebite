@@ -15,9 +15,26 @@ const ASSET = {
   url: 'https://cdn.sanity.io/images/zes52trp/production/hero-bowl.jpg',
 };
 
+/** الشعاران المضبوطان من لوحة التحكم: الأساسي وشعار الخلفية الداكنة */
+const LOGO_ASSET = {
+  _id: 'image-logo',
+  _type: 'sanity.imageAsset',
+  url: 'https://cdn.sanity.io/images/zes52trp/production/logo-480x480.png',
+};
+const LOGO_DARK_ASSET = {
+  _id: 'image-logo-dark',
+  _type: 'sanity.imageAsset',
+  url: 'https://cdn.sanity.io/images/zes52trp/production/logo-dark-480x480.png',
+};
+
+/** كل وثائق الصور التي تُحل إليها مراجع الحقول (asset->url) */
+const IMAGE_ASSETS = [ASSET, LOGO_ASSET, LOGO_DARK_ASSET];
+
 const IDENTITY = {
   nameAr: 'فيتبايت',
   nameEn: 'FITBITE',
+  logo: { asset: { _type: 'reference', _ref: 'image-logo' } },
+  logoDark: { asset: { _type: 'reference', _ref: 'image-logo-dark' } },
   taglineAr: 'طعام صحي للضخامة والتنشيف',
   description: 'وصف الموقع للمحركات',
 };
@@ -56,6 +73,13 @@ const HOME = {
   steps: [{ title: 'اختر وجباتك', desc: 'تصفح القائمة', icon: 'cart' }],
   cta: { title: 'جاهز تبدأ؟', sub: 'اطلب الآن', primaryLabel: 'اطلب عبر واتساب', secondaryLabel: 'تصفح القائمة' },
   pkgBanner: { title: 'تفضّل الجاهز؟', sub: 'ست باقات شهرية', button: 'تصفح الباقات الجاهزة' },
+};
+
+/** نفس الهوية كما يعيدها الاستعلام: مرجعا الشعارين يتحولان إلى رابطَي CDN */
+const IDENTITY_QUERY_SHAPE = {
+  ...IDENTITY,
+  logo: LOGO_ASSET.url,
+  logoDark: LOGO_DARK_ASSET.url,
 };
 
 const HEAD = { _id: 'site-settings', _type: 'siteSettings', _updatedAt: '2026-10-11T00:00:00Z' };
@@ -108,9 +132,11 @@ describe('SETTINGS_QUERY tolerates both document shapes', () => {
   });
 
   it('reads the nested shape (identity / contact / home) in full', async () => {
-    const [doc] = await runQuery([NESTED_DOC, ASSET]);
+    const [doc] = await runQuery([NESTED_DOC, ...IMAGE_ASSETS]);
 
     expect(doc.nameAr).toBe(IDENTITY.nameAr);
+    expect(doc.logo).toBe(LOGO_ASSET.url);
+    expect(doc.logoDark).toBe(LOGO_DARK_ASSET.url);
     expect(doc.whatsapp).toBe(CONTACT.whatsapp);
     expect(doc.deliveryFee).toBe(CONTACT.deliveryFee);
     expect(doc.socials).toEqual(ROOT.socials);
@@ -122,9 +148,11 @@ describe('SETTINGS_QUERY tolerates both document shapes', () => {
   });
 
   it('reads the legacy flat shape (fields at the document root) in full', async () => {
-    const [doc] = await runQuery([FLAT_DOC, ASSET]);
+    const [doc] = await runQuery([FLAT_DOC, ...IMAGE_ASSETS]);
 
     expect(doc.nameAr).toBe(IDENTITY.nameAr);
+    expect(doc.logo).toBe(LOGO_ASSET.url);
+    expect(doc.logoDark).toBe(LOGO_DARK_ASSET.url);
     expect(doc.whatsapp).toBe(CONTACT.whatsapp);
     expect(doc.city).toBe(CONTACT.city);
     expect(doc.home.heroBadge).toBe(HOME.heroBadge);
@@ -136,8 +164,8 @@ describe('SETTINGS_QUERY tolerates both document shapes', () => {
   });
 
   it('normalises both shapes into the exact same document (the shape the site expects)', async () => {
-    const [nested] = await runQuery([NESTED_DOC, ASSET]);
-    const [flat] = await runQuery([FLAT_DOC, ASSET]);
+    const [nested] = await runQuery([NESTED_DOC, ...IMAGE_ASSETS]);
+    const [flat] = await runQuery([FLAT_DOC, ...IMAGE_ASSETS]);
 
     expect(flat).toEqual(nested);
     /* No field may leak a null from the shape it does not live in */
@@ -146,17 +174,31 @@ describe('SETTINGS_QUERY tolerates both document shapes', () => {
   });
 
   it('reads a half-migrated document (nested identity + root-level home) without losing values', async () => {
-    const [doc] = await runQuery([MIXED_DOC, ASSET]);
+    const [doc] = await runQuery([MIXED_DOC, ...IMAGE_ASSETS]);
 
     /* The query always answers in one shape: flat scalars + a nested `home` block */
-    expect(doc).toEqual({ ...IDENTITY, ...CONTACT, ...ROOT, home: { ...HOME, heroImage: ASSET.url } });
+    expect(doc).toEqual({
+      ...IDENTITY_QUERY_SHAPE,
+      ...CONTACT,
+      ...ROOT,
+      home: { ...HOME, heroImage: ASSET.url },
+    });
     expect(doc.home.steps).toEqual(HOME.steps);
+  });
+
+  it('leaves the dark-background logo null when only the main logo is uploaded', async () => {
+    const { logoDark: _omitted, ...identityWithoutDark } = IDENTITY;
+    const [doc] = await runQuery([{ ...HEAD, identity: identityWithoutDark }, ...IMAGE_ASSETS]);
+
+    expect(doc.logo).toBe(LOGO_ASSET.url);
+    /* null (not an empty string) → lib/site-data.ts keeps the main logo for every background */
+    expect(doc.logoDark).toBeNull();
   });
 
   it('keeps documents sorted oldest → newest so lib/site-data.ts can merge them', async () => {
     const older = { ...HEAD, _updatedAt: '2026-10-01T00:00:00Z', ...flatten({ identity: IDENTITY }), city: 'بحري' };
     const newer = { ...HEAD, _updatedAt: '2026-10-10T00:00:00Z', city: 'أم درمان' };
-    const docs = await runQuery([newer, older, ASSET]);
+    const docs = await runQuery([newer, older, ...IMAGE_ASSETS]);
 
     expect(docs.map((d) => d.city)).toEqual(['بحري', 'أم درمان']);
   });

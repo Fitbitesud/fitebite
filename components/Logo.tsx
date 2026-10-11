@@ -1,6 +1,6 @@
 'use client';
 
-import { imgUrl } from '@/lib/site-data';
+import { imgUrl, logoForTone } from '@/lib/site-data';
 import { useSite } from './SiteContext';
 import {
   DUMBBELL_TRANSFORM,
@@ -59,22 +59,20 @@ export function LogoMark({ className = '' }: { className?: string }) {
   );
 }
 
-/** الشعار الكامل في الشريط؛ مصدر الصورة قابل للتعديل من لوحة التحكم. */
+/** الشعار الكامل في الشريط؛ مصدر الصورة قابل للتعديل من لوحة التحكم (logo / logoDark). */
 export default function Logo({
   tone = 'forest',
   className = '',
 }: {
-  withWordmark?: boolean;
-  withTagline?: boolean;
+  /** forest = خلفية فاتحة (الشعار الأساسي) | cream = الخلفية الداكنة (شعار الخلفية الداكنة إن وُجد) */
   tone?: 'forest' | 'cream';
-  wordmark?: string;
   className?: string;
 }) {
   const site = useSite();
   return (
     <span className={`flex items-center ${className}`}>
       <img
-        src={imgUrl(site.logo)}
+        src={imgUrl(logoForTone(site, tone))}
         alt={`شعار ${site.nameAr}`}
         className={`h-14 w-auto max-w-[190px] object-contain transition ${
           tone === 'cream' ? 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)]' : ''

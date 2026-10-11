@@ -1,5 +1,5 @@
-import {defineConfig, type StructureResolver} from 'sanity'
-import {structureTool} from 'sanity/structure'
+import {defineConfig} from 'sanity'
+import {structureTool, type StructureResolver} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
 
@@ -18,7 +18,7 @@ const structure: StructureResolver = (S) =>
     .title('فيتبايت')
     .items([
       S.listItem()
-        .title('إعدادات الموقع (كل النصوص والأرقام)')
+        .title('إعدادات الموقع (الشعار والنصوص والأرقام)')
         .child(S.editor().id('siteSettings').schemaType('siteSettings').documentId('siteSettings')),
       S.divider(),
       S.listItem().title('أصناف القائمة').child(S.documentTypeList('menuItem')),
