@@ -46,6 +46,7 @@ export interface HomeContent {
 export interface SiteData {
   nameAr: string;
   nameEn: string;
+  logo: string;
   taglineAr: string;
   description: string;
   whatsapp: string;
@@ -65,6 +66,7 @@ export interface SiteData {
 export const DEFAULT_SITE: SiteData = {
   nameAr: SITE.nameAr,
   nameEn: 'FITBITE',
+  logo: '/logo.png',
   taglineAr: SITE.taglineAr,
   description: SITE.description,
   whatsapp: SITE.whatsapp,
@@ -263,6 +265,7 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   /* الهوية والأرقام: قيم فارغة أو غير صالحة تسقط على الافتراضية */
   merged.nameAr = toSafeString(merged.nameAr, DEFAULT_SITE.nameAr);
   merged.nameEn = toSafeString(merged.nameEn, DEFAULT_SITE.nameEn);
+  merged.logo = toSafeString(merged.logo, DEFAULT_SITE.logo);
   merged.taglineAr = toSafeString(merged.taglineAr, DEFAULT_SITE.taglineAr);
   merged.description = toSafeString(merged.description, DEFAULT_SITE.description);
   merged.currency = toSafeString(merged.currency, DEFAULT_SITE.currency);

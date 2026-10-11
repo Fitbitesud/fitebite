@@ -1,6 +1,6 @@
 'use client';
 
-import { SITE } from '@/lib/config';
+import { imgUrl } from '@/lib/site-data';
 import { useSite } from './SiteContext';
 import {
   DUMBBELL_TRANSFORM,
@@ -59,12 +59,9 @@ export function LogoMark({ className = '' }: { className?: string }) {
   );
 }
 
-/** الشعار الكامل: العلامة + الكلمة (عربية افتراضياً، أو إنجليزية عبر wordmark) */
+/** الشعار الكامل في الشريط؛ مصدر الصورة قابل للتعديل من لوحة التحكم. */
 export default function Logo({
-  withWordmark = true,
-  withTagline = false,
   tone = 'forest',
-  wordmark,
   className = '',
 }: {
   withWordmark?: boolean;
@@ -73,34 +70,16 @@ export default function Logo({
   wordmark?: string;
   className?: string;
 }) {
-  const main = tone === 'cream' ? 'text-cream' : 'text-forest';
-  const word = tone === 'cream' ? 'text-cream' : 'text-forest';
   const site = useSite();
   return (
-    <span className={`flex items-center gap-3 ${className}`}>
-      <LogoMark className={`h-11 w-11 shrink-0 ${main}`} />
-      {withWordmark && (
-        <span className="flex flex-col leading-none">
-          <span
-            className={`text-2xl font-black tracking-tight ${word}`}
-            dir={wordmark ? 'ltr' : undefined}
-          >
-            {wordmark ?? site.nameAr}
-          </span>
-          {withTagline && (
-            <span
-              className={`mt-1.5 flex items-center gap-1.5 text-[11px] font-bold ${
-                tone === 'cream' ? 'text-cream/70' : 'text-muted'
-              }`}
-            >
-              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="#7E9C4E" strokeWidth="2">
-                <path d="M5 19C5 10 10 5 20 4c-.5 10-5.5 15-15 15z" />
-              </svg>
-              {site.taglineAr}
-            </span>
-          )}
-        </span>
-      )}
+    <span className={`flex items-center ${className}`}>
+      <img
+        src={imgUrl(site.logo)}
+        alt={`شعار ${site.nameAr}`}
+        className={`h-14 w-auto max-w-[190px] object-contain transition ${
+          tone === 'cream' ? 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)]' : ''
+        }`}
+      />
     </span>
   );
 }

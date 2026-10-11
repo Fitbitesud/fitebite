@@ -30,6 +30,7 @@ export const APPROVED_COMMENTS_QUERY = `*[_type == "comment" && approved] | orde
 export const SETTINGS_QUERY = `*[_type == "siteSettings"] | order(_updatedAt asc) {
   "nameAr": coalesce(identity.nameAr, nameAr),
   "nameEn": coalesce(identity.nameEn, nameEn),
+  "logo": coalesce(identity.logo.asset->url, logo.asset->url),
   "taglineAr": coalesce(identity.taglineAr, taglineAr),
   "description": coalesce(identity.description, description),
   "whatsapp": coalesce(contact.whatsapp, whatsapp),
