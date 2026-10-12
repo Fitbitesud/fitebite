@@ -68,8 +68,9 @@ export default function CartDrawer() {
   const validate = (): boolean => {
     const e: Record<string, string> = {};
     if (form.name.trim().length < 3) e.name = 'الرجاء كتابة الاسم الكامل';
-    const digits = toLatinDigits(form.phone).replace(/[^\d+]/g, '');
-    if (!/^(\+?249|00249|0)?9\d{8}$/.test(digits)) e.phone = 'رقم جوال سوداني غير صحيح — مثال: 0912345678';
+    /* نقبل أي رقم جوال — سوداني (09… / 01…) أو دولي — بشرط ٧ خانات رقمية على الأقل */
+    const phoneDigits = toLatinDigits(form.phone).replace(/\D/g, '');
+    if (phoneDigits.length < 7) e.phone = 'رقم جوال غير صحيح — اكتب الرقم كاملاً (مثال: 0912345678)';
     if (!form.region) e.region = 'اختر منطقة التوصيل';
     if (form.address.trim().length < 6) e.address = 'اكتب عنواناً واضحاً (رقم المنزل/أقرب معلم)';
     setErrors(e);

@@ -359,7 +359,7 @@ d('checkout — validation', () => {
     await submitBtn(page).click();
     const text = await drawerText(page);
     expect(text).toContain('الرجاء كتابة الاسم الكامل');
-    expect(text).toContain('رقم جوال سوداني غير صحيح');
+    expect(text).toContain('رقم جوال غير صحيح');
     expect(text).toContain('اختر منطقة التوصيل');
     expect(text).toContain('اكتب عنواناً واضحاً');
     expect(await opened(page)).toHaveLength(0);
@@ -379,7 +379,15 @@ d('checkout — validation', () => {
     expect(await opened(page)).toHaveLength(1);
   });
 
-  const accepted = ['0912345678', '+249912345678', '249912345678', '912345678', '0912 345 678', '091-234-5678'];
+  // أي رقم جوال يُقبل — سوداني (09…/01…) أو دولي — بشرط ٧ خانات رقمية على الأقل
+  const accepted = [
+    '0912345678', '+249912345678', '249912345678', '912345678', '0912 345 678', '091-234-5678',
+    '091234567', '09123456789', // أقصر/أطول قليلاً
+    '0112345678', // أرضي سوداني (لا يبدأ ب 09)
+    '00249912345678', // بادئة 00
+    '+971501234567', '+14155551234', // أرقام دولية
+    '1234567', // الحد الأدنى: ٧ خانات
+  ];
   for (const phone of accepted) {
     it(`accepts the phone "${phone}"`, async () => {
       const { page } = await readyToOrder();
@@ -389,13 +397,13 @@ d('checkout — validation', () => {
     });
   }
 
-  const rejected = ['', '0112345678', '091234567', '09123456789', 'abcdefghij', '12345'];
+  const rejected = ['', 'abcdefghij', '12345', '123456']; // فارغ / ليس رقماً / أقل من ٧ خانات
   for (const phone of rejected) {
     it(`rejects the phone "${phone}"`, async () => {
       const { page } = await readyToOrder();
       await fillForm(page, { phone });
       await submitBtn(page).click();
-      expect(await drawerText(page)).toContain('رقم جوال سوداني غير صحيح');
+      expect(await drawerText(page)).toContain('رقم جوال غير صحيح');
       expect(await opened(page)).toHaveLength(0);
     });
   }
