@@ -57,8 +57,6 @@ export function buildOrderMessage(
   });
   L.push('━━━━━━━━━━━━━━━');
   L.push(`🍽 عدد الأصناف: ${fmt(totals.count)}`);
-  L.push(`🔥 إجمالي السعرات: ${fmt(totals.kcal)} سعرة`);
-  L.push(`💪 إجمالي البروتين: ${fmt(totals.protein)} غ`);
   L.push(`🧾 المجموع الفرعي: ${price(totals.subtotal, cur)}`);
   L.push(`🛵 التوصيل: ${totals.delivery === 0 ? 'مجاني ✅' : price(totals.delivery, cur)}`);
   L.push(`💰 *الإجمالي الكلي: ${price(totals.total, cur)}*`);

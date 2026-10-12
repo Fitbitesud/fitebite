@@ -37,10 +37,10 @@ describe('buildOrderMessage — content', () => {
     expect(msg).toContain('سعر الوحدة: 7,500 ج.س | 🔥 410 سعرة');
   });
 
-  it('prints the same totals the cart shows', () => {
+  it('prints the same money totals the cart shows — but no kcal/protein totals', () => {
     expect(msg).toContain('عدد الأصناف: 3');
-    expect(msg).toContain('إجمالي السعرات: 1,090 سعرة');
-    expect(msg).toContain('إجمالي البروتين: 56 غ');
+    expect(msg).not.toContain('إجمالي السعرات');
+    expect(msg).not.toContain('إجمالي البروتين');
     expect(msg).toContain('المجموع الفرعي: 20,500 ج.س');
     expect(msg).toContain('التوصيل: 2,000 ج.س');
     expect(msg).toContain('الإجمالي الكلي: 22,500 ج.س');
