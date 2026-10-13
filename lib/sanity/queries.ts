@@ -60,7 +60,9 @@ export const SETTINGS_QUERY = `*[_type == "siteSettings"] | order(_updatedAt asc
     "howHeading": coalesce(home.howHeading{eyebrow, title, sub}, howHeading{eyebrow, title, sub}),
     "steps": coalesce(home.steps[]{title, desc, icon}, steps[]{title, desc, icon}),
     "cta": coalesce(home.cta{title, sub, primaryLabel, secondaryLabel}, cta{title, sub, primaryLabel, secondaryLabel}),
-    "pkgBanner": coalesce(home.pkgBanner{title, sub, button}, pkgBanner{title, sub, button})
+    "pkgBanner": coalesce(home.pkgBanner{title, sub, button}, pkgBanner{title, sub, button}),
+    "offersHeading": coalesce(home.offersHeading{eyebrow, title, sub}, offersHeading{eyebrow, title, sub}),
+    "offersEnabled": coalesce(home.offersEnabled, offersEnabled)
   }
 }`;
 
@@ -69,4 +71,11 @@ export const PACKAGES_QUERY = `*[_type == "readyPackage"] | order(order asc) {
   _id, name, goalId, meals, kcal, desc, badge,
   "image": image.asset->url,
   priceMonthly, order
+}`;
+
+/** العروض الخاصة من لوحة التحكم */
+export const OFFERS_QUERY = `*[_type == "offer"] | order(order asc) {
+  _id, title, desc, badge,
+  "image": image.asset->url,
+  priceOld, priceNew, validUntil, active, order
 }`;

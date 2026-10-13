@@ -139,6 +139,23 @@ describe('empty or invalid dashboard values fall back to defaults', () => {
     expect(site.home.pkgBanner).toEqual(DEFAULT_SITE.home.pkgBanner);
   });
 
+  it('offers section: heading is completed from defaults and the toggle is honoured', async () => {
+    setSanityDoc({ home: { offersHeading: { title: 'عروضنا' } } });
+    let site = await getSite();
+    expect(site.home.offersHeading.title).toBe('عروضنا');
+    expect(site.home.offersHeading.eyebrow).toBe(DEFAULT_SITE.home.offersHeading.eyebrow);
+    expect(site.home.offersEnabled).toBe(true);
+
+    setSanityDoc({ home: { offersEnabled: false } });
+    site = await getSite();
+    expect(site.home.offersEnabled).toBe(false);
+
+    /* قيمة غير منطقية من لوحة التحكم تعود للافتراضي (مفعّل) */
+    setSanityDoc({ home: { offersEnabled: 'نعم' as unknown as boolean } });
+    site = await getSite();
+    expect(site.home.offersEnabled).toBe(true);
+  });
+
   it('incomplete hours rows are cleaned and a fully missing schedule falls back', async () => {
     setSanityDoc({ hours: [{ days: '  ' }, { days: 'السبت', time: ' 10:00 ' }] });
     let site = await getSite();

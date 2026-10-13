@@ -41,6 +41,9 @@ export interface HomeContent {
   steps: TitledIcon[];
   cta: { title: string; sub: string; primaryLabel: string; secondaryLabel: string };
   pkgBanner: { title: string; sub: string; button: string };
+  offersHeading: Heading;
+  /** إظهار قسم العروض الخاصة في الصفحة الرئيسية (أوقفه لإخفاء القسم حتى مع وجود عروض) */
+  offersEnabled: boolean;
 }
 
 export interface SiteData {
@@ -161,6 +164,12 @@ export const DEFAULT_SITE: SiteData = {
       sub: 'ست باقات شهرية بأسعار وماكروز معلنة — اختر باقتك ويبدأ اشتراكك من اليوم.',
       button: 'تصفح الباقات الجاهزة',
     },
+    offersHeading: {
+      eyebrow: 'لفترة محدودة',
+      title: 'العروض الخاصة',
+      sub: 'عروض دورية على وجباتنا المحسوبة — نفس الجودة ونفس الدقة الغذائية، بسعر أفضل.',
+    },
+    offersEnabled: true,
   },
 };
 
@@ -246,6 +255,7 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
       howHeading: { ...DEFAULT_SITE.home.howHeading, ...(dh.howHeading ?? {}) },
       cta: { ...DEFAULT_SITE.home.cta, ...(dh.cta ?? {}) },
       pkgBanner: { ...DEFAULT_SITE.home.pkgBanner, ...(dh.pkgBanner ?? {}) },
+      offersHeading: { ...DEFAULT_SITE.home.offersHeading, ...(dh.offersHeading ?? {}) },
     },
   };
   const h = merged.home;
@@ -259,6 +269,10 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   h.howHeading = fillObjectStrings(h.howHeading, DEFAULT_SITE.home.howHeading);
   h.cta = fillObjectStrings(h.cta, DEFAULT_SITE.home.cta);
   h.pkgBanner = fillObjectStrings(h.pkgBanner, DEFAULT_SITE.home.pkgBanner);
+  h.offersHeading = fillObjectStrings(h.offersHeading, DEFAULT_SITE.home.offersHeading);
+  /* مفتاح القسم: أي قيمة غير منطقية (نص/رقم…) تعود للافتراضي (مفعّل) */
+  h.offersEnabled =
+    typeof h.offersEnabled === 'boolean' ? h.offersEnabled : DEFAULT_SITE.home.offersEnabled;
   if (!Array.isArray(h.strip) || !h.strip.length) h.strip = DEFAULT_SITE.home.strip;
   if (!Array.isArray(h.features) || !h.features.length) h.features = DEFAULT_SITE.home.features;
   if (!Array.isArray(h.steps) || !h.steps.length) h.steps = DEFAULT_SITE.home.steps;

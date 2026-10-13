@@ -73,6 +73,8 @@ const HOME = {
   steps: [{ title: 'اختر وجباتك', desc: 'تصفح القائمة', icon: 'cart' }],
   cta: { title: 'جاهز تبدأ؟', sub: 'اطلب الآن', primaryLabel: 'اطلب عبر واتساب', secondaryLabel: 'تصفح القائمة' },
   pkgBanner: { title: 'تفضّل الجاهز؟', sub: 'ست باقات شهرية', button: 'تصفح الباقات الجاهزة' },
+  offersHeading: { eyebrow: 'لفترة محدودة', title: 'العروض الخاصة', sub: 'عروض دورية' },
+  offersEnabled: true,
 };
 
 /** نفس الهوية كما يعيدها الاستعلام: مرجعا الشعارين يتحولان إلى رابطَي CDN */
@@ -145,6 +147,8 @@ describe('SETTINGS_QUERY tolerates both document shapes', () => {
     expect(doc.home.strip).toEqual(HOME.strip);
     expect(doc.home.cta).toEqual(HOME.cta);
     expect(doc.home.pkgBanner).toEqual(HOME.pkgBanner);
+    expect(doc.home.offersHeading).toEqual(HOME.offersHeading);
+    expect(doc.home.offersEnabled).toBe(HOME.offersEnabled);
   });
 
   it('reads the legacy flat shape (fields at the document root) in full', async () => {
