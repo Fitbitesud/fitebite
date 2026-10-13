@@ -265,6 +265,24 @@ export const siteSettings = defineType({
             {name: 'button', title: 'نص الزر', type: 'string'},
           ],
         }),
+        defineField({
+          name: 'offersHeading',
+          title: 'عنوان قسم العروض الخاصة',
+          type: 'object',
+          fields: [
+            {name: 'eyebrow', title: 'السطر الصغير', type: 'string'},
+            {name: 'title', title: 'العنوان', type: 'string'},
+            {name: 'sub', title: 'الوصف', type: 'text', rows: 2},
+          ],
+        }),
+        defineField({
+          name: 'offersEnabled',
+          title: 'إظهار قسم العروض الخاصة في الصفحة الرئيسية',
+          type: 'boolean',
+          initialValue: true,
+          description:
+            'أوقفه لإخفاء القسم بالكامل حتى لو وُجدت عروض منشورة. العروض نفسها تُدار من قائمة «العروض الخاصة».',
+        }),
       ],
       options: {collapsed: false},
     }),

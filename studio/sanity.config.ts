@@ -24,6 +24,7 @@ const structure: StructureResolver = (S) =>
       S.listItem().title('أصناف القائمة').child(S.documentTypeList('menuItem')),
       S.listItem().title('تصنيفات القائمة').child(S.documentTypeList('category')),
       S.listItem().title('الباقات الشهرية').child(S.documentTypeList('readyPackage')),
+      S.listItem().title('العروض الخاصة').child(S.documentTypeList('offer')),
       S.listItem().title('تعليقات الزوار (موافقة/نشر)').child(S.documentTypeList('comment')),
     ])
 

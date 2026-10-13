@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getApprovedComments, type SiteComment } from '@/lib/comments';
 import { getMenu } from '@/lib/menu';
+import { getOffers, type Offer } from '@/lib/offers';
 import { getReadyPackages, type ReadyPackage } from '@/lib/subscriptions';
 import type { MenuData } from '@/lib/types';
 
@@ -31,6 +32,20 @@ export function useLivePackages(initial: ReadyPackage[]): ReadyPackage[] {
   useEffect(() => {
     let alive = true;
     getReadyPackages({ fresh: true })
+      .then((d) => alive && Array.isArray(d) && setData(d))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return data;
+}
+
+export function useLiveOffers(initial: Offer[]): Offer[] {
+  const [data, setData] = useState(initial);
+  useEffect(() => {
+    let alive = true;
+    getOffers({ fresh: true })
       .then((d) => alive && Array.isArray(d) && setData(d))
       .catch(() => {});
     return () => {
