@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { fillTokens, imgUrl } from '@/lib/site-data';
 import { useSite, useWhatsapp } from './SiteContext';
-import { LogoMark } from './Logo';
 import {
   IconChart,
   IconCloche,
@@ -107,18 +106,6 @@ export default function Hero() {
 
         {/* الصورة بإطار نظيف بسيط */}
         <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-          {/* لوحة الشعار في الهبوط */}
-          <motion.div
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55, duration: 0.6 }}
-            className="absolute -top-7 right-6 z-10 flex items-center gap-2.5 rounded-2xl bg-cream px-4 py-2.5 shadow-lift"
-          >
-            <LogoMark className="h-10 w-10 text-forest" />
-            <span className="text-lg font-black leading-none text-forest" dir="ltr">
-              {site.nameEn}
-            </span>
-          </motion.div>
           <motion.img
             src={imgUrl(h.heroImage)}
             alt={`${site.nameAr} — ${h.heroCardTitle}`}
