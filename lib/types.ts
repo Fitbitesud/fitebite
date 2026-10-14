@@ -57,11 +57,11 @@ export interface CustomerInfo {
   payment: PaymentMethod;
 }
 
+/** إجماليات السلة — لا يوجد حقل لرسوم توصيل: الموقع يحسب قيمة الأكل فقط */
 export interface OrderTotals {
   count: number;
   kcal: number;
   protein: number;
   subtotal: number;
-  delivery: number;
   total: number;
 }

@@ -93,8 +93,6 @@ export default function CartDrawer() {
     clear();
   };
 
-  const remainingForFree = site.freeDeliveryAbove - totals.subtotal;
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -265,27 +263,8 @@ export default function CartDrawer() {
                     </div>
                     <div className="flex justify-between text-muted">
                       <span>التوصيل داخل {site.city}</span>
-                      {totals.delivery === 0 ? (
-                        <span className="font-black text-leaf">مجاني ✅</span>
-                      ) : (
-                        <span className="text-ink">{price(totals.delivery, site.currency)}</span>
-                      )}
+                      <span className="font-bold text-ink">{site.deliveryNote}</span>
                     </div>
-                    {totals.delivery > 0 && remainingForFree > 0 && (
-                      <div className="rounded-xl bg-leaf/10 p-3">
-                        <p className="text-xs font-extrabold text-forest">
-                          أضف بقيمة {price(remainingForFree, site.currency)} للحصول على توصيل مجاني 🛵
-                        </p>
-                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sand">
-                          <div
-                            className="h-full rounded-full bg-leaf transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, (totals.subtotal / site.freeDeliveryAbove) * 100)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
                     <div className="flex justify-between border-t border-sand pt-2.5 text-base font-black text-forest">
                       <span>الإجمالي</span>
                       <span>{price(totals.total, site.currency)}</span>

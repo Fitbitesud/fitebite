@@ -130,7 +130,7 @@ async function fillForm(page: Page, over: Partial<Record<'name' | 'phone' | 'add
 }
 const submitBtn = (page: Page) => page.getByRole('button', { name: /إتمام الطلب عبر واتساب/ });
 
-/** Adds m9×2 + m10×1 (subtotal 20,500 → delivery 2,000 → total 22,500), opens the drawer, fills the form. */
+/** Adds m9×2 + m10×1 (20,500 — no delivery fee is ever added), opens the drawer, fills the form. */
 async function readyToOrder(opts: Opts = {}) {
   const ctx = await openPage(opts);
   await act(ctx.page, 'add', 'm9');
@@ -150,7 +150,7 @@ d('cart — state and totals', () => {
     const { page } = await openPage();
     const s = await state(page);
     expect(s.lines).toEqual([]);
-    expect(s.totals).toEqual({ count: 0, kcal: 0, protein: 0, subtotal: 0, delivery: 0, total: 0 });
+    expect(s.totals).toEqual({ count: 0, kcal: 0, protein: 0, subtotal: 0, total: 0 });
   });
 
   it('add / inc / dec / remove / clear behave and totals follow', async () => {
@@ -160,7 +160,7 @@ d('cart — state and totals', () => {
     await act(page, 'add', 'm10');
     let s = await state(page);
     expect(s.lines.map((l: any) => [l.id, l.qty])).toEqual([['m9', 2], ['m10', 1]]);
-    expect(s.totals).toMatchObject({ count: 3, subtotal: 20500, delivery: 2000, total: 22500 });
+    expect(s.totals).toMatchObject({ count: 3, subtotal: 20500, total: 20500 });
 
     await act(page, 'inc', 'm10');
     expect((await state(page)).totals.subtotal).toBe(28000);
@@ -191,18 +191,19 @@ d('cart — state and totals', () => {
     expect((await state(page)).totals.subtotal).toBe(0);
   });
 
-  it('free-delivery boundary in the real cart: 39,500 pays delivery, 40,000 is free', async () => {
+  it('no delivery fee is ever added — the total is the food value above and below the old 40,000 threshold', async () => {
     const five = byPrice(5000);
     const { page } = await openPage();
     for (let i = 0; i < 7; i++) await act(page, 'add', five._id); // 35,000
-    await act(page, 'add', byPrice(4500)._id); // 39,500
+    await act(page, 'add', byPrice(4500)._id); // 39,500 (used to pay a 2,000 delivery fee)
     let t = (await state(page)).totals;
-    expect([t.subtotal, t.delivery, t.total]).toEqual([39500, 2000, 41500]);
+    expect([t.subtotal, t.total]).toEqual([39500, 39500]);
+    expect(t).not.toHaveProperty('delivery');
 
     await act(page, 'remove', byPrice(4500)._id);
-    await act(page, 'add', five._id); // 8 × 5,000 = 40,000 exactly
+    await act(page, 'add', five._id); // 8 × 5,000 = 40,000 exactly (used to be «مجاني»)
     t = (await state(page)).totals;
-    expect([t.subtotal, t.delivery, t.total]).toEqual([40000, 0, 40000]);
+    expect([t.subtotal, t.total]).toEqual([40000, 40000]);
   });
 
   it('the drawer shows the same numbers as the cart state', async () => {
@@ -214,19 +215,21 @@ d('cart — state and totals', () => {
     const text = await drawerText(page);
     expect(text).toContain('13,000 ج.س'); // m9 line total
     expect(text).toContain('7,500 ج.س'); // m10 line total
-    expect(text).toContain('20,500 ج.س'); // subtotal
-    expect(text).toContain('2,000 ج.س'); // delivery
-    expect(text).toContain('22,500 ج.س'); // total
-    expect(text).toContain('أضف بقيمة 19,500 ج.س للحصول على توصيل مجاني'); // 40,000 − 20,500
-    expect(await submitBtn(page).innerText()).toContain('22,500 ج.س');
+    expect(text).toContain('20,500 ج.س'); // subtotal = total (nothing is added on top)
+    expect(text).toContain('التوصيل داخل الخرطوم');
+    expect(text).toContain('مع مندوب التوصيل');
+    expect(text).not.toContain('مجاني');
+    expect(text).not.toContain('2,000 ج.س');
+    expect(await submitBtn(page).innerText()).toContain('20,500 ج.س');
   });
 
-  it('shows free delivery and hides the "add more" hint once the subtotal reaches 40,000', async () => {
+  it('a big cart stays fee-free: the courier note replaces the old «مجاني» badge and the "add more" hint', async () => {
     const { page } = await openPage();
-    for (let i = 0; i < 8; i++) await act(page, 'add', byPrice(5000)._id);
+    for (let i = 0; i < 8; i++) await act(page, 'add', byPrice(5000)._id); // 40,000
     await openCart(page);
     const text = await drawerText(page);
-    expect(text).toContain('مجاني');
+    expect(text).toContain('مع مندوب التوصيل');
+    expect(text).not.toContain('مجاني');
     expect(text).not.toContain('للحصول على توصيل مجاني');
     expect(await submitBtn(page).innerText()).toContain('40,000 ج.س');
   });
@@ -444,9 +447,9 @@ d('checkout — the WhatsApp message and recipient', () => {
     expect(text).toContain('1) باول الشوفان بالتوت × 2');
     expect(text).toContain('2) بان كيك البروتين × 1');
     expect(n(/المجموع الفرعي: ([\d,]+)/.exec(text)![1])).toBe(before.totals.subtotal);
-    expect(n(/التوصيل: ([\d,]+)/.exec(text)![1])).toBe(before.totals.delivery);
+    expect(text).toContain('🛵 التوصيل: مع مندوب التوصيل');
     expect(n(/الإجمالي الكلي: ([\d,]+)/.exec(text)![1])).toBe(before.totals.total);
-    expect(before.totals.total).toBe(22500);
+    expect(before.totals.total).toBe(20500);
   });
 
   it('with the built-in settings, the order goes to the same number as every other WhatsApp button', async () => {
@@ -472,18 +475,26 @@ d('checkout — the WhatsApp message and recipient', () => {
     const { page } = await readyToOrder({ sanityDoc: { currency: 'SDG' } });
     await submitBtn(page).click();
     const [href] = (await opened(page))[0] as string[];
-    expect(new URL(href).searchParams.get('text')).toContain('22,500 SDG');
+    expect(new URL(href).searchParams.get('text')).toContain('20,500 SDG');
   });
 
-  it('dashboard delivery settings change both the cart and the message consistently', async () => {
+  it('legacy delivery fee/threshold fields still saved in the dashboard are ignored (nothing is added)', async () => {
     const { page } = await readyToOrder({ sanityDoc: { deliveryFee: 3000, freeDeliveryAbove: 20000 } });
-    // subtotal 20,500 ≥ 20,000 → free delivery
-    expect((await state(page)).totals).toMatchObject({ subtotal: 20500, delivery: 0, total: 20500 });
+    expect((await state(page)).totals).toMatchObject({ subtotal: 20500, total: 20500 });
     await submitBtn(page).click();
     const [href] = (await opened(page))[0] as string[];
     const text = new URL(href).searchParams.get('text')!;
-    expect(text).toContain('التوصيل: مجاني ✅');
+    expect(text).toContain('🛵 التوصيل: مع مندوب التوصيل');
     expect(text).toContain('الإجمالي الكلي: 20,500');
+    expect(text).not.toContain('مجاني');
+  });
+
+  it('the delivery wording saved in the dashboard reaches both the drawer and the message', async () => {
+    const { page } = await readyToOrder({ sanityDoc: { deliveryNote: 'مع مندوبنا داخل أم درمان' } });
+    expect(await drawerText(page)).toContain('مع مندوبنا داخل أم درمان');
+    await submitBtn(page).click();
+    const [href] = (await opened(page))[0] as string[];
+    expect(new URL(href).searchParams.get('text')).toContain('🛵 التوصيل: مع مندوبنا داخل أم درمان');
   });
 
   it('special characters in the address / notes reach WhatsApp unchanged', async () => {
@@ -561,7 +572,7 @@ d('checkout — next order after sending one', () => {
     const { page } = await readyToOrder();
     await submitBtn(page).click();
     await page.getByRole('button', { name: 'متابعة التسوق' }).click();
-    await act(page, 'add', 'm13'); // 5,500 + 2,000
+    await act(page, 'add', 'm13'); // 5,500 — no delivery fee on top
     await openCart(page);
     await fillForm(page);
     await submitBtn(page).click();
@@ -569,7 +580,8 @@ d('checkout — next order after sending one', () => {
     expect(calls).toHaveLength(2);
     const second = new URL((calls[1] as string[])[0]).searchParams.get('text')!;
     expect(second).toContain('1) عجة بياض البيض بالخضار × 1');
-    expect(second).toContain('الإجمالي الكلي: 7,500');
+    expect(second).toContain('الإجمالي الكلي: 5,500');
+    expect(second).toContain('🛵 التوصيل: مع مندوب التوصيل');
     expect(second).not.toContain('باول الشوفان');
   });
 });

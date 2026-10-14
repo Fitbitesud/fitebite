@@ -28,8 +28,8 @@ export function fakeItem(over: Partial<MenuItem> = {}): MenuItem {
 
 export const line = (item: MenuItem, qty: number): CartLine => ({ item, qty });
 
-/** Site with known delivery rules, independent of whatever config.ts currently says. */
-export const SITE: SiteData = { ...DEFAULT_SITE, deliveryFee: 2000, freeDeliveryAbove: 40000 };
+/** Site used by the unit tests — the local defaults (no delivery fee: التوصيل مع مندوب التوصيل). */
+export const SITE: SiteData = { ...DEFAULT_SITE };
 
 export const setSanityDoc = (doc: unknown) => {
   (globalThis as any).__SANITY = {

@@ -14,7 +14,7 @@ const customer: CustomerInfo = {
 };
 
 const lines = [line(menuItem('m9'), 2), line(menuItem('m10'), 1)];
-const totals = computeTotals(lines, SITE);
+const totals = computeTotals(lines);
 const build = (over: Partial<CustomerInfo> = {}, l = lines, t = totals) =>
   buildOrderMessage({ lines: l, customer: { ...customer, ...over }, orderNo: 'FB-123456', totals: t }, SITE);
 
@@ -42,37 +42,50 @@ describe('buildOrderMessage — content', () => {
     expect(msg).not.toContain('إجمالي السعرات');
     expect(msg).not.toContain('إجمالي البروتين');
     expect(msg).toContain('المجموع الفرعي: 20,500 ج.س');
-    expect(msg).toContain('التوصيل: 2,000 ج.س');
-    expect(msg).toContain('الإجمالي الكلي: 22,500 ج.س');
+    expect(msg).toContain('الإجمالي الكلي: 20,500 ج.س'); // no delivery fee on top
   });
 
-  it('shows "free" instead of a price when delivery is free', () => {
+  it('writes the delivery note instead of a fee: «التوصيل: مع مندوب التوصيل»', () => {
+    expect(msg).toContain('🛵 التوصيل: مع مندوب التوصيل');
+    expect(msg).not.toContain('مجاني');
+    expect(msg).not.toContain('2,000 ج.س');
+  });
+
+  it('keeps the money story food-only at any cart size (even past the old 40,000 threshold)', () => {
     const big = [line(fakeItem({ price: 40000 }), 1)];
-    const m = build({}, big, computeTotals(big, SITE));
-    expect(m).toContain('التوصيل: مجاني ✅');
+    const m = build({}, big, computeTotals(big));
     expect(m).toContain('الإجمالي الكلي: 40,000 ج.س');
+    expect(m).toContain('🛵 التوصيل: مع مندوب التوصيل');
+    expect(m).not.toContain('مجاني ✅');
+    expect(m).not.toContain('45,000'); // the old +2,000 fee must not come back
+  });
+
+  it('uses the delivery wording saved in the dashboard', () => {
+    const m = buildOrderMessage(
+      { lines, customer, orderNo: 'FB-1', totals },
+      { ...SITE, deliveryNote: 'مع مندوبنا داخل أم درمان' },
+    );
+    expect(m).toContain('🛵 التوصيل: مع مندوبنا داخل أم درمان');
   });
 
   it('bank transfer label for payment=bank', () => {
     expect(build({ payment: 'bank' })).toContain('تحويل بنكي (بنكك)');
   });
 
-  it('numbers inside the message add up (unit prices × qty + delivery = grand total)', () => {
+  it('numbers inside the message add up (unit prices × qty = grand total, with no fee added)', () => {
     const text = build();
     const re = /(\d+)\) .+ × (\d+)\n\s+سعر الوحدة: ([\d,]+) /g;
     let sub = 0;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text))) sub += Number(m[2]) * Number(m[3].replace(/,/g, ''));
-    const delivery = /التوصيل: ([\d,]+) /.exec(text);
     const grand = /الإجمالي الكلي: ([\d,]+) /.exec(text)!;
-    const del = delivery ? Number(delivery[1].replace(/,/g, '')) : 0;
-    expect(Number(grand[1].replace(/,/g, ''))).toBe(sub + del);
+    expect(Number(grand[1].replace(/,/g, ''))).toBe(sub);
   });
 
   it('uses the grand total passed in — message total equals computeTotals().total for many carts', () => {
     for (const qty of [1, 2, 5, 9]) {
       const l = [line(menuItem('m13'), qty)];
-      const t = computeTotals(l, SITE);
+      const t = computeTotals(l);
       expect(build({}, l, t)).toContain(`الإجمالي الكلي: ${fmt(t.total)} ج.س`);
     }
   });
