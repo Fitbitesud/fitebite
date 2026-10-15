@@ -2,13 +2,13 @@ import { DEFAULT_SITE, type SiteData } from './site-data';
 import { fmt, price } from './format';
 import type { CartLine, CustomerInfo, OrderTotals } from './types';
 
-export function computeTotals(lines: CartLine[], site: SiteData = DEFAULT_SITE): OrderTotals {
+export function computeTotals(lines: CartLine[]): OrderTotals {
   const count = lines.reduce((s, l) => s + l.qty, 0);
   const kcal = lines.reduce((s, l) => s + (l.item.macros?.kcal ?? 0) * l.qty, 0);
   const protein = lines.reduce((s, l) => s + (l.item.macros?.protein ?? 0) * l.qty, 0);
   const subtotal = lines.reduce((s, l) => s + l.item.price * l.qty, 0);
-  const delivery = count === 0 || subtotal >= site.freeDeliveryAbove ? 0 : site.deliveryFee;
-  return { count, kcal, protein, subtotal, delivery, total: subtotal + delivery };
+  /* لا رسوم توصيل: الموقع يحسب قيمة الأكل فقط، والتوصيل مع مندوب التوصيل */
+  return { count, kcal, protein, subtotal, total: subtotal };
 }
 
 export function makeOrderNo(): string {
@@ -58,7 +58,7 @@ export function buildOrderMessage(
   L.push('━━━━━━━━━━━━━━━');
   L.push(`🍽 عدد الأصناف: ${fmt(totals.count)}`);
   L.push(`🧾 المجموع الفرعي: ${price(totals.subtotal, cur)}`);
-  L.push(`🛵 التوصيل: ${totals.delivery === 0 ? 'مجاني ✅' : price(totals.delivery, cur)}`);
+  L.push(`🛵 التوصيل: ${site.deliveryNote}`);
   L.push(`💰 *الإجمالي الكلي: ${price(totals.total, cur)}*`);
   L.push('');
   L.push(`_أُرسل تلقائياً من موقع ${site.nameAr}_ 🌿`);

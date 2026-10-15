@@ -96,16 +96,28 @@ describe('empty or invalid dashboard values fall back to defaults', () => {
     expect(site.description).toBe(DEFAULT_SITE.description);
   });
 
-  it('missing or invalid delivery numbers fall back, but an intentional 0 is kept', async () => {
-    setSanityDoc({ deliveryFee: null, freeDeliveryAbove: -5 });
-    let site = await getSite();
-    expect(site.deliveryFee).toBe(DEFAULT_SITE.deliveryFee);
-    expect(site.freeDeliveryAbove).toBe(DEFAULT_SITE.freeDeliveryAbove);
+  it('an empty or whitespace-only delivery note falls back to the default wording', async () => {
+    setSanityDoc({ deliveryNote: '' });
+    expect((await getSite()).deliveryNote).toBe(DEFAULT_SITE.deliveryNote);
 
-    setSanityDoc({ deliveryFee: 0, freeDeliveryAbove: 60000 });
-    site = await getSite();
-    expect(site.deliveryFee).toBe(0);
-    expect(site.freeDeliveryAbove).toBe(60000);
+    setSanityDoc({ deliveryNote: '   ' });
+    expect((await getSite()).deliveryNote).toBe(DEFAULT_SITE.deliveryNote);
+  });
+
+  it('a delivery note typed in the dashboard wins, and it does not affect any other field', async () => {
+    setSanityDoc({ deliveryNote: 'مع مندوب التوصيل داخل الخرطوم' });
+    const site = await getSite();
+    expect(site.deliveryNote).toBe('مع مندوب التوصيل داخل الخرطوم');
+    expect(site.currency).toBe(DEFAULT_SITE.currency);
+    expect(site.city).toBe(DEFAULT_SITE.city);
+  });
+
+  it('legacy fee/threshold fields left in a published document are ignored (no fee anywhere)', async () => {
+    setSanityDoc({ deliveryFee: 3000, freeDeliveryAbove: 20000 });
+    const site = await getSite();
+    expect(site).not.toHaveProperty('deliveryFee');
+    expect(site).not.toHaveProperty('freeDeliveryAbove');
+    expect(site.deliveryNote).toBe(DEFAULT_SITE.deliveryNote);
   });
 
   it('empty social links fall back to the default links one by one', async () => {

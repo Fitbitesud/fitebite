@@ -15,7 +15,6 @@ import { MENU_SYNC, getMenu } from '@/lib/menu';
 import type { CartLine, MenuItem, OrderTotals } from '@/lib/types';
 import { computeTotals } from '@/lib/whatsapp';
 import { IconCheck } from '../Icons';
-import { useSite } from '../SiteContext';
 
 const STORAGE_KEY = 'fitbite_cart_v1';
 
@@ -51,7 +50,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   /* أصناف القائمة الحالية (من لوحة التحكم إن وُجدت، وإلا المحلية) — منها تُحسب أسعار السلة */
   const [catalog, setCatalog] = useState<MenuItem[]>(MENU_SYNC.items);
   const [isOpen, setIsOpen] = useState(false);
-  const site = useSite();
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -125,7 +123,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [cart, catalog],
   );
 
-  const totals = useMemo(() => computeTotals(lines, site), [lines, site]);
+  const totals = useMemo(() => computeTotals(lines), [lines]);
   const qtyOf = useCallback((id: string) => cart[id] ?? 0, [cart]);
 
   const value = useMemo<CartContextValue>(

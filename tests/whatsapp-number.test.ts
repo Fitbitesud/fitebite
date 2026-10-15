@@ -92,23 +92,20 @@ describe('getSite() — partial documents and failures', () => {
   it('a partial dashboard document keeps every other default', async () => {
     setSanityDoc({ whatsapp: '0116643520' });
     const site = await getSite();
-    expect(site.deliveryFee).toBe(DEFAULT_SITE.deliveryFee);
-    expect(site.freeDeliveryAbove).toBe(DEFAULT_SITE.freeDeliveryAbove);
+    expect(site.deliveryNote).toBe(DEFAULT_SITE.deliveryNote);
     expect(site.currency).toBe(DEFAULT_SITE.currency);
     expect(site.regions.length).toBeGreaterThan(0);
   });
 
-  it('a delivery fee / threshold of 0 from the dashboard is respected, not replaced by the default', async () => {
-    setSanityDoc({ deliveryFee: 0, freeDeliveryAbove: 0 });
-    const site = await getSite();
-    expect(site.deliveryFee).toBe(0);
-    expect(site.freeDeliveryAbove).toBe(0);
+  it('an empty delivery note from the dashboard keeps the default wording', async () => {
+    setSanityDoc({ deliveryNote: '   ' });
+    expect((await getSite()).deliveryNote).toBe(DEFAULT_SITE.deliveryNote);
   });
 
-  it('dashboard delivery settings override the defaults', async () => {
-    setSanityDoc({ deliveryFee: 3000, freeDeliveryAbove: 50000, currency: 'SDG' });
+  it('a delivery note typed in the dashboard is used as written', async () => {
+    setSanityDoc({ deliveryNote: 'مع مندوب التوصيل — داخل الخرطوم', currency: 'SDG' });
     const site = await getSite();
-    expect([site.deliveryFee, site.freeDeliveryAbove, site.currency]).toEqual([3000, 50000, 'SDG']);
+    expect([site.deliveryNote, site.currency]).toEqual(['مع مندوب التوصيل — داخل الخرطوم', 'SDG']);
   });
 
   it('when the dashboard request fails, the default number is used', async () => {

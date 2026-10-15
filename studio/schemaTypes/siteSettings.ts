@@ -126,8 +126,13 @@ export const siteSettings = defineType({
         }),
         defineField({name: 'whatsappDisplay', title: 'الرقم كما يُعرض للزوار', type: 'string'}),
         defineField({name: 'currency', title: 'رمز العملة', type: 'string'}),
-        defineField({name: 'deliveryFee', title: 'رسوم التوصيل', type: 'number'}),
-        defineField({name: 'freeDeliveryAbove', title: 'توصيل مجاني فوق مجموع', type: 'number'}),
+        defineField({
+          name: 'deliveryNote',
+          title: 'نص التوصيل (يظهر في السلة ورسالة الطلب)',
+          type: 'string',
+          description:
+            'لا يحسب الموقع رسوم توصيل — الطلب يُسلَّم مع مندوب التوصيل، وهذا النص يظهر بجانب «التوصيل» في ملخص السلة وفي رسالة الطلب على واتساب. اتركه فارغاً للإبقاء على: مع مندوب التوصيل.',
+        }),
         defineField({name: 'city', title: 'المدينة', type: 'string'}),
         defineField({name: 'address', title: 'العنوان', type: 'string'}),
       ],

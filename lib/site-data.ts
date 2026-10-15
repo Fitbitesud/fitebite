@@ -58,8 +58,8 @@ export interface SiteData {
   whatsapp: string;
   whatsappDisplay: string;
   currency: string;
-  deliveryFee: number;
-  freeDeliveryAbove: number;
+  /** نص التوصيل المعروض في السلة ورسالة الطلب (التوصيل مع مندوب التوصيل) */
+  deliveryNote: string;
   city: string;
   address: string;
   hours: HoursRow[];
@@ -80,8 +80,7 @@ export const DEFAULT_SITE: SiteData = {
   whatsapp: SITE.whatsapp,
   whatsappDisplay: SITE.whatsappDisplay,
   currency: SITE.currency,
-  deliveryFee: SITE.deliveryFee,
-  freeDeliveryAbove: SITE.freeDeliveryAbove,
+  deliveryNote: SITE.deliveryNote,
   city: SITE.city,
   address: SITE.address,
   hours: SITE.hours as unknown as HoursRow[],
@@ -222,10 +221,6 @@ export function mergeSettingsDocs(
   > & { home?: Partial<HomeContent> };
 }
 
-/** رقم صالح غير سالب من لوحة التحكم، وإلا القيمة الافتراضية */
-const toSafeNumber = (v: unknown, fallback: number): number =>
-  typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : fallback;
-
 /** نص غير فارغ من لوحة التحكم، وإلا القيمة الافتراضية (حقل ممسوح/فارغ لا يُفرغ الموقع) */
 const toSafeString = (v: unknown, fallback: string): string =>
   typeof v === 'string' && v.trim() ? v : fallback;
@@ -291,8 +286,7 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   merged.currency = toSafeString(merged.currency, DEFAULT_SITE.currency);
   merged.city = toSafeString(merged.city, DEFAULT_SITE.city);
   merged.address = toSafeString(merged.address, DEFAULT_SITE.address);
-  merged.deliveryFee = toSafeNumber(merged.deliveryFee, DEFAULT_SITE.deliveryFee);
-  merged.freeDeliveryAbove = toSafeNumber(merged.freeDeliveryAbove, DEFAULT_SITE.freeDeliveryAbove);
+  merged.deliveryNote = toSafeString(merged.deliveryNote, DEFAULT_SITE.deliveryNote);
   /* ساعات العمل: تنظيف صفوف ناقصة، والغياب الكامل يعود للدوام الافتراضي */
   merged.hours = (Array.isArray(merged.hours) ? merged.hours : [])
     .map((row) => ({
@@ -328,6 +322,10 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
       : merged.whatsapp.startsWith('249')
         ? `0${merged.whatsapp.slice(3)}`
         : merged.whatsapp;
+  /* حقول قديمة أُلغيت (رسوم التوصيل وحدّ التوصيل المجاني): تُسقط فلا تصل للواجهة أبداً */
+  const legacy = merged as unknown as Record<string, unknown>;
+  delete legacy.deliveryFee;
+  delete legacy.freeDeliveryAbove;
   return merged;
 }
 

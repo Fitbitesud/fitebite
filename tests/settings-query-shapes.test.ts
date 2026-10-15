@@ -43,8 +43,7 @@ const CONTACT = {
   whatsapp: '249116642510',
   whatsappDisplay: '0116642510',
   currency: 'ج.س',
-  deliveryFee: 2000,
-  freeDeliveryAbove: 40000,
+  deliveryNote: 'مع مندوب التوصيل',
   city: 'الخرطوم',
   address: 'شارع المطار',
 };
@@ -140,7 +139,7 @@ describe('SETTINGS_QUERY tolerates both document shapes', () => {
     expect(doc.logo).toBe(LOGO_ASSET.url);
     expect(doc.logoDark).toBe(LOGO_DARK_ASSET.url);
     expect(doc.whatsapp).toBe(CONTACT.whatsapp);
-    expect(doc.deliveryFee).toBe(CONTACT.deliveryFee);
+    expect(doc.deliveryNote).toBe(CONTACT.deliveryNote);
     expect(doc.socials).toEqual(ROOT.socials);
     expect(doc.regions).toEqual(ROOT.regions);
     expect(doc.home.heroImage).toBe(ASSET.url);
@@ -159,6 +158,7 @@ describe('SETTINGS_QUERY tolerates both document shapes', () => {
     expect(doc.logoDark).toBe(LOGO_DARK_ASSET.url);
     expect(doc.whatsapp).toBe(CONTACT.whatsapp);
     expect(doc.city).toBe(CONTACT.city);
+    expect(doc.deliveryNote).toBe(CONTACT.deliveryNote);
     expect(doc.home.heroBadge).toBe(HOME.heroBadge);
     expect(doc.home.heroImage).toBe(ASSET.url);
     expect(doc.home.strip).toEqual(HOME.strip);
