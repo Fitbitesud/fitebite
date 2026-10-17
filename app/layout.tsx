@@ -18,7 +18,7 @@ import { getSite, resolveImageUrl } from '@/lib/site-data';
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
   return {
-    metadataBase: new URL(process.env.SITE_URL ?? 'https://fitbitesud.github.io/fitebite/'),
+    metadataBase: new URL(process.env.SITE_URL ?? 'https://fitbite-sudan.com/'),
     title: {
       default: `${site.nameAr} | ${site.taglineAr}`,
       template: `%s | ${site.nameAr}`,

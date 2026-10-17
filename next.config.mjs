@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 
-/* عند النشر على GitHub Pages يُبنى الموقع بمسار أساس مثل /fitebite:
-   NEXT_PUBLIC_BASE_PATH=/fitebite npm run build   (أو npm run build:pages) */
+/* الموقع يُقدَّم حالياً من الدومين المخصص fitbite-sudan.com على الجذر (/)،
+   لذلك يُبنى بدون مسار أساس: npm run build
+   لا تستخدم NEXT_PUBLIC_BASE_PATH=/fitebite (npm run build:pages) إلا إذا
+   عُدت للنشر على الرابط الفرعي fitbitesud.github.io/fitebite — فهو يجعل
+   ملفات CSS/JS تُطلب من /fitebite/_next/... وتعود 404 على الدومين الجذري،
+   فيظهر الموقع كنصوص عارية بلا تنسيق. */
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 const nextConfig = {
