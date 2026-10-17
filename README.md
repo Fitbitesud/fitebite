@@ -51,15 +51,41 @@ npm start
 وفي ملخص السلة ورسالة الطلب يُكتب بجانب «التوصيل» النص: **مع مندوب التوصيل** (تُعدَّل الصيغة من
 `deliveryNote` في `lib/config.ts` أو من لوحة التحكم → إعدادات الموقع → الأرقام والتواصل).
 
-## النشر على GitHub Pages
+## النشر على GitHub Pages (الدومين المخصص fitbite-sudan.com)
 
-الموقع مُهيأ للتصدير الثابت (`output: 'export'`) ليعمل على Pages:
+الموقع مُهيأ للتصدير الثابت (`output: 'export'`) ليعمل على Pages، ويُقدَّم من
+الدومين المخصص **`https://fitbite-sudan.com`** على جذر الموقع (`/`):
 
-- ملف الـ workflow: `.github/workflows/deploy-pages.yml` — يبني بـ `basePath=/fitebite`
-  عند كل push على `main` أو فرع الجلسة وينشر مجلد `out/` تلقائياً.
-- في إعدادات المستودع: **Settings → Pages → Source = GitHub Actions** (مرة واحدة).
-- رابط الموقع بعد النشر: `https://fitbitesud.github.io/fitebite/`
-- للبناء محلياً بنفس إعداد Pages: `npm run build:pages` ثم افتح مجلد `out/` بأي خادم ثابت.
+- ملف الـ workflow: `.github/workflows/deploy-pages.yml` — يبني بـ `npm run build`
+  **بدون أي `basePath`** عند كل push على `main` أو فرع الجلسة وينشر مجلد `out/` تلقائياً.
+  ⚠️ لا تبنِ بـ `build:pages`/`NEXT_PUBLIC_BASE_PATH=/fitebite` مع الدومين المخصص:
+  ستُطلب ملفات CSS/JS من `/fitebite/_next/...` فتعود 404 ويظهر الموقع كنصوص
+  عارية بلا ألوان أو أشكال (هذا البناء مخصص فقط للرابط الفرعي القديم
+  `fitbitesud.github.io/fitebite/`).
+- ملف `public/CNAME` (وفيه `fitbite-sudan.com`) يُنسخ تلقائياً إلى `out/CNAME`
+  مع كل نشر، فيبقى ربط الدومين محفوظاً ولا يضيع مع أي إعادة نشر. (يوجد أيضاً
+  `CNAME` في جذر المستودع لنفس الغرض.)
+- في إعدادات المستودع: **Settings → Pages → Source = GitHub Actions** (مرة واحدة)،
+  و **Custom domain = `fitbite-sudan.com`**، وفعّل **Enforce HTTPS** بعد ظهوره.
+- رابط الموقع بعد النشر: `https://fitbite-sudan.com/`
+- للبناء محلياً بنفس إعداد الإنتاج: `npm run build` ثم افتح مجلد `out/` بأي خادم ثابت.
+
+### شهادة الأمان (HTTPS) — تُصدَر تلقائياً من GitHub، لا تُشترى
+
+GitHub Pages يُصدر شهادة Let's Encrypt مجاناً للدومين المخصص بشرط صحة DNS.
+عند مسجّل الدومين يجب أن تكون السجلات:
+
+| النوع | الاسم | القيمة |
+| --- | --- | --- |
+| `A` | `@` (الجذر) | `185.199.108.153` و`185.199.109.153` و`185.199.110.153` و`185.199.111.153` (أربعة سجلات) |
+| `CNAME` | `www` | `fitbitesud.github.io` |
+
+بعدها: **Settings → Pages** اكتب الدومين في *Custom domain* واحفظ، انتظر حتى
+تظهر حالة الشهادة `approved` (قد تستغرق من دقائق حتى 24 ساعة)، ثم فعّل
+**Enforce HTTPS**. إذا بقي التحذير «الشهادة غير جاهزة» فالسبب غالباً انتشار
+DNS لم يكتمل أو سجل `A`/`CAA` قديم عند المسجّل — احذف أي سجلات قديمة متعارضة
+وانتظر، ولا حاجة لأي تعديل في الكود. وتذكّر إضافة `https://fitbite-sudan.com`
+في Sanity → API → CORS Origins حتى يعمل جلب بيانات لوحة التحكم على الدومين الجديد.
 
 ## الربط مع Sanity Studio لاحقاً
 

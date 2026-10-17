@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, arena/22ad5e11-fitebite]
+    branches: [main, arena/43929ce2-fitebite]
   workflow_dispatch:
   # بناء يومي تلقائي لالتقاط تعديلات لوحة تحكم Sanity بدون دفع commit
   schedule:
@@ -33,9 +33,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build static export (basePath=/fitebite)
-        run: npm run build:pages
+      # الدومين المخصص fitbite-sudan.com يُقدَّم من جذر الموقع (/) وليس من
+      # مسار فرعي، لذلك يُبنى الموقع بدون basePath إطلاقاً. البناء القديم
+      # بـ basePath=/fitebite كان يجعل الصفحات تطلب CSS/JS من
+      # /fitebite/_next/... فتعود 404 على الدومين الجديد ويظهر الموقع
+      # كنصوص عارية بلا ألوان أو أشكال.
+      # ملف public/CNAME يُنسخ تلقائياً إلى out/CNAME فيحفظ ربط الدومين
+      # المخصص (وشهادة HTTPS التلقائية من GitHub) مع كل نشر.
+      - name: Build static export (custom domain — served from root, no basePath)
+        run: npm run build
         env:
+          SITE_URL: https://fitbite-sudan.com/
           NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
           NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
           NEXT_PUBLIC_SANITY_API_VERSION: ${{ secrets.SANITY_API_VERSION }}
