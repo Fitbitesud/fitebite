@@ -176,6 +176,16 @@ export const IconBike = (p: P) => (
   </svg>
 );
 
+/** أيقونة محل (استلام الطلب من المحل) */
+export const IconStore = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M3 9.5l1.6-5h14.8l1.6 5" />
+    <path d="M3 9.5c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3" />
+    <path d="M4.6 12.4V20h14.8v-7.6" />
+    <path d="M10 20v-5.2h4V20" />
+  </svg>
+);
+
 export const IconBank = (p: P) => (
   <svg {...base} {...p}>
     <path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18" />

@@ -120,13 +120,24 @@ const M9 = MENU_SYNC.items.find((i) => i._id === 'm9')!; // 6,500
 const M10 = MENU_SYNC.items.find((i) => i._id === 'm10')!; // 7,500
 const n = (s: string) => Number(s.replace(/[^\d]/g, ''));
 
+/**
+ * Fills the checkout form. Only name and phone are required; the pickup location (region) and its
+ * details (address) are optional and only exist in delivery mode — they are filled when present.
+ */
 async function fillForm(page: Page, over: Partial<Record<'name' | 'phone' | 'address' | 'notes', string>> & { region?: string } = {}) {
   const v = { name: 'أحمد محمد', phone: '0912345678', address: 'حي الملازمين، منزل 12', notes: '', region: 'أم درمان', ...over };
   await page.getByPlaceholder('الاسم الكامل *').fill(v.name);
   await page.getByPlaceholder('0912345678 *').fill(v.phone);
-  if (v.region) await page.locator('aside select').selectOption(v.region);
-  await page.getByPlaceholder('العنوان: رقم المنزل / أقرب معلم *').fill(v.address);
+  const region = page.locator('aside select');
+  if (v.region && (await region.count())) await region.selectOption(v.region);
+  const address = page.getByPlaceholder(/تفاصيل مكان الاستلام/);
+  if (v.address && (await address.count())) await address.fill(v.address);
   if (v.notes) await page.getByPlaceholder(/ملاحظات للطلب/).fill(v.notes);
+}
+/** Picks the place of collection: توصيل (delivery) or استلام في المحل (collect at the store). */
+async function chooseFulfillment(page: Page, label: 'توصيل' | 'استلام في المحل') {
+  await page.locator('aside [aria-label="مكان الاستلام"]').getByRole('button', { name: label, exact: true }).click();
+  await page.waitForTimeout(40);
 }
 const submitBtn = (page: Page) => page.getByRole('button', { name: /إتمام الطلب عبر واتساب/ });
 
@@ -355,7 +366,7 @@ d('cart — damaged saved cart', () => {
 /* ───────────────────────── checkout form ───────────────────────── */
 
 d('checkout — validation', () => {
-  it('an empty form shows every error and does not open WhatsApp', async () => {
+  it('an empty form shows the name and phone errors only, and does not open WhatsApp', async () => {
     const { page } = await openPage();
     await act(page, 'add', 'm9');
     await openCart(page);
@@ -363,21 +374,38 @@ d('checkout — validation', () => {
     const text = await drawerText(page);
     expect(text).toContain('الرجاء كتابة الاسم الكامل');
     expect(text).toContain('رقم جوال غير صحيح');
-    expect(text).toContain('اختر منطقة التوصيل');
-    expect(text).toContain('اكتب عنواناً واضحاً');
+    // the pickup location and its details are optional now — no error for them
+    expect(text).not.toContain('اختر منطقة التوصيل');
+    expect(text).not.toContain('اكتب عنواناً واضحاً');
     expect(await opened(page)).toHaveLength(0);
   });
 
-  it('name needs 3+ characters and address 6+', async () => {
+  it('name + phone alone send the order: no region, no address', async () => {
+    const { page } = await openPage();
+    await act(page, 'add', 'm9');
+    await openCart(page);
+    await fillForm(page, { region: '', address: '' });
+    await submitBtn(page).click();
+    const calls = await opened(page);
+    expect(calls).toHaveLength(1);
+    const text = new URL((calls[0] as string[])[0]).searchParams.get('text')!;
+    expect(text).toContain('الاسم: أحمد محمد');
+    expect(text).toContain('الجوال: 0912345678');
+    expect(text).toContain('طريقة الاستلام: 🛵 توصيل');
+    expect(text).not.toContain('• المنطقة');
+    expect(text).not.toContain('• العنوان');
+  });
+
+  it('name needs 3+ characters; a short (or empty) address is accepted because it is optional', async () => {
     const { page } = await readyToOrder();
     await fillForm(page, { name: 'ab', address: '12345' });
     await submitBtn(page).click();
-    let text = await drawerText(page);
+    const text = await drawerText(page);
     expect(text).toContain('الرجاء كتابة الاسم الكامل');
-    expect(text).toContain('اكتب عنواناً واضحاً');
+    expect(text).not.toContain('اكتب عنواناً واضحاً');
     expect(await opened(page)).toHaveLength(0);
 
-    await fillForm(page, { name: 'abc', address: '123456' });
+    await fillForm(page, { name: 'abc' });
     await submitBtn(page).click();
     expect(await opened(page)).toHaveLength(1);
   });
@@ -423,6 +451,83 @@ d('checkout — validation', () => {
     await fillForm(page, { phone: '00249912345678' });
     await submitBtn(page).click();
     expect(await opened(page)).toHaveLength(1);
+  });
+});
+
+/* ───────────────────── place of collection: توصيل / استلام في المحل ───────────────────── */
+
+d('checkout — place of collection', () => {
+  it('offers exactly two options and starts on توصيل, with the location fields marked optional', async () => {
+    const { page } = await openPage();
+    await act(page, 'add', 'm9');
+    await openCart(page);
+    const group = page.locator('aside [aria-label="مكان الاستلام"]');
+    expect(await group.getByRole('button').count()).toBe(2);
+    expect(await group.getByRole('button', { name: 'توصيل', exact: true }).getAttribute('aria-pressed')).toBe('true');
+    expect(await group.getByRole('button', { name: 'استلام في المحل', exact: true }).getAttribute('aria-pressed')).toBe('false');
+    const text = await drawerText(page);
+    expect(text).toContain('المطلوب: الاسم والجوال فقط');
+    // the region <select> is now labelled optional (its placeholder option carries the hint)
+    expect(await page.locator('aside select option').first().textContent()).toContain('(اختياري)');
+    expect(await page.getByPlaceholder('تفاصيل مكان الاستلام (اختياري): رقم المنزل / أقرب معلم').isVisible()).toBe(true);
+    expect(text).toContain('التوصيل داخل الخرطوم');
+  });
+
+  it('استلام في المحل hides the location fields and shows the store address instead', async () => {
+    const { page } = await openPage();
+    await act(page, 'add', 'm9');
+    await openCart(page);
+    await chooseFulfillment(page, 'استلام في المحل');
+    expect(await page.locator('aside select').count()).toBe(0);
+    expect(await page.getByPlaceholder(/تفاصيل مكان الاستلام/).count()).toBe(0);
+    const text = await drawerText(page);
+    expect(text).toContain('تستلم طلبك من المحل: الخرطوم — السودان');
+    expect(text).toContain('من المحل 🏪'); // the cart summary row follows the choice
+    expect(text).not.toContain('التوصيل داخل الخرطوم');
+  });
+
+  it('switching back to توصيل brings the optional location fields back', async () => {
+    const { page } = await openPage();
+    await act(page, 'add', 'm9');
+    await openCart(page);
+    await chooseFulfillment(page, 'استلام في المحل');
+    await chooseFulfillment(page, 'توصيل');
+    expect(await page.locator('aside select').count()).toBe(1);
+    expect(await page.getByPlaceholder(/تفاصيل مكان الاستلام/).isVisible()).toBe(true);
+  });
+
+  it('a pickup order needs no location at all and sends the store address to WhatsApp', async () => {
+    const { page } = await openPage();
+    await act(page, 'add', 'm9');
+    await openCart(page);
+    await fillForm(page, { region: '', address: '' });
+    await chooseFulfillment(page, 'استلام في المحل');
+    await submitBtn(page).click();
+    const calls = await opened(page);
+    expect(calls).toHaveLength(1);
+    const text = new URL((calls[0] as string[])[0]).searchParams.get('text')!;
+    expect(text).toContain('الاسم: أحمد محمد');
+    expect(text).toContain('الجوال: 0912345678');
+    expect(text).toContain('طريقة الاستلام: 🏪 استلام من المحل');
+    expect(text).toContain('مكان الاستلام: الخرطوم — السودان');
+    expect(text).toContain('🏪 الاستلام: من المحل');
+    expect(text).not.toContain('🛵 التوصيل');
+    expect(text).not.toContain('• المنطقة');
+    expect(text).not.toContain('• العنوان');
+    expect(text).toContain('الإجمالي الكلي: 6,500 ج.س');
+  });
+
+  it('the pickup place follows the address saved in the dashboard', async () => {
+    const { page } = await readyToOrder({ sanityDoc: { address: 'الرياض — شارع 15' } });
+    await chooseFulfillment(page, 'استلام في المحل');
+    expect(await drawerText(page)).toContain('تستلم طلبك من المحل: الرياض — شارع 15');
+    await submitBtn(page).click();
+    const [href] = (await opened(page))[0] as string[];
+    const text = new URL(href).searchParams.get('text')!;
+    expect(text).toContain('مكان الاستلام: الرياض — شارع 15');
+    // a region/address filled while in delivery mode is not sent for a pickup order
+    expect(text).not.toContain('• المنطقة');
+    expect(text).not.toContain('• العنوان');
   });
 });
 

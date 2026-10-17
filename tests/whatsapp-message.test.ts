@@ -1,9 +1,18 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { fmt } from '../lib/format';
-import { buildOrderMessage, computeTotals, makeOrderNo, openWhatsApp, whatsappLink } from '../lib/whatsapp';
+import {
+  buildOrderMessage,
+  computeTotals,
+  FULFILLMENT_LABEL,
+  makeOrderNo,
+  normalizeFulfillment,
+  openWhatsApp,
+  whatsappLink,
+} from '../lib/whatsapp';
 import type { CustomerInfo } from '../lib/types';
 import { fakeItem, line, menuItem, SITE } from './helpers';
 
+/** طلب توصيل مكتمل البيانات (المنطقة والعنوان اختياريان لكنهما مكتوبان هنا) */
 const customer: CustomerInfo = {
   name: 'أحمد محمد',
   phone: '0912345678',
@@ -11,6 +20,7 @@ const customer: CustomerInfo = {
   address: 'حي الملازمين، منزل 12',
   notes: '',
   payment: 'cod',
+  fulfillment: 'delivery',
 };
 
 const lines = [line(menuItem('m9'), 2), line(menuItem('m10'), 1)];
@@ -108,6 +118,96 @@ describe('buildOrderMessage — notes', () => {
   });
   it('includes trimmed notes', () => {
     expect(build({ notes: '  بدون بصل  ' })).toContain('• ملاحظات: بدون بصل\n');
+  });
+});
+
+describe('buildOrderMessage — pickup location is optional (only name + phone are required)', () => {
+  it('omits the region and address lines when the customer left them empty', () => {
+    const m = build({ region: '', address: '' });
+    expect(m).not.toContain('المنطقة');
+    expect(m).not.toContain('العنوان');
+    expect(m).toContain('الاسم: أحمد محمد');
+    expect(m).toContain('الجوال: 0912345678');
+    expect(m).toContain('الإجمالي الكلي: 20,500 ج.س');
+  });
+
+  it('treats whitespace-only region/address as empty', () => {
+    const m = build({ region: '   ', address: ' \n ' });
+    expect(m).not.toContain('• المنطقة');
+    expect(m).not.toContain('• العنوان');
+  });
+
+  it('writes whichever one the customer did fill, on its own', () => {
+    expect(build({ address: '' })).toContain('• المنطقة: أم درمان');
+    expect(build({ region: '' })).toContain('• العنوان: حي الملازمين، منزل 12');
+  });
+
+  it('trims the values it does write', () => {
+    expect(build({ region: '  بحري  ' })).toContain('• المنطقة: بحري\n');
+  });
+});
+
+describe('buildOrderMessage — place of collection: توصيل / استلام من المحل', () => {
+  it('delivery is the default: «طريقة الاستلام: 🛵 توصيل» plus the courier note', () => {
+    const m = build();
+    expect(m).toContain('• طريقة الاستلام: 🛵 توصيل');
+    expect(m).not.toContain('استلام من المحل');
+    expect(m).not.toContain('مكان الاستلام:');
+    expect(m).toContain('🛵 التوصيل: مع مندوب التوصيل');
+  });
+
+  it('pickup names the store from the settings and replaces the courier line', () => {
+    const m = build({ fulfillment: 'pickup', region: '', address: '' });
+    expect(m).toContain(`• طريقة الاستلام: 🏪 ${FULFILLMENT_LABEL.pickup}`);
+    expect(m).toContain(`• مكان الاستلام: ${SITE.address}`);
+    expect(m).toContain('🏪 الاستلام: من المحل');
+    expect(m).not.toContain('🛵 التوصيل');
+  });
+
+  it('pickup ignores a region/address left over from delivery mode', () => {
+    const m = build({ fulfillment: 'pickup' }); // region + address are still filled
+    expect(m).not.toContain('• المنطقة');
+    expect(m).not.toContain('• العنوان');
+    expect(m).toContain(`• مكان الاستلام: ${SITE.address}`);
+  });
+
+  it('pickup uses the store address saved in the dashboard', () => {
+    const m = buildOrderMessage(
+      { lines, customer: { ...customer, fulfillment: 'pickup' }, orderNo: 'FB-1', totals },
+      { ...SITE, address: 'الرياض — شارع 15' },
+    );
+    expect(m).toContain('• مكان الاستلام: الرياض — شارع 15');
+    expect(m).toContain('🏪 الاستلام: من المحل');
+  });
+
+  it('a missing or unknown fulfillment value falls back to delivery', () => {
+    const partial = { ...customer } as unknown as Record<string, unknown>;
+    delete partial.fulfillment;
+    expect(
+      buildOrderMessage({ lines, customer: partial as CustomerInfo, orderNo: 'FB-1', totals }, SITE),
+    ).toContain('• طريقة الاستلام: 🛵 توصيل');
+    expect(
+      buildOrderMessage(
+        { lines, customer: { ...customer, fulfillment: 'anything' as never }, orderNo: 'FB-1', totals },
+        SITE,
+      ),
+    ).toContain('• طريقة الاستلام: 🛵 توصيل');
+  });
+
+  it('normalizeFulfillment maps any input onto the two known options', () => {
+    expect(normalizeFulfillment('pickup')).toBe('pickup');
+    expect(normalizeFulfillment('delivery')).toBe('delivery');
+    expect(normalizeFulfillment(undefined)).toBe('delivery');
+    expect(normalizeFulfillment('')).toBe('delivery');
+    expect(normalizeFulfillment(null)).toBe('delivery');
+  });
+
+  it('both options keep the money story unchanged (no fee is added for either)', () => {
+    for (const fulfillment of ['delivery', 'pickup'] as const) {
+      const m = build({ fulfillment });
+      expect(m).toContain('المجموع الفرعي: 20,500 ج.س');
+      expect(m).toContain('الإجمالي الكلي: 20,500 ج.س');
+    }
   });
 });
 

@@ -17,11 +17,14 @@ import {
 import { useCart } from './CartContext';
 import {
   IconBank,
+  IconBike,
   IconCash,
   IconCheck,
   IconClose,
   IconMinus,
+  IconPin,
   IconPlus,
+  IconStore,
   IconTrash,
   IconWhatsApp,
 } from '../Icons';
@@ -36,7 +39,14 @@ const EMPTY_FORM: CustomerInfo = {
   address: '',
   notes: '',
   payment: 'cod',
+  fulfillment: 'delivery',
 };
+
+/** خيارا مكان الاستلام: توصيل للموقع أو استلام من المحل */
+const FULFILLMENT_OPTIONS = [
+  { id: 'delivery', label: 'توصيل', Icon: IconBike },
+  { id: 'pickup', label: 'استلام في المحل', Icon: IconStore },
+] as const;
 
 export default function CartDrawer() {
   const { lines, totals, isOpen, closeCart, inc, dec, remove, clear } = useCart();
@@ -67,12 +77,13 @@ export default function CartDrawer() {
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
+    /* الإجباري في الطلب: الاسم ورقم الهاتف فقط.
+       موقع الاستلام (المنطقة) وتفاصيل مكان الاستلام (العنوان) اختيارية،
+       وفي «استلام في المحل» لا تظهر حقول الموقع أصلاً. */
     if (form.name.trim().length < 3) e.name = 'الرجاء كتابة الاسم الكامل';
     /* نقبل أي رقم جوال — سوداني (09… / 01…) أو دولي — بشرط ٧ خانات رقمية على الأقل */
     const phoneDigits = toLatinDigits(form.phone).replace(/\D/g, '');
     if (phoneDigits.length < 7) e.phone = 'رقم جوال غير صحيح — اكتب الرقم كاملاً (مثال: 0912345678)';
-    if (!form.region) e.region = 'اختر منطقة التوصيل';
-    if (form.address.trim().length < 6) e.address = 'اكتب عنواناً واضحاً (رقم المنزل/أقرب معلم)';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -261,10 +272,17 @@ export default function CartDrawer() {
                       <span>المجموع الفرعي</span>
                       <span className="text-ink">{price(totals.subtotal, site.currency)}</span>
                     </div>
-                    <div className="flex justify-between text-muted">
-                      <span>التوصيل داخل {site.city}</span>
-                      <span className="font-bold text-ink">{site.deliveryNote}</span>
-                    </div>
+                    {form.fulfillment === 'pickup' ? (
+                      <div className="flex justify-between text-muted">
+                        <span>الاستلام</span>
+                        <span className="font-bold text-ink">من المحل 🏪</span>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between text-muted">
+                        <span>التوصيل داخل {site.city}</span>
+                        <span className="font-bold text-ink">{site.deliveryNote}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between border-t border-sand pt-2.5 text-base font-black text-forest">
                       <span>الإجمالي</span>
                       <span>{price(totals.total, site.currency)}</span>
@@ -275,9 +293,12 @@ export default function CartDrawer() {
                     </div>
                   </div>
 
-                  {/* بيانات العميل */}
+                  {/* بيانات العميل — الإجباري: الاسم ورقم الهاتف فقط */}
                   <div className="space-y-3 rounded-2xl border border-sand bg-card p-4">
-                    <h4 className="text-sm font-black text-forest">بيانات التوصيل</h4>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h4 className="text-sm font-black text-forest">بيانات الطلب</h4>
+                      <span className="text-[11px] font-bold text-muted">المطلوب: الاسم والجوال فقط</span>
+                    </div>
                     <div>
                       <input
                         className={inputCls}
@@ -298,30 +319,68 @@ export default function CartDrawer() {
                       />
                       {errors.phone && <p className="mt-1 text-xs font-bold text-copper-dark">{errors.phone}</p>}
                     </div>
+                    {/* مكان الاستلام: توصيل أو استلام في المحل */}
                     <div>
-                      <select
-                        className={`${inputCls} ${form.region ? '' : 'text-muted/60'}`}
-                        value={form.region}
-                        onChange={(e) => set({ region: e.target.value })}
-                      >
-                        <option value="">اختر منطقة التوصيل *</option>
-                        {site.regions.map((r) => (
-                          <option key={r} value={r}>
-                            {r}
-                          </option>
+                      <p className="mb-1.5 text-xs font-black text-forest">مكان الاستلام</p>
+                      <div className="grid grid-cols-2 gap-2" role="group" aria-label="مكان الاستلام">
+                        {FULFILLMENT_OPTIONS.map((f) => (
+                          <button
+                            key={f.id}
+                            type="button"
+                            onClick={() => set({ fulfillment: f.id })}
+                            className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-xs font-extrabold transition ${
+                              form.fulfillment === f.id
+                                ? 'border-forest bg-forest/10 text-forest'
+                                : 'border-sand bg-card text-muted hover:border-forest/40'
+                            }`}
+                            aria-pressed={form.fulfillment === f.id}
+                          >
+                            <f.Icon className="h-4 w-4" />
+                            {f.label}
+                          </button>
                         ))}
-                      </select>
-                      {errors.region && <p className="mt-1 text-xs font-bold text-copper-dark">{errors.region}</p>}
+                      </div>
                     </div>
-                    <div>
-                      <input
-                        className={inputCls}
-                        placeholder="العنوان: رقم المنزل / أقرب معلم *"
-                        value={form.address}
-                        onChange={(e) => set({ address: e.target.value })}
-                      />
-                      {errors.address && <p className="mt-1 text-xs font-bold text-copper-dark">{errors.address}</p>}
-                    </div>
+
+                    {form.fulfillment === 'pickup' ? (
+                      /* استلام من المحل: لا منطقة ولا عنوان — نذكّر العميل بعنوان المحل */
+                      <div className="flex items-start gap-2 rounded-xl bg-leaf/10 px-4 py-3 text-xs font-bold leading-6 text-forest">
+                        <IconPin className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>
+                          تستلم طلبك من المحل: <b className="font-black">{site.address}</b>
+                          <span className="mt-0.5 block text-[11px] font-bold text-muted">
+                            ما تحتاج تكتب منطقة أو عنوان — أرسل الطلب وسنجهّزه للاستلام.
+                          </span>
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        {/* موقع الاستلام وتفاصيل مكان الاستلام — اختياريان */}
+                        <div>
+                          <select
+                            className={`${inputCls} ${form.region ? '' : 'text-muted/60'}`}
+                            value={form.region}
+                            onChange={(e) => set({ region: e.target.value })}
+                            aria-label="موقع الاستلام (اختياري)"
+                          >
+                            <option value="">موقع الاستلام — المنطقة (اختياري)</option>
+                            {site.regions.map((r) => (
+                              <option key={r} value={r}>
+                                {r}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <input
+                            className={inputCls}
+                            placeholder="تفاصيل مكان الاستلام (اختياري): رقم المنزل / أقرب معلم"
+                            value={form.address}
+                            onChange={(e) => set({ address: e.target.value })}
+                          />
+                        </div>
+                      </>
+                    )}
                     <textarea
                       className={`${inputCls} resize-none`}
                       rows={2}
@@ -329,28 +388,31 @@ export default function CartDrawer() {
                       value={form.notes}
                       onChange={(e) => set({ notes: e.target.value })}
                     />
-                    <div className="grid grid-cols-2 gap-2">
-                      {(
-                        [
-                          { id: 'cod', label: 'كاش عند الاستلام', Icon: IconCash },
-                          { id: 'bank', label: 'تحويل بنكك', Icon: IconBank },
-                        ] as const
-                      ).map((p) => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => set({ payment: p.id })}
-                          className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-xs font-extrabold transition ${
-                            form.payment === p.id
-                              ? 'border-forest bg-forest/10 text-forest'
-                              : 'border-sand bg-card text-muted hover:border-forest/40'
-                          }`}
-                          aria-pressed={form.payment === p.id}
-                        >
-                          <p.Icon className="h-4 w-4" />
-                          {p.label}
-                        </button>
-                      ))}
+                    <div>
+                      <p className="mb-1.5 text-xs font-black text-forest">طريقة الدفع</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(
+                          [
+                            { id: 'cod', label: 'كاش عند الاستلام', Icon: IconCash },
+                            { id: 'bank', label: 'تحويل بنكك', Icon: IconBank },
+                          ] as const
+                        ).map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => set({ payment: p.id })}
+                            className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-xs font-extrabold transition ${
+                              form.payment === p.id
+                                ? 'border-forest bg-forest/10 text-forest'
+                                : 'border-sand bg-card text-muted hover:border-forest/40'
+                            }`}
+                            aria-pressed={form.payment === p.id}
+                          >
+                            <p.Icon className="h-4 w-4" />
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
