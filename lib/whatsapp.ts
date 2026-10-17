@@ -1,6 +1,16 @@
 import { DEFAULT_SITE, type SiteData } from './site-data';
 import { fmt, price } from './format';
-import type { CartLine, CustomerInfo, OrderTotals } from './types';
+import type { CartLine, CustomerInfo, FulfillmentMethod, OrderTotals } from './types';
+
+/** نص طريقة الاستلام كما يصل في رسالة الواتساب */
+export const FULFILLMENT_LABEL: Record<FulfillmentMethod, string> = {
+  delivery: 'توصيل',
+  pickup: 'استلام من المحل',
+};
+
+/** أي قيمة غير معروفة (أو مفقودة) تُعامل كتوصيل حتى لا تتعطل الرسالة */
+export const normalizeFulfillment = (v: unknown): FulfillmentMethod =>
+  v === 'pickup' ? 'pickup' : 'delivery';
 
 export function computeTotals(lines: CartLine[]): OrderTotals {
   const count = lines.reduce((s, l) => s + l.qty, 0);
@@ -27,6 +37,11 @@ export function buildOrderMessage(
 ): string {
   const { lines, customer, orderNo, totals } = opts;
   const cur = site.currency;
+  /* المنطقة والعنوان اختياريان: سطر يُكتب فقط إذا كتب العميل شيئاً */
+  const region = String(customer.region ?? '').trim();
+  const address = String(customer.address ?? '').trim();
+  const isPickup = normalizeFulfillment(customer.fulfillment) === 'pickup';
+  const fulfillmentLabel = isPickup ? FULFILLMENT_LABEL.pickup : FULFILLMENT_LABEL.delivery;
   const now = new Date();
   const date = now.toLocaleDateString('ar-EG-u-nu-latn', {
     weekday: 'long',
@@ -45,8 +60,12 @@ export function buildOrderMessage(
   L.push('*👤 بيانات العميل*');
   L.push(`• الاسم: ${customer.name}`);
   L.push(`• الجوال: ${customer.phone}`);
-  L.push(`• المنطقة: ${customer.region}`);
-  L.push(`• العنوان: ${customer.address}`);
+  L.push(`• طريقة الاستلام: ${isPickup ? '🏪' : '🛵'} ${fulfillmentLabel}`);
+  /* في الاستلام من المحل نكتب عنوان المحل المضبوط في الإعدادات حتى يعرفه العميل */
+  if (isPickup) L.push(`• مكان الاستلام: ${site.address}`);
+  /* موقع الاستلام وتفاصيله اختياريان: يظهران فقط في التوصيل وإذا كتب العميل شيئاً */
+  if (!isPickup && region) L.push(`• المنطقة: ${region}`);
+  if (!isPickup && address) L.push(`• العنوان: ${address}`);
   if (customer.notes.trim()) L.push(`• ملاحظات: ${customer.notes.trim()}`);
   L.push(`• الدفع: ${customer.payment === 'cod' ? 'كاش عند الاستلام' : 'تحويل بنكي (بنكك)'}`);
   L.push('');
@@ -58,7 +77,8 @@ export function buildOrderMessage(
   L.push('━━━━━━━━━━━━━━━');
   L.push(`🍽 عدد الأصناف: ${fmt(totals.count)}`);
   L.push(`🧾 المجموع الفرعي: ${price(totals.subtotal, cur)}`);
-  L.push(`🛵 التوصيل: ${site.deliveryNote}`);
+  /* في التوصيل نكتب نص التوصيل من الإعدادات، وفي الاستلام من المحل نؤكد أن الطلب يُستلم من المحل */
+  L.push(isPickup ? '🏪 الاستلام: من المحل' : `🛵 التوصيل: ${site.deliveryNote}`);
   L.push(`💰 *الإجمالي الكلي: ${price(totals.total, cur)}*`);
   L.push('');
   L.push(`_أُرسل تلقائياً من موقع ${site.nameAr}_ 🌿`);

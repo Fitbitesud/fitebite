@@ -48,13 +48,26 @@ export interface CartLine {
 
 export type PaymentMethod = 'cod' | 'bank';
 
+/**
+ * طريقة استلام الطلب:
+ *  - `delivery` → توصيل للموقع الذي يحدده العميل
+ *  - `pickup`   → استلام من المحل (لا يحتاج منطقة ولا عنوان)
+ */
+export type FulfillmentMethod = 'delivery' | 'pickup';
+
 export interface CustomerInfo {
+  /** مطلوب */
   name: string;
+  /** مطلوب */
   phone: string;
+  /** اختياري — موقع الاستلام (مناطق التوصيل من إعدادات الموقع) */
   region: string;
+  /** اختياري — تفاصيل مكان الاستلام (رقم المنزل / أقرب معلم) */
   address: string;
   notes: string;
   payment: PaymentMethod;
+  /** طريقة الاستلام — افتراضياً توصيل */
+  fulfillment: FulfillmentMethod;
 }
 
 /** إجماليات السلة — لا يوجد حقل لرسوم توصيل: الموقع يحسب قيمة الأكل فقط */
