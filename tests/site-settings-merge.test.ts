@@ -220,3 +220,49 @@ describe('getSite() — [site-settings] diagnostics', () => {
     expect(error.calls).toEqual([]);
   });
 });
+
+describe('common spelling fixes in dashboard texts', () => {
+  it('shows «البحر الأحمر» with the hamza even when the dashboard text lacks it', async () => {
+    setSanityDoc([{ city: 'بورتسودان', address: 'بورتسودان البحر الاحمر' }]);
+
+    const site = await getSite();
+
+    expect(site.address).toBe('بورتسودان البحر الأحمر');
+    expect(site.city).toBe('بورتسودان');
+  });
+
+  it('fixes the spelling everywhere: home texts, regions and opening hours too', async () => {
+    setSanityDoc([
+      {
+        regions: ['البحر الاحمر'],
+        hours: [{ days: 'السبت — الخميس', time: '10:00' }],
+        home: {
+          heroParagraph: 'توصلك حتى باب البيت في البحر الاحمر.',
+          features: [{ title: 'وجبة البحر الاحمر', desc: 'سمك طازج يومياً', icon: 'cloche' }],
+        },
+      },
+    ]);
+
+    const site = await getSite();
+
+    expect(site.regions).toEqual(['البحر الأحمر']);
+    expect(site.home.heroParagraph).toBe('توصلك حتى باب البيت في البحر الأحمر.');
+    expect(site.home.features[0]?.title).toBe('وجبة البحر الأحمر');
+  });
+
+  it('keeps already-correct texts untouched', async () => {
+    setSanityDoc([
+      {
+        address: 'بورتسودان — البحر الأحمر',
+        city: 'بورتسودان',
+        home: { heroTitleLead: 'طعام صحي يُحسب' },
+      },
+    ]);
+
+    const site = await getSite();
+
+    expect(site.address).toBe('بورتسودان — البحر الأحمر');
+    expect(site.city).toBe('بورتسودان');
+    expect(site.home.heroTitleLead).toBe('طعام صحي يُحسب');
+  });
+});
