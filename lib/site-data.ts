@@ -225,6 +225,31 @@ export function mergeSettingsDocs(
 const toSafeString = (v: unknown, fallback: string): string =>
   typeof v === 'string' && v.trim() ? v : fallback;
 
+/**
+ * تصحيح أخطاء إملائية شائعة في نصوص لوحة التحكم — أهمها همزة «الأحمر»
+ * (تُكتب أحياناً «الاحمر»: مثل «بورتسودان البحر الاحمر» ← «بورتسودان البحر الأحمر»).
+ *
+ * هذا حارس عرض مؤقت يضمن ظهور الكتابة الصحيحة للزوار مهما كان محفوظاً في الداتاسيت؛
+ * ولتصحيح البيانات نفسها في لوحة التحكم شغّل `studio/scripts/fix-spelling.ts`.
+ */
+const SPELL_FIXES: ReadonlyArray<[RegExp, string]> = [[/الاحمر/g, 'الأحمر']];
+
+/** يصحح الأخطاء الإملائية الشائعة في كل سلسلة نصية داخل بنية بيانات (كائن/مصفوفة/نص) */
+function fixCommonTypos<T>(value: T): T {
+  if (typeof value === 'string') {
+    let out: string = value;
+    for (const [pattern, replacement] of SPELL_FIXES) out = out.replace(pattern, replacement);
+    return out as unknown as T;
+  }
+  if (Array.isArray(value)) return value.map((item) => fixCommonTypos(item)) as T;
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) out[k] = fixCommonTypos(v);
+    return out as unknown as T;
+  }
+  return value;
+}
+
 /** استكمال النصوص الفارغة في كائنات العناوين (مثل cta وpkgBanner) من الافتراضية */
 function fillObjectStrings<T extends object>(current: T, def: T): T {
   const out = { ...current } as Record<string, unknown>;
@@ -326,7 +351,8 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   const legacy = merged as unknown as Record<string, unknown>;
   delete legacy.deliveryFee;
   delete legacy.freeDeliveryAbove;
-  return merged;
+  /* التصحيح الإملائي الأخير لكل نصوص لوحة التحكم قبل تسليمها للواجهة */
+  return fixCommonTypos(merged);
 }
 
 /**

@@ -292,4 +292,23 @@ export const siteSettings = defineType({
       options: {collapsed: false},
     }),
   ],
+  /**
+   * عنوان الوثيقة في اللوحة. بدون preview يعتمد Sanity عنواناً افتراضياً يسلسل
+   * كل الحقول كنص تقني غريب (مثل identity: {description: …, logo: {asset: …}}).
+   * هنا نعرض اسماً بشرياً واضحاً مع اسم الموقع والمدينة وشعاره.
+   */
+  preview: {
+    select: {
+      name: 'identity.nameAr',
+      city: 'contact.city',
+      media: 'identity.logo',
+    },
+    prepare({name, city, media}) {
+      return {
+        title: 'إعدادات الموقع',
+        subtitle: [name, city].filter(Boolean).join(' — '),
+        media,
+      }
+    },
+  },
 })

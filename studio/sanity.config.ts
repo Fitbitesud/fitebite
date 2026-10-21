@@ -19,7 +19,14 @@ const structure: StructureResolver = (S) =>
     .items([
       S.listItem()
         .title('إعدادات الموقع (الشعار والنصوص والأرقام)')
-        .child(S.editor().id('siteSettings').schemaType('siteSettings').documentId('siteSettings')),
+        .child(
+          S.editor()
+            .id('siteSettings')
+            .schemaType('siteSettings')
+            .documentId('siteSettings')
+            /* عنوان بشري واضح للوثيقة (بدونه يعرض Studio تسلسل الحقول كنص تقني) */
+            .title('إعدادات الموقع'),
+        ),
       S.divider(),
       S.listItem().title('أصناف القائمة').child(S.documentTypeList('menuItem')),
       S.listItem().title('تصنيفات القائمة').child(S.documentTypeList('category')),
