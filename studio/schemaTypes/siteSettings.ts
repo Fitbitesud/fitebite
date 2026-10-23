@@ -174,6 +174,23 @@ export const siteSettings = defineType({
         defineField({name: 'heroAccent', title: 'الكلمة الملوّنة في العنوان', type: 'string'}),
         defineField({name: 'heroTitleTail', title: 'نهاية العنوان الرئيسي', type: 'string'}),
         defineField({
+          name: 'heroSentences',
+          title: 'الجمل المتحركة في العنوان الرئيسي (اختياري)',
+          type: 'array',
+          description:
+            'يتبدّل العنوان الرئيسي تلقائياً بأنيميشن سلس بين هذه الجمل. اتركها فارغة لاستخدام الجمل المتحركة الافتراضية.',
+          of: [
+            {
+              type: 'object',
+              fields: [
+                {name: 'lead', title: 'بداية الجملة', type: 'string'},
+                {name: 'accent', title: 'الجزء الملوّن (اختياري)', type: 'string'},
+                {name: 'tail', title: 'تتمة الجملة (اختياري)', type: 'string'},
+              ],
+            },
+          ],
+        }),
+        defineField({
           name: 'heroParagraph',
           title: 'فقرة الهبوط',
           type: 'text',
@@ -287,6 +304,42 @@ export const siteSettings = defineType({
           initialValue: true,
           description:
             'أوقفه لإخفاء القسم بالكامل حتى لو وُجدت عروض منشورة. العروض نفسها تُدار من قائمة «العروض الخاصة».',
+        }),
+        defineField({
+          name: 'videosHeading',
+          title: 'عنوان قسم الفيديوهات (بعد الهبوط)',
+          type: 'object',
+          fields: [
+            {name: 'eyebrow', title: 'السطر الصغير', type: 'string'},
+            {name: 'title', title: 'العنوان', type: 'string'},
+            {name: 'sub', title: 'الوصف', type: 'text', rows: 2},
+          ],
+        }),
+        defineField({
+          name: 'videosEnabled',
+          title: 'إظهار مربعات الفيديوهات الثلاثة بعد قسم الهبوط',
+          type: 'boolean',
+          initialValue: true,
+          description:
+            'الفيديوهات نفسها تُضاف وتُرتّب من قائمة «فيديوهات الصفحة الرئيسية» في الشريط الجانبي.',
+        }),
+        defineField({
+          name: 'faqHeading',
+          title: 'عنوان قسم الأسئلة الشائعة',
+          type: 'object',
+          fields: [
+            {name: 'eyebrow', title: 'السطر الصغير', type: 'string'},
+            {name: 'title', title: 'العنوان', type: 'string'},
+            {name: 'sub', title: 'الوصف', type: 'text', rows: 2},
+          ],
+        }),
+        defineField({
+          name: 'faqEnabled',
+          title: 'إظهار قسم الأسئلة الشائعة أسفل الصفحة الرئيسية',
+          type: 'boolean',
+          initialValue: true,
+          description:
+            'الأسئلة والأجوبة تُدار من قائمة «الأسئلة الشائعة» في الشريط الجانبي.',
         }),
       ],
       options: {collapsed: false},

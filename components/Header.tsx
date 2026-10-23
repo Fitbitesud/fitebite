@@ -20,10 +20,12 @@ export default function Header() {
   /* عناوين التنقل تتبع نصوص الأقسام المضبوطة في لوحة التحكم */
   const LINKS = [
     { href: '/#home', label: 'الرئيسية' },
-    { href: '/#features', label: site.home.featuresHeading.eyebrow },
     { href: '/menu', label: 'القائمة' },
     { href: '/packages', label: 'الباقات' },
-    { href: '/#how', label: site.home.howHeading.eyebrow },
+    { href: '/gallery', label: 'معرض الأعمال' },
+    { href: '/consultations', label: 'الاستشارات' },
+    { href: '/#features', label: site.home.featuresHeading.eyebrow },
+    { href: '/#faq', label: 'الأسئلة الشائعة' },
     { href: '/#comments', label: 'آراء الزوار' },
     { href: '/#contact', label: 'تواصل معنا' },
   ];
@@ -53,19 +55,30 @@ export default function Header() {
             <Logo tone={dark ? 'cream' : 'forest'} />
           </Link>
 
-          <nav className="hidden items-center gap-7 lg:flex" aria-label="التنقل الرئيسي">
+          <nav className="hidden items-center gap-4 lg:flex xl:gap-6" aria-label="التنقل الرئيسي">
             {LINKS.map((l) => {
               const Tag = Link;
+              const isCurrentPage =
+                !l.href.includes('#') &&
+                (pathname === l.href || pathname === `${l.href}/`);
               return (
                 <Tag
                   key={l.href}
                   href={l.href}
-                  className={`group relative text-sm font-extrabold transition ${
-                    dark ? 'text-cream/85 hover:text-cream' : 'text-ink/75 hover:text-forest'
+                  className={`group relative whitespace-nowrap text-xs font-extrabold transition xl:text-sm ${
+                    dark
+                      ? 'text-cream/85 hover:text-cream'
+                      : isCurrentPage
+                        ? 'text-forest'
+                        : 'text-ink/75 hover:text-forest'
                   }`}
                 >
                   {l.label}
-                  <span className="absolute -bottom-1.5 right-0 h-0.5 w-0 rounded-full bg-copper transition-all duration-300 group-hover:w-full" />
+                  <span
+                    className={`absolute -bottom-1.5 right-0 h-0.5 rounded-full bg-copper transition-all duration-300 ${
+                      isCurrentPage ? 'w-full' : 'w-0 group-hover:w-full'
+                    }`}
+                  />
                 </Tag>
               );
             })}
@@ -117,7 +130,7 @@ export default function Header() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="fixed inset-x-0 top-[68px] z-40 border-b border-sand bg-cream/95 px-6 pb-4 pt-2 shadow-soft backdrop-blur-md lg:hidden"
+            className="fixed inset-x-0 top-[68px] z-40 max-h-[calc(100vh-68px)] overflow-y-auto border-b border-sand bg-cream/95 px-6 pb-4 pt-2 shadow-soft backdrop-blur-md lg:hidden"
             aria-label="قائمة الجوال"
           >
             {LINKS.map((l) => {

@@ -48,6 +48,7 @@ export const SETTINGS_QUERY = `*[_type == "siteSettings"] | order(_updatedAt asc
     "heroTitleLead": coalesce(home.heroTitleLead, heroTitleLead),
     "heroAccent": coalesce(home.heroAccent, heroAccent),
     "heroTitleTail": coalesce(home.heroTitleTail, heroTitleTail),
+    "heroSentences": coalesce(home.heroSentences[]{lead, accent, tail}, heroSentences[]{lead, accent, tail}),
     "heroParagraph": coalesce(home.heroParagraph, heroParagraph),
     "heroPrimaryLabel": coalesce(home.heroPrimaryLabel, heroPrimaryLabel),
     "heroSecondaryLabel": coalesce(home.heroSecondaryLabel, heroSecondaryLabel),
@@ -61,7 +62,11 @@ export const SETTINGS_QUERY = `*[_type == "siteSettings"] | order(_updatedAt asc
     "cta": coalesce(home.cta{title, sub, primaryLabel, secondaryLabel}, cta{title, sub, primaryLabel, secondaryLabel}),
     "pkgBanner": coalesce(home.pkgBanner{title, sub, button}, pkgBanner{title, sub, button}),
     "offersHeading": coalesce(home.offersHeading{eyebrow, title, sub}, offersHeading{eyebrow, title, sub}),
-    "offersEnabled": coalesce(home.offersEnabled, offersEnabled)
+    "offersEnabled": coalesce(home.offersEnabled, offersEnabled),
+    "videosHeading": coalesce(home.videosHeading{eyebrow, title, sub}, videosHeading{eyebrow, title, sub}),
+    "videosEnabled": coalesce(home.videosEnabled, videosEnabled),
+    "faqHeading": coalesce(home.faqHeading{eyebrow, title, sub}, faqHeading{eyebrow, title, sub}),
+    "faqEnabled": coalesce(home.faqEnabled, faqEnabled)
   }
 }`;
 
@@ -77,4 +82,25 @@ export const OFFERS_QUERY = `*[_type == "offer"] | order(order asc) {
   _id, title, desc, badge,
   "image": image.asset->url,
   priceOld, priceNew, validUntil, active, order
+}`;
+
+/** فيديوهات الصفحة الرئيسية (المربعات الثلاثة بعد الهبوط) من لوحة التحكم */
+export const VIDEOS_QUERY = `*[_type == "homeVideo"] | order(order asc) {
+  _id, title, badge, desc,
+  "videoFileUrl": videoFile.asset->url,
+  videoUrl,
+  "poster": poster.asset->url,
+  active, order
+}`;
+
+/** الأسئلة الشائعة من لوحة التحكم */
+export const FAQS_QUERY = `*[_type == "faqItem"] | order(order asc) {
+  _id, question, answer, active, order
+}`;
+
+/** صور معرض الأعمال من لوحة التحكم */
+export const GALLERY_QUERY = `*[_type == "galleryItem"] | order(order asc) {
+  _id, title, category, desc,
+  "image": image.asset->url,
+  active, order
 }`;
