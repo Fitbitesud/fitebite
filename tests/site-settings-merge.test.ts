@@ -145,10 +145,38 @@ describe('empty or invalid dashboard values fall back to defaults', () => {
 
     expect(site.home.heroBadge).toBe(DEFAULT_SITE.home.heroBadge);
     expect(site.home.heroTitleLead).toBe('عنوان جديد');
+    expect(site.home.heroSentences[0]?.lead).toBe('عنوان جديد');
     expect(site.home.heroImage).toBe(DEFAULT_SITE.home.heroImage);
     expect(site.home.cta.title).toBe(DEFAULT_SITE.home.cta.title);
     expect(site.home.cta.sub).toBe('وصف جديد');
     expect(site.home.pkgBanner).toEqual(DEFAULT_SITE.home.pkgBanner);
+  });
+
+  it('hero rotating sentences, videos section, and FAQ section settings merge safely', async () => {
+    setSanityDoc({
+      home: {
+        heroSentences: [
+          { lead: 'جملة أولى', accent: 'مميزة', tail: '!' },
+          { lead: '   ', accent: '' },
+          { lead: 'جملة ثانية', accent: 'قوية' },
+        ],
+        videosHeading: { title: 'فيديوهات المطبخ' },
+        videosEnabled: false,
+        faqHeading: { title: 'أسئلتكم' },
+        faqEnabled: false,
+      },
+    });
+    const site = await getSite();
+    expect(site.home.heroSentences).toEqual([
+      { lead: 'جملة أولى', accent: 'مميزة', tail: '!' },
+      { lead: 'جملة ثانية', accent: 'قوية' },
+    ]);
+    expect(site.home.videosHeading.title).toBe('فيديوهات المطبخ');
+    expect(site.home.videosHeading.eyebrow).toBe(DEFAULT_SITE.home.videosHeading.eyebrow);
+    expect(site.home.videosEnabled).toBe(false);
+    expect(site.home.faqHeading.title).toBe('أسئلتكم');
+    expect(site.home.faqHeading.eyebrow).toBe(DEFAULT_SITE.home.faqHeading.eyebrow);
+    expect(site.home.faqEnabled).toBe(false);
   });
 
   it('offers section: heading is completed from defaults and the toggle is honoured', async () => {

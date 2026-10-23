@@ -269,3 +269,43 @@ export const IconSnack = (p: P) => (
     <circle cx="15.5" cy="13.5" r="0.6" fill="currentColor" />
   </svg>
 );
+
+/** أيقونة تشغيل فيديو */
+export const IconPlay = (p: P) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...p}>
+    <path d="M8 5.5v13l11-6.5z" />
+  </svg>
+);
+
+/** أيقونة إيقاف مؤقت */
+export const IconPause = (p: P) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...p}>
+    <rect x="6.5" y="5" width="4" height="14" rx="1.2" />
+    <rect x="13.5" y="5" width="4" height="14" rx="1.2" />
+  </svg>
+);
+
+/** أيقونة سهم سفلي (للأسئلة الشائعة) */
+export const IconChevronDown = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+);
+
+/** أيقونة صورة / معرض الأعمال */
+export const IconGallery = (p: P) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="4" width="18" height="16" rx="2.5" />
+    <circle cx="8.5" cy="9.5" r="1.6" />
+    <path d="M21 15.5l-5-4.5-6.5 6-2.5-2-4 3.5" />
+  </svg>
+);
+
+/** أيقونة استشارة / محادثة */
+export const IconConsultation = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M4 5.5A2.5 2.5 0 016.5 3h11A2.5 2.5 0 0120 5.5v8A2.5 2.5 0 0117.5 16H9l-4.5 4v-4H6.5A2.5 2.5 0 014 13.5z" />
+    <path d="M8 8.5h8M8 12h5" />
+  </svg>
+);
+

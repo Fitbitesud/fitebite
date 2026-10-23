@@ -1,8 +1,9 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
-import { fillTokens, imgUrl } from '@/lib/site-data';
+import { useEffect, useState } from 'react';
+import { fillTokens, imgUrl, type HeroSentence } from '@/lib/site-data';
 import { useSite, useWhatsapp } from './SiteContext';
 import {
   IconChart,
@@ -25,10 +26,34 @@ const MACROS = [
   { v: '58غ', l: 'كاربوهيدرات' },
 ];
 
+const ROTATE_INTERVAL_MS = 3800;
+
 export default function Hero() {
   const site = useSite();
   const wa = useWhatsapp();
   const h = site.home;
+
+  const sentences: HeroSentence[] =
+    Array.isArray(h.heroSentences) && h.heroSentences.length > 0
+      ? h.heroSentences
+      : [{ lead: h.heroTitleLead, accent: h.heroAccent, tail: h.heroTitleTail }];
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    setActiveIdx(0);
+  }, [sentences.length]);
+
+  useEffect(() => {
+    if (sentences.length <= 1 || paused) return;
+    const timer = window.setInterval(() => {
+      setActiveIdx((prev) => (prev + 1) % sentences.length);
+    }, ROTATE_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [sentences.length, paused]);
+
+  const current = sentences[activeIdx % sentences.length] ?? sentences[0];
 
   return (
     <section id="home" className="relative scroll-mt-20 overflow-hidden bg-forest pt-32 text-cream">
@@ -43,8 +68,11 @@ export default function Hero() {
       />
 
       <div className="container-x relative grid items-center gap-16 pb-24 pt-10 lg:grid-cols-2 lg:pb-28">
-        {/* النص */}
-        <div>
+        {/* النص الرئيسي المتحرك */}
+        <div
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
           <motion.span
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -55,27 +83,73 @@ export default function Hero() {
             {h.heroBadge}
           </motion.span>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="mt-6 text-4xl font-black leading-[1.25] text-cream sm:text-5xl lg:text-[3.4rem]"
-          >
-            {h.heroTitleLead}{' '}
-            <span className="relative inline-block bg-gradient-to-l from-orange-soft via-orange to-copper bg-clip-text text-transparent">
-              {h.heroAccent}
-              <svg viewBox="0 0 120 14" className="absolute -bottom-2 right-0 w-full" fill="none" aria-hidden="true">
-                <path d="M4 10 C30 4 90 4 116 8" stroke="#7E9C4E" strokeWidth="5" strokeLinecap="round" />
-              </svg>
-            </span>
-            {h.heroTitleTail}
-          </motion.h1>
+          <div className="mt-6 min-h-[7.5rem] sm:min-h-[8.5rem] lg:min-h-[9.5rem]">
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={`${activeIdx}-${current.lead}-${current.accent ?? ''}`}
+                initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -18, filter: 'blur(4px)' }}
+                transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+                className="text-4xl font-black leading-[1.28] text-cream sm:text-5xl lg:text-[3.35rem]"
+                aria-live="polite"
+              >
+                {fillTokens(current.lead, site)}
+                {current.accent ? (
+                  <>
+                    {' '}
+                    <span className="relative inline-block bg-gradient-to-l from-orange-soft via-orange to-copper bg-clip-text pb-1 text-transparent">
+                      {fillTokens(current.accent, site)}
+                      <svg
+                        viewBox="0 0 120 14"
+                        className="absolute -bottom-1.5 right-0 w-full"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <motion.path
+                          d="M4 10 C30 4 90 4 116 8"
+                          stroke="#7E9C4E"
+                          strokeWidth="5"
+                          strokeLinecap="round"
+                          initial={{ pathLength: 0, opacity: 0.4 }}
+                          animate={{ pathLength: 1, opacity: 1 }}
+                          transition={{ duration: 0.55, delay: 0.12, ease: 'easeOut' }}
+                        />
+                      </svg>
+                    </span>
+                  </>
+                ) : null}
+                {current.tail ? fillTokens(current.tail, site) : null}
+              </motion.h1>
+            </AnimatePresence>
+          </div>
+
+          {sentences.length > 1 && (
+            <div className="mt-3 flex items-center gap-2" role="tablist" aria-label="جمل العنوان المتحركة">
+              {sentences.map((s, idx) => {
+                const isActive = idx === activeIdx % sentences.length;
+                return (
+                  <button
+                    key={`${idx}-${s.lead}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-label={`الجملة ${idx + 1}`}
+                    onClick={() => setActiveIdx(idx)}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      isActive ? 'w-8 bg-orange-soft' : 'w-2 bg-cream/25 hover:bg-cream/45'
+                    }`}
+                  />
+                );
+              })}
+            </div>
+          )}
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.32, duration: 0.6 }}
-            className="mt-6 max-w-lg text-base leading-8 text-cream/70 sm:text-lg"
+            className="mt-5 max-w-lg text-base leading-8 text-cream/70 sm:text-lg"
           >
             {fillTokens(h.heroParagraph, site)}
           </motion.p>

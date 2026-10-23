@@ -19,10 +19,11 @@ export default function Footer() {
   /* عناوين الروابط تتبع نصوص الأقسام المضبوطة في لوحة التحكم */
   const QUICK_LINKS = [
     { href: '/#home', label: 'الرئيسية' },
-    { href: '/#features', label: site.home.featuresHeading.eyebrow },
     { href: '/menu', label: 'القائمة الكاملة' },
     { href: '/packages', label: 'الباقات الشهرية' },
-    { href: '/#how', label: site.home.howHeading.eyebrow },
+    { href: '/gallery', label: 'معرض الأعمال' },
+    { href: '/consultations', label: 'الاستشارات الغذائية' },
+    { href: '/#faq', label: 'الأسئلة الشائعة' },
     { href: '/#comments', label: 'آراء الزوار' },
   ];
   const SOCIALS = [

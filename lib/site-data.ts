@@ -24,11 +24,19 @@ export interface Heading {
   sub: string;
 }
 
+export interface HeroSentence {
+  lead: string;
+  accent?: string;
+  tail?: string;
+}
+
 export interface HomeContent {
   heroBadge: string;
   heroTitleLead: string;
   heroAccent: string;
   heroTitleTail: string;
+  /** جمل متحركة تتبدل تلقائياً في العنوان الرئيسي */
+  heroSentences: HeroSentence[];
   heroParagraph: string;
   heroPrimaryLabel: string;
   heroSecondaryLabel: string;
@@ -44,6 +52,12 @@ export interface HomeContent {
   offersHeading: Heading;
   /** إظهار قسم العروض الخاصة في الصفحة الرئيسية (أوقفه لإخفاء القسم حتى مع وجود عروض) */
   offersEnabled: boolean;
+  videosHeading: Heading;
+  /** إظهار مربعات الفيديوهات الثلاثة بعد قسم الهبوط */
+  videosEnabled: boolean;
+  faqHeading: Heading;
+  /** إظهار قسم الأسئلة الشائعة أسفل الصفحة الرئيسية */
+  faqEnabled: boolean;
 }
 
 export interface SiteData {
@@ -91,6 +105,28 @@ export const DEFAULT_SITE: SiteData = {
     heroTitleLead: 'طعام صحي يُحسب',
     heroAccent: 'بالغرام',
     heroTitleTail: '، لا بالتقريب.',
+    heroSentences: [
+      {
+        lead: 'طعام صحي يُحسب',
+        accent: 'بالغرام',
+        tail: '، لا بالتقريب.',
+      },
+      {
+        lead: 'وجبات طازجة تدعم هدفك في',
+        accent: 'الضخامة والتنشيف',
+        tail: ' يومياً.',
+      },
+      {
+        lead: 'سعرات وماكروز محسوبة',
+        accent: 'بدقة عالية',
+        tail: ' لكل طبق.',
+      },
+      {
+        lead: 'طعم شهي بدون زيوت ضارة',
+        accent: 'يوصلك طازجاً',
+        tail: ' لباب بيتك.',
+      },
+    ],
     heroParagraph:
       'وجبات محسوبة السعرات والماكروز، مشوية ومطهوة على البخار — حسب هدفك ضخامة أو تنشيف — وتوصلك حتى باب البيت في {city}.',
     heroPrimaryLabel: 'تصفح القائمة',
@@ -169,6 +205,18 @@ export const DEFAULT_SITE: SiteData = {
       sub: 'عروض دورية على وجباتنا المحسوبة — نفس الجودة ونفس الدقة الغذائية، بسعر أفضل.',
     },
     offersEnabled: true,
+    videosHeading: {
+      eyebrow: 'شاهد عن قرب',
+      title: 'من داخل مطبخ فيتبايت',
+      sub: 'ثلاث لقطات سريعة توضّح كيف نختار المكونات، نطهو بطريقة صحية، ونجهّز وجبتك بالغرام.',
+    },
+    videosEnabled: true,
+    faqHeading: {
+      eyebrow: 'الأسئلة الشائعة',
+      title: 'كل ما تود معرفته عن فيتبايت',
+      sub: 'إجابات واضحة ومختصرة عن حساب السعرات والماكروز، طرق الطهي، الباقات الشهرية، وطريقة الطلب.',
+    },
+    faqEnabled: true,
   },
 };
 
@@ -276,6 +324,8 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
       cta: { ...DEFAULT_SITE.home.cta, ...(dh.cta ?? {}) },
       pkgBanner: { ...DEFAULT_SITE.home.pkgBanner, ...(dh.pkgBanner ?? {}) },
       offersHeading: { ...DEFAULT_SITE.home.offersHeading, ...(dh.offersHeading ?? {}) },
+      videosHeading: { ...DEFAULT_SITE.home.videosHeading, ...(dh.videosHeading ?? {}) },
+      faqHeading: { ...DEFAULT_SITE.home.faqHeading, ...(dh.faqHeading ?? {}) },
     },
   };
   const h = merged.home;
@@ -290,9 +340,36 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   h.cta = fillObjectStrings(h.cta, DEFAULT_SITE.home.cta);
   h.pkgBanner = fillObjectStrings(h.pkgBanner, DEFAULT_SITE.home.pkgBanner);
   h.offersHeading = fillObjectStrings(h.offersHeading, DEFAULT_SITE.home.offersHeading);
-  /* مفتاح القسم: أي قيمة غير منطقية (نص/رقم…) تعود للافتراضي (مفعّل) */
+  h.videosHeading = fillObjectStrings(h.videosHeading, DEFAULT_SITE.home.videosHeading);
+  h.faqHeading = fillObjectStrings(h.faqHeading, DEFAULT_SITE.home.faqHeading);
+  /* مفاتيح الأقسام: أي قيمة غير منطقية (نص/رقم…) تعود للافتراضي (مفعّل) */
   h.offersEnabled =
     typeof h.offersEnabled === 'boolean' ? h.offersEnabled : DEFAULT_SITE.home.offersEnabled;
+  h.videosEnabled =
+    typeof h.videosEnabled === 'boolean' ? h.videosEnabled : DEFAULT_SITE.home.videosEnabled;
+  h.faqEnabled =
+    typeof h.faqEnabled === 'boolean' ? h.faqEnabled : DEFAULT_SITE.home.faqEnabled;
+  /* الجمل المتحركة في العنوان الرئيسي: إذا ضُبطت في اللوحة ننظّفها، وإلا نبنيها مع احترام عنوان الهبوط الحالي */
+  const customSentences = Array.isArray(dh.heroSentences)
+    ? dh.heroSentences
+        .map((s) => {
+          const lead = typeof s?.lead === 'string' ? s.lead.trim() : '';
+          const accent = typeof s?.accent === 'string' && s.accent.trim() ? s.accent.trim() : undefined;
+          const tail = typeof s?.tail === 'string' && s.tail ? s.tail : undefined;
+          return lead || accent ? { lead, ...(accent ? { accent } : {}), ...(tail ? { tail } : {}) } : null;
+        })
+        .filter((s): s is HeroSentence => s !== null)
+    : [];
+  h.heroSentences = customSentences.length
+    ? customSentences
+    : [
+        {
+          lead: h.heroTitleLead,
+          accent: h.heroAccent,
+          tail: h.heroTitleTail,
+        },
+        ...DEFAULT_SITE.home.heroSentences.slice(1),
+      ];
   if (!Array.isArray(h.strip) || !h.strip.length) h.strip = DEFAULT_SITE.home.strip;
   if (!Array.isArray(h.features) || !h.features.length) h.features = DEFAULT_SITE.home.features;
   if (!Array.isArray(h.steps) || !h.steps.length) h.steps = DEFAULT_SITE.home.steps;

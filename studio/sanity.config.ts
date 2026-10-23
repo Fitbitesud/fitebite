@@ -32,6 +32,12 @@ const structure: StructureResolver = (S) =>
       S.listItem().title('تصنيفات القائمة').child(S.documentTypeList('category')),
       S.listItem().title('الباقات الشهرية').child(S.documentTypeList('readyPackage')),
       S.listItem().title('العروض الخاصة').child(S.documentTypeList('offer')),
+      S.listItem()
+        .title('فيديوهات الصفحة الرئيسية (المربعات الثلاثة)')
+        .child(S.documentTypeList('homeVideo')),
+      S.listItem().title('معرض الأعمال').child(S.documentTypeList('galleryItem')),
+      S.listItem().title('الأسئلة الشائعة').child(S.documentTypeList('faqItem')),
+      S.listItem().title('الاستشارات الواردة').child(S.documentTypeList('consultation')),
       S.listItem().title('تعليقات الزوار (موافقة/نشر)').child(S.documentTypeList('comment')),
     ])
 

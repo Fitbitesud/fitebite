@@ -60,6 +60,7 @@ const HOME = {
   heroTitleLead: 'طعام صحي يُحسب',
   heroAccent: 'بالغرام',
   heroTitleTail: '، لا بالتقريب.',
+  heroSentences: [{ lead: 'طعام صحي يُحسب', accent: 'بالغرام', tail: '، لا بالتقريب.' }],
   heroParagraph: 'وجبات محسوبة السعرات.',
   heroPrimaryLabel: 'تصفح القائمة',
   heroSecondaryLabel: 'اطلب عبر واتساب',
@@ -74,6 +75,10 @@ const HOME = {
   pkgBanner: { title: 'تفضّل الجاهز؟', sub: 'ست باقات شهرية', button: 'تصفح الباقات الجاهزة' },
   offersHeading: { eyebrow: 'لفترة محدودة', title: 'العروض الخاصة', sub: 'عروض دورية' },
   offersEnabled: true,
+  videosHeading: { eyebrow: 'شاهد عن قرب', title: 'من داخل مطبخ فيتبايت', sub: 'لقطات سريعة' },
+  videosEnabled: true,
+  faqHeading: { eyebrow: 'الأسئلة الشائعة', title: 'كل ما تود معرفته', sub: 'إجابات واضحة' },
+  faqEnabled: true,
 };
 
 /** نفس الهوية كما يعيدها الاستعلام: مرجعا الشعارين يتحولان إلى رابطَي CDN */
