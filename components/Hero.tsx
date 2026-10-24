@@ -39,19 +39,18 @@ export default function Hero() {
       : [{ lead: h.heroTitleLead, accent: h.heroAccent, tail: h.heroTitleTail }];
 
   const [activeIdx, setActiveIdx] = useState(0);
-  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     setActiveIdx(0);
   }, [sentences.length]);
 
   useEffect(() => {
-    if (sentences.length <= 1 || paused) return;
+    if (sentences.length <= 1) return;
     const timer = window.setInterval(() => {
       setActiveIdx((prev) => (prev + 1) % sentences.length);
     }, ROTATE_INTERVAL_MS);
     return () => window.clearInterval(timer);
-  }, [sentences.length, paused]);
+  }, [sentences.length]);
 
   const current = sentences[activeIdx % sentences.length] ?? sentences[0];
 
@@ -69,10 +68,7 @@ export default function Hero() {
 
       <div className="container-x relative grid items-center gap-16 pb-24 pt-10 lg:grid-cols-2 lg:pb-28">
         {/* النص الرئيسي المتحرك */}
-        <div
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
+        <div>
           <motion.span
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -98,24 +94,8 @@ export default function Hero() {
                 {current.accent ? (
                   <>
                     {' '}
-                    <span className="relative inline-block bg-gradient-to-l from-orange-soft via-orange to-copper bg-clip-text pb-1 text-transparent">
+                    <span className="inline-block bg-gradient-to-l from-orange-soft via-orange to-copper bg-clip-text pb-1 text-transparent">
                       {fillTokens(current.accent, site)}
-                      <svg
-                        viewBox="0 0 120 14"
-                        className="absolute -bottom-1.5 right-0 w-full"
-                        fill="none"
-                        aria-hidden="true"
-                      >
-                        <motion.path
-                          d="M4 10 C30 4 90 4 116 8"
-                          stroke="#7E9C4E"
-                          strokeWidth="5"
-                          strokeLinecap="round"
-                          initial={{ pathLength: 0, opacity: 0.4 }}
-                          animate={{ pathLength: 1, opacity: 1 }}
-                          transition={{ duration: 0.55, delay: 0.12, ease: 'easeOut' }}
-                        />
-                      </svg>
                     </span>
                   </>
                 ) : null}

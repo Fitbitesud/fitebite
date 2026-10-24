@@ -23,7 +23,7 @@ const config: Config = {
         wa: '#25D366',
       },
       fontFamily: {
-        sans: ['Cairo', 'system-ui', 'sans-serif'],
+        sans: ['Tajawal', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         soft: '0 10px 40px -12px rgba(42, 51, 28, 0.18)',

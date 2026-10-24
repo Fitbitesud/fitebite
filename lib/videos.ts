@@ -84,14 +84,14 @@ export function resolveVideoPlayback(video: HomeVideo): VideoPlayback {
     if (yt) {
       return {
         kind: 'embed',
-        embedUrl: `https://www.youtube.com/embed/${yt}?autoplay=1&rel=0&playsinline=1`,
+        embedUrl: `https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&rel=0&playsinline=1`,
       };
     }
     const vimeo = extractVimeoId(url);
     if (vimeo) {
       return {
         kind: 'embed',
-        embedUrl: `https://player.vimeo.com/video/${vimeo}?autoplay=1`,
+        embedUrl: `https://player.vimeo.com/video/${vimeo}?autoplay=1&muted=1`,
       };
     }
     return { kind: 'external', url };

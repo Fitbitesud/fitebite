@@ -100,15 +100,17 @@ function MotionPreviewPlayer({
 
 /** بطاقة فيديو واحدة ضمن المربعات الثلاثة المتتالية */
 function VideoBox({ video, index }: { video: HomeVideo; index: number }) {
-  const [playing, setPlaying] = useState(false);
   const playback = resolveVideoPlayback(video);
+  const [closed, setClosed] = useState(false);
+  // المشغلات المدعومة تُفتح مباشرة؛ الروابط الخارجية وحدها تحتاج نقرة لأن المتصفح يمنع النوافذ المنبثقة التلقائية.
+  const playing = playback.kind !== 'external' && !closed;
 
   const handleActivate = () => {
     if (playback.kind === 'external') {
       window.open(playback.url, '_blank', 'noopener,noreferrer');
       return;
     }
-    setPlaying(true);
+    setClosed(false);
   };
 
   return (
@@ -123,6 +125,7 @@ function VideoBox({ video, index }: { video: HomeVideo; index: number }) {
                 poster={imgUrl(video.poster)}
                 controls
                 autoPlay
+                muted
                 playsInline
                 className="h-full w-full object-cover"
               >
@@ -130,7 +133,7 @@ function VideoBox({ video, index }: { video: HomeVideo; index: number }) {
               </video>
               <button
                 type="button"
-                onClick={() => setPlaying(false)}
+                onClick={() => setClosed(true)}
                 aria-label="إغلاق الفيديو"
                 className="absolute left-2.5 top-2.5 z-10 grid h-8 w-8 place-items-center rounded-full bg-forest-deep/80 text-cream backdrop-blur transition hover:bg-copper"
               >
@@ -148,7 +151,7 @@ function VideoBox({ video, index }: { video: HomeVideo; index: number }) {
               />
               <button
                 type="button"
-                onClick={() => setPlaying(false)}
+                onClick={() => setClosed(true)}
                 aria-label="إغلاق الفيديو"
                 className="absolute left-2.5 top-2.5 z-10 grid h-8 w-8 place-items-center rounded-full bg-forest-deep/80 text-cream backdrop-blur transition hover:bg-copper"
               >
@@ -158,7 +161,7 @@ function VideoBox({ video, index }: { video: HomeVideo; index: number }) {
           ) : playback.kind === 'preview' ? (
             <MotionPreviewPlayer
               scenes={playback.scenes}
-              onClose={() => setPlaying(false)}
+              onClose={() => setClosed(true)}
             />
           ) : null
         ) : (

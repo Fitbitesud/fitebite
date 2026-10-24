@@ -97,7 +97,7 @@ describe('home videos — three consecutive boxes after hero', () => {
       }),
     ).toEqual({
       kind: 'embed',
-      embedUrl: 'https://www.youtube.com/embed/abc123DEF_-?autoplay=1&rel=0&playsinline=1',
+      embedUrl: 'https://www.youtube.com/embed/abc123DEF_-?autoplay=1&mute=1&rel=0&playsinline=1',
     });
 
     const preview = resolveVideoPlayback(DEFAULT_VIDEOS[0]);
