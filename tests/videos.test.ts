@@ -97,10 +97,51 @@ describe('home videos — three consecutive boxes after hero', () => {
       }),
     ).toEqual({
       kind: 'embed',
-      embedUrl: 'https://www.youtube.com/embed/abc123DEF_-?autoplay=1&mute=1&rel=0&playsinline=1',
+      embedUrl:
+        'https://www.youtube.com/embed/abc123DEF_-?autoplay=1&mute=1&loop=1&playlist=abc123DEF_-&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&playsinline=1&iv_load_policy=3',
     });
+
+    const vimeo = resolveVideoPlayback({
+      id: '3',
+      title: 'فيميو',
+      desc: '',
+      videoUrl: 'https://vimeo.com/123456789',
+      poster: '/images/hero-bowl.jpg',
+      active: true,
+    });
+    expect(vimeo.kind).toBe('embed');
+    if (vimeo.kind === 'embed') {
+      expect(vimeo.embedUrl).toContain('autoplay=1');
+      expect(vimeo.embedUrl).toContain('loop=1');
+      expect(vimeo.embedUrl).toContain('background=1');
+    }
 
     const preview = resolveVideoPlayback(DEFAULT_VIDEOS[0]);
     expect(preview.kind).toBe('preview');
+  });
+
+  it('روابط التضمين تُخفي أدوات التحكم وتعمل تلقائياً وتتكرر', () => {
+    const yt = resolveVideoPlayback({
+      id: 'yt',
+      title: 'شورت',
+      desc: '',
+      videoUrl: 'https://www.youtube.com/shorts/abc123DEF_-',
+      poster: '/images/hero-bowl.jpg',
+      active: true,
+    });
+    expect(yt.kind).toBe('embed');
+    if (yt.kind !== 'embed') return;
+    for (const param of [
+      'autoplay=1',
+      'mute=1',
+      'controls=0',
+      'disablekb=1',
+      'fs=0',
+      'loop=1',
+      'playlist=abc123DEF_-',
+      'playsinline=1',
+    ]) {
+      expect(yt.embedUrl).toContain(param);
+    }
   });
 });

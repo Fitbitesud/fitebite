@@ -82,16 +82,19 @@ export function resolveVideoPlayback(video: HomeVideo): VideoPlayback {
     }
     const yt = extractYouTubeId(url);
     if (yt) {
+      // controls=0 يخفي شريط التقديم وكل أزرار المشغّل،
+      // وloop=1 مع playlist بنفس المعرّف يجعل الفيديو يتكرر تلقائياً في يوتيوب.
       return {
         kind: 'embed',
-        embedUrl: `https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&rel=0&playsinline=1`,
+        embedUrl: `https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&loop=1&playlist=${yt}&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&playsinline=1&iv_load_policy=3`,
       };
     }
     const vimeo = extractVimeoId(url);
     if (vimeo) {
+      // background=1 في فيميو يخفي كل أدوات التحكم ويفرض التشغيل التلقائي المكتوم المتكرر.
       return {
         kind: 'embed',
-        embedUrl: `https://player.vimeo.com/video/${vimeo}?autoplay=1&muted=1`,
+        embedUrl: `https://player.vimeo.com/video/${vimeo}?autoplay=1&muted=1&loop=1&background=1&autopause=0&dnt=1`,
       };
     }
     return { kind: 'external', url };
