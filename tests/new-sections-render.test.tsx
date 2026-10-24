@@ -34,9 +34,16 @@ describe('المزايا الجديدة — رسم الواجهة', () => {
     for (const v of DEFAULT_VIDEOS) {
       expect(html).toContain(v.title);
     }
-    // العروض الافتراضية مفتوحة وتعمل دون انتظار الضغط على صورة الغلاف.
+    // العروض الافتراضية مفتوحة وتعمل دون انتظار الضغط على صورة الغلاف،
+    // وتعرض الصورة كاملة بلا قص وبلا أي أدوات تحكم.
     expect(html).toContain(DEFAULT_VIDEOS[0].previewScenes?.[0]?.caption ?? '');
-    expect(html).toContain('إغلاق المشغل');
+    expect(html).toContain('object-contain');
+    expect(html).not.toContain('scale(1.1)');
+    expect(html).not.toContain('bg-cream/25'); // شريط التقدم العلوي
+    expect(html).not.toContain('إغلاق المشغل');
+    expect(html).not.toContain('إغلاق الفيديو');
+    expect(html).not.toContain('إيقاف مؤقت');
+    expect(html).not.toContain('استئناف العرض');
     expect(html).not.toContain('تشغيل فيديو:');
 
     const disabledSite = {
@@ -81,8 +88,25 @@ describe('المزايا الجديدة — رسم الواجهة', () => {
     expect(html).toMatch(/autoplay=""/i);
     expect(html).toContain('muted=""');
     expect(html).toMatch(/playsinline=""/i);
+    expect(html).toMatch(/loop=""/i); // تكرار تلقائي
     expect(html).toContain('autoplay=1&amp;mute=1');
     expect(html).not.toContain('تشغيل فيديو:');
+
+    // لا توجد أدوات تحكم: لا خاصية controls ولا شريط تقديم ولا تنزيل ولا أزرار إغلاق
+    expect(html).not.toMatch(/<video[^>]*\scontrols(?=[\s\/>])/i);
+    expect(html).toContain('nodownload');
+    expect(html).toMatch(/disablepictureinpicture/i);
+    expect(html).not.toContain('إغلاق الفيديو');
+    expect(html).not.toContain('allowfullscreen');
+    expect(html).not.toContain('picture-in-picture');
+
+    // الفيديو يظهر كاملاً داخل المربع دون قصّ، والمقطع المضمّن بلا أدوات تحكم ويتكرر
+    expect(html).toMatch(/<video[^>]*object-contain/i);
+    expect(html).not.toMatch(/<video[^>]*object-cover/i);
+    expect(html).toContain('controls=0');
+    expect(html).toContain('loop=1');
+    expect(html).toContain('playlist=abc123DEF_-');
+    expect(html).toContain('pointer-events-none');
   });
 
   it('قسم الأسئلة الشائعة يعرض الأسئلة مطوية افتراضياً لتظهر الإجابة عند الضغط', () => {
