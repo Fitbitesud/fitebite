@@ -34,6 +34,10 @@ describe('المزايا الجديدة — رسم الواجهة', () => {
     for (const v of DEFAULT_VIDEOS) {
       expect(html).toContain(v.title);
     }
+    // العروض الافتراضية مفتوحة وتعمل دون انتظار الضغط على صورة الغلاف.
+    expect(html).toContain(DEFAULT_VIDEOS[0].previewScenes?.[0]?.caption ?? '');
+    expect(html).toContain('إغلاق المشغل');
+    expect(html).not.toContain('تشغيل فيديو:');
 
     const disabledSite = {
       ...DEFAULT_SITE,
@@ -45,6 +49,40 @@ describe('المزايا الجديدة — رسم الواجهة', () => {
       </SiteProvider>,
     );
     expect(hiddenHtml).toBe('');
+  });
+
+  it('ملفات الفيديو والمقاطع المضمنة تُفتح تلقائياً بصوت مكتوم', () => {
+    const html = renderToStaticMarkup(
+      <SiteProvider value={DEFAULT_SITE}>
+        <VideoShowcase
+          videos={[
+            {
+              id: 'uploaded-video',
+              title: 'ملف مرفوع',
+              desc: '',
+              videoFileUrl: '/videos/kitchen.mp4',
+              poster: '/images/hero-bowl.jpg',
+              active: true,
+            },
+            {
+              id: 'youtube-video',
+              title: 'مقطع يوتيوب',
+              desc: '',
+              videoUrl: 'https://youtu.be/abc123DEF_-',
+              poster: '/images/hero-bowl.jpg',
+              active: true,
+            },
+          ]}
+        />
+      </SiteProvider>,
+    );
+
+    expect(html).toContain('<video');
+    expect(html).toMatch(/autoplay=""/i);
+    expect(html).toContain('muted=""');
+    expect(html).toMatch(/playsinline=""/i);
+    expect(html).toContain('autoplay=1&amp;mute=1');
+    expect(html).not.toContain('تشغيل فيديو:');
   });
 
   it('قسم الأسئلة الشائعة يعرض الأسئلة مطوية افتراضياً لتظهر الإجابة عند الضغط', () => {

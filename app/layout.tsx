@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import '@fontsource/cairo/400.css';
-import '@fontsource/cairo/500.css';
-import '@fontsource/cairo/700.css';
-import '@fontsource/cairo/800.css';
-import '@fontsource/cairo/900.css';
+import '@fontsource/tajawal/400.css';
+import '@fontsource/tajawal/500.css';
+import '@fontsource/tajawal/700.css';
+import '@fontsource/tajawal/800.css';
+import '@fontsource/tajawal/900.css';
 import './globals.css';
 import CartDrawer from '@/components/cart/CartDrawer';
 import { CartProvider } from '@/components/cart/CartContext';
@@ -45,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="ar" dir="rtl" className="scroll-smooth">
-      <body className="bg-cream font-sans text-ink antialiased">
+      <body className="bg-cream font-sans font-medium text-ink antialiased">
         <SiteProvider value={site}>
           <CartProvider>
             <Loader />
