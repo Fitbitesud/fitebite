@@ -27,6 +27,24 @@ const MACROS = [
 ];
 
 const ROTATE_INTERVAL_MS = 3800;
+const HERO_TITLE_CLASS = 'text-4xl font-black leading-[1.28] text-cream sm:text-5xl lg:text-[3.35rem]';
+
+function heroTitle(sentence: HeroSentence, site: ReturnType<typeof useSite>) {
+  return (
+    <>
+      {fillTokens(sentence.lead, site)}
+      {sentence.accent ? (
+        <>
+          {' '}
+          <span className="inline-block bg-gradient-to-l from-orange-soft via-orange to-copper bg-clip-text pb-1 text-transparent">
+            {fillTokens(sentence.accent, site)}
+          </span>
+        </>
+      ) : null}
+      {sentence.tail ? fillTokens(sentence.tail, site) : null}
+    </>
+  );
+}
 
 export default function Hero() {
   const site = useSite();
@@ -79,7 +97,15 @@ export default function Hero() {
             {h.heroBadge}
           </motion.span>
 
-          <div className="mt-6 min-h-[7.5rem] sm:min-h-[8.5rem] lg:min-h-[9.5rem]">
+          <div className="relative mt-6 min-h-[7.5rem] sm:min-h-[8.5rem] lg:min-h-[9.5rem]">
+            {/* احجز ارتفاع أطول عنوان عند عرض الشاشة الحالي حتى لا تقفز بقية الصفحة عند التبديل. */}
+            <div aria-hidden="true" className="invisible grid">
+              {sentences.map((sentence, idx) => (
+                <div key={idx} className={`${HERO_TITLE_CLASS} col-start-1 row-start-1`}>
+                  {heroTitle(sentence, site)}
+                </div>
+              ))}
+            </div>
             <AnimatePresence mode="wait">
               <motion.h1
                 key={`${activeIdx}-${current.lead}-${current.accent ?? ''}`}
@@ -87,19 +113,10 @@ export default function Hero() {
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, y: -18, filter: 'blur(4px)' }}
                 transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-                className="text-4xl font-black leading-[1.28] text-cream sm:text-5xl lg:text-[3.35rem]"
+                className={`${HERO_TITLE_CLASS} absolute inset-x-0 top-0`}
                 aria-live="polite"
               >
-                {fillTokens(current.lead, site)}
-                {current.accent ? (
-                  <>
-                    {' '}
-                    <span className="inline-block bg-gradient-to-l from-orange-soft via-orange to-copper bg-clip-text pb-1 text-transparent">
-                      {fillTokens(current.accent, site)}
-                    </span>
-                  </>
-                ) : null}
-                {current.tail ? fillTokens(current.tail, site) : null}
+                {heroTitle(current, site)}
               </motion.h1>
             </AnimatePresence>
           </div>
