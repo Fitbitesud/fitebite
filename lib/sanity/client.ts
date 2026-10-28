@@ -11,14 +11,20 @@ import { createClient, type SanityClient } from '@sanity/client';
  *  NEXT_PUBLIC_SANITY_API_VERSION     — إصدار API ثابت (افتراضياً 2025-02-19)
  *  NEXT_PUBLIC_SANITY_COMMENT_TOKEN   — توكن API يسمح بإنشاء مستندات التعليقات في الداتاسيت
  */
-export const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'zes52trp';
+export const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? '';
 export const SANITY_DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
 export const SANITY_API_VERSION = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-02-19';
 /** This NEXT_PUBLIC token is embedded in the static bundle; it must never be an admin token. */
 const SANITY_COMMENT_TOKEN = process.env.NEXT_PUBLIC_SANITY_COMMENT_TOKEN ?? '';
 
-/** هل تم ربط Sanity؟ (وجود معرّف المشروع يكفي للقراءة) */
-export const isSanityConfigured = Boolean(SANITY_PROJECT_ID);
+/**
+ * هل تم ربط Sanity بمشروع فعلي في متغيرات البيئة؟
+ * بدون `NEXT_PUBLIC_SANITY_PROJECT_ID` صريح يعمل الموقع ببياناته المحلية فقط
+ * (الباقات الجاهزة المضمنة في الكود، والقوائم، والعروض…)، ولا يحاول القراءة من
+ * معرّف مشروع افتراضي لن يكون المشروع الخاص بلوحة تحكم العميل — وبالتالي لا تظهر
+ * باقات لوحة التحكم وتظل الباقات التجريبية الأولية ظاهرة إلى أن يُربَط المشروع الصحيح.
+ */
+export const isSanityConfigured = Boolean(process.env.NEXT_PUBLIC_SANITY_PROJECT_ID);
 
 let readClient: SanityClient | null = null;
 let freshReadClient: SanityClient | null = null;

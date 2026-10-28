@@ -98,6 +98,37 @@ describe('getReadyPackages — partial dashboard documents are normalised, not d
     });
   });
 
+  it('لوحة التحكم بها باقات صالحة → تستبدل الباقات المحلية الجاهزة بالكامل ولا تختلط بها', async () => {
+    setSanityDoc([
+      {
+        _id: 'p-dash-1',
+        name: 'باقة من لوحة التحكم',
+        goalId: 'cutting',
+        meals: 2,
+        kcal: 2200,
+        priceMonthly: 150000,
+      },
+      {
+        _id: 'p-dash-2',
+        name: 'باقة ثانية من لوحة التحكم',
+        goalId: 'bulking',
+        meals: 4,
+        kcal: 3400,
+        priceMonthly: 400000,
+      },
+    ]);
+    const packages = await getReadyPackages();
+    expect(packages).toHaveLength(2);
+    expect(packages.map((p) => p.id)).toEqual(['p-dash-1', 'p-dash-2']);
+    expect(packages.map((p) => p.name)).toEqual([
+      'باقة من لوحة التحكم',
+      'باقة ثانية من لوحة التحكم',
+    ]);
+    // الباقات المضمنة في الكود (التجريبية الأولية) لا تظهر عند وجود باقات من لوحة التحكم
+    expect(packages.map((p) => p.id)).not.toContain('bulk-pro');
+    expect(packages.map((p) => p.id)).not.toContain('maintain-light');
+  });
+
   it('no dashboard packages or a network failure → local packages', async () => {
     setSanityDoc([]);
     expect(await getReadyPackages()).toEqual(READY_PACKAGES);
