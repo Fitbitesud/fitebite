@@ -70,7 +70,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let alive = true;
     getMenu({ fresh: true })
-      .then((m) => alive && Array.isArray(m?.items) && m.items.length && setCatalog(m.items))
+      // قد تحتوي اللوحة على تصنيفات منشورة قبل إضافة الأصناف. في هذه الحالة
+      // نثبت قائمة فارغة بدلاً من إبقاء أصناف المعاينة داخل السلة.
+      .then((m) => alive && Array.isArray(m?.items) && setCatalog(m.items))
       .catch(() => {});
     return () => {
       alive = false;

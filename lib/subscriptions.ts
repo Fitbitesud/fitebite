@@ -251,20 +251,22 @@ function coerceReadyPackage(d: Partial<ReadyPackage> & { _id: string }): ReadyPa
   };
 }
 
-/** جلب الباقات الجاهزة — من Sanity إذا ضُبطت الوثائق، وإلا القائمة المحلية */
+/**
+ * جلب الباقات الجاهزة — بيانات READY_PACKAGES للمعاينة فقط قبل أول نشر في
+ * Sanity. وجود أي وثيقة باقة في لوحة التحكم يجعلها المصدر الوحيد؛ لذلك حتى
+ * الوثيقة غير المكتملة لا تعيد الباقات التجريبية إلى الواجهة.
+ */
 export async function getReadyPackages(options: ReadClientOptions = {}): Promise<ReadyPackage[]> {
   if (isSanityConfigured) {
     try {
       const docs = await getReadClient(options).fetch<Array<Partial<ReadyPackage> & { _id: string }>>(
         PACKAGES_QUERY
       );
-      if (Array.isArray(docs)) {
-        const valid = docs
+      if (Array.isArray(docs) && docs.length) {
+        return docs
           .filter((d) => d && d._id)
           .map(coerceReadyPackage)
           .filter((pkg): pkg is ReadyPackage => pkg !== null);
-        if (valid.length) return valid;
-        if (docs.length) return [];
       }
     } catch (err) {
       console.error('Sanity packages fetch failed — falling back to local:', err);
