@@ -1,11 +1,10 @@
 /**
- * The local catalogue is preview-only. Once the dashboard has published menu
- * content, its data is the only data shown; images must still resolve safely
- * through imgUrl.
+ * The local catalogue is preview-only. When Sanity is connected, its data is
+ * the only data shown; images must still resolve safely through imgUrl.
  */
 import { beforeEach, describe, expect, it } from 'bun:test';
-import { getMenu, MENU_SYNC } from '../lib/menu';
-import { getReadyPackages, READY_PACKAGES } from '../lib/subscriptions';
+import { getMenu } from '../lib/menu';
+import { getReadyPackages } from '../lib/subscriptions';
 import { imgUrl } from '../lib/site-data';
 import { setSanityDoc, setSanityError } from './helpers';
 
@@ -44,12 +43,12 @@ describe('getMenu — dashboard content replaces the preview catalogue', () => {
     expect(menu).toEqual({ categories: sanityCategories, items: sanityItems });
   });
 
-  it('no dashboard data or a network failure → full local preview menu', async () => {
+  it('empty dashboard or a network failure → empty dashboard menu, never preview content', async () => {
     setSanityDoc({ categories: [], items: [] });
-    expect(await getMenu()).toBe(MENU_SYNC);
+    expect(await getMenu()).toEqual({ categories: [], items: [] });
 
     setSanityError(new Error('cdn unreachable'));
-    expect(await getMenu()).toBe(MENU_SYNC);
+    expect(await getMenu()).toEqual({ categories: [], items: [] });
   });
 });
 
@@ -126,12 +125,12 @@ describe('getReadyPackages — partial dashboard documents are normalised, not d
     expect(packages.map((p) => p.id)).not.toContain('maintain-light');
   });
 
-  it('no dashboard packages or a network failure → local packages', async () => {
+  it('empty dashboard or a network failure → no preview packages', async () => {
     setSanityDoc([]);
-    expect(await getReadyPackages()).toEqual(READY_PACKAGES);
+    expect(await getReadyPackages()).toEqual([]);
 
     setSanityError(new Error('cdn unreachable'));
-    expect(await getReadyPackages()).toEqual(READY_PACKAGES);
+    expect(await getReadyPackages()).toEqual([]);
   });
 });
 
