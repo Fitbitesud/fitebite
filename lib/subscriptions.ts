@@ -252,27 +252,26 @@ function coerceReadyPackage(d: Partial<ReadyPackage> & { _id: string }): ReadyPa
 }
 
 /**
- * جلب الباقات الجاهزة — بيانات READY_PACKAGES للمعاينة فقط قبل أول نشر في
- * Sanity. وجود أي وثيقة باقة في لوحة التحكم يجعلها المصدر الوحيد؛ لذلك حتى
- * الوثيقة غير المكتملة لا تعيد الباقات التجريبية إلى الواجهة.
+ * جلب الباقات الجاهزة — بيانات READY_PACKAGES للمعاينة فقط قبل ربط Sanity.
+ * بعد ضبط مشروع اللوحة لا نعرض باقات المعاينة إطلاقاً، حتى عندما تكون اللوحة
+ * فارغة أو يتعذر الجلب، حتى لا تظهر باقات تجريبية بجانب الباقات الحقيقية.
  */
 export async function getReadyPackages(options: ReadClientOptions = {}): Promise<ReadyPackage[]> {
-  if (isSanityConfigured) {
-    try {
-      const docs = await getReadClient(options).fetch<Array<Partial<ReadyPackage> & { _id: string }>>(
-        PACKAGES_QUERY
-      );
-      if (Array.isArray(docs) && docs.length) {
-        return docs
-          .filter((d) => d && d._id)
-          .map(coerceReadyPackage)
-          .filter((pkg): pkg is ReadyPackage => pkg !== null);
-      }
-    } catch (err) {
-      console.error('Sanity packages fetch failed — falling back to local:', err);
-    }
+  if (!isSanityConfigured) return READY_PACKAGES;
+
+  try {
+    const docs = await getReadClient(options).fetch<Array<Partial<ReadyPackage> & { _id: string }>>(
+      PACKAGES_QUERY
+    );
+    if (!Array.isArray(docs)) return [];
+    return docs
+      .filter((d) => d && d._id)
+      .map(coerceReadyPackage)
+      .filter((pkg): pkg is ReadyPackage => pkg !== null);
+  } catch (err) {
+    console.error('Sanity packages fetch failed — keeping the dashboard packages empty:', err);
+    return [];
   }
-  return READY_PACKAGES;
 }
 
 /** رسالة واتساب جاهزة لطلب باقة شهرية جاهزة بالاسم والسعر والماكروز */

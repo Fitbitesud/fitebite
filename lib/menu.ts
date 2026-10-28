@@ -289,29 +289,23 @@ const MENU: MenuData = {
  * جلب القائمة — من Sanity إذا ضُبط المشروع، وإلا فبيانات المعاينة المحلية.
  *
  * بيانات `MENU` موجودة فقط كي لا تبدو النسخة الجديدة من الموقع فارغة قبل ربط لوحة
- * التحكم. بمجرد نشر أي تصنيف أو صنف في Sanity تصبح اللوحة هي المصدر الوحيد لهذا
- * القسم؛ لا نكمل الجزء الناقص من بيانات المعاينة حتى لا تختلط أصناف/تصنيفات التصميم
- * التجريبي مع الأصناف الحقيقية.
+ * التحكم. أما بعد ضبط مشروع Sanity فاللوحة هي المصدر الوحيد للقسم حتى إن لم تُنشر
+ * وثائق بعد أو فشل الاتصال؛ لا نكملها من بيانات المعاينة كي لا تختلط أصناف/تصنيفات
+ * التصميم التجريبي مع الأصناف الحقيقية.
  */
 export async function getMenu(options: ReadClientOptions = {}): Promise<MenuData> {
-  if (isSanityConfigured) {
-    try {
-      const data = await getReadClient(options).fetch<Partial<MenuData>>(MENU_QUERY);
-      const categories = Array.isArray(data?.categories) ? data.categories : [];
-      const items = Array.isArray(data?.items) ? data.items : [];
+  if (!isSanityConfigured) return MENU;
 
-      // وجود أي محتوى منشور في لوحة التحكم يلغي القائمة التجريبية بالكامل.
-      if (categories.length || items.length) {
-        return {
-          categories: categories as MenuData['categories'],
-          items: items as MenuData['items'],
-        };
-      }
-    } catch (err) {
-      console.error('Sanity menu fetch failed — falling back to local data:', err);
-    }
+  try {
+    const data = await getReadClient(options).fetch<Partial<MenuData>>(MENU_QUERY);
+    return {
+      categories: (Array.isArray(data?.categories) ? data.categories : []) as MenuData['categories'],
+      items: (Array.isArray(data?.items) ? data.items : []) as MenuData['items'],
+    };
+  } catch (err) {
+    console.error('Sanity menu fetch failed — keeping the dashboard menu empty:', err);
+    return { categories: [], items: [] };
   }
-  return MENU;
 }
 
 export const MENU_SYNC = MENU;
