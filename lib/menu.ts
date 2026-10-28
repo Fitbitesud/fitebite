@@ -285,19 +285,26 @@ const MENU: MenuData = {
   ],
 };
 
-/** جلب القائمة — من Sanity إذا ضُبط المشروع، وإلا فالبيانات المحلية.
- *  البيانات الجزئية (تصنيفات بدون أصناف أو العكس) لا تُسقط كل شيء:
- *  يُعرض الجزء المنشور في لوحة التحكم ويُكمَّل الباقي من البيانات المحلية. */
+/**
+ * جلب القائمة — من Sanity إذا ضُبط المشروع، وإلا فبيانات المعاينة المحلية.
+ *
+ * بيانات `MENU` موجودة فقط كي لا تبدو النسخة الجديدة من الموقع فارغة قبل ربط لوحة
+ * التحكم. بمجرد نشر أي تصنيف أو صنف في Sanity تصبح اللوحة هي المصدر الوحيد لهذا
+ * القسم؛ لا نكمل الجزء الناقص من بيانات المعاينة حتى لا تختلط أصناف/تصنيفات التصميم
+ * التجريبي مع الأصناف الحقيقية.
+ */
 export async function getMenu(options: ReadClientOptions = {}): Promise<MenuData> {
   if (isSanityConfigured) {
     try {
       const data = await getReadClient(options).fetch<Partial<MenuData>>(MENU_QUERY);
       const categories = Array.isArray(data?.categories) ? data.categories : [];
       const items = Array.isArray(data?.items) ? data.items : [];
+
+      // وجود أي محتوى منشور في لوحة التحكم يلغي القائمة التجريبية بالكامل.
       if (categories.length || items.length) {
         return {
-          categories: categories.length ? (categories as MenuData['categories']) : MENU.categories,
-          items: items.length ? (items as MenuData['items']) : MENU.items,
+          categories: categories as MenuData['categories'],
+          items: items as MenuData['items'],
         };
       }
     } catch (err) {

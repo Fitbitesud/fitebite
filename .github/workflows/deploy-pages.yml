@@ -20,6 +20,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # يتيح أسرار Sanity المحفوظة على بيئة GitHub Pages (إن وُجدت) أثناء
+    # البناء، فتُضمَّن بيانات مشروع لوحة التحكم في النسخة الثابتة أيضاً.
+    environment: github-pages
     steps:
       - name: Checkout
         uses: actions/checkout@v4

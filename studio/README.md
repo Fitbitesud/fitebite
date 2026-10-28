@@ -50,13 +50,25 @@
 
 ## ربط الموقع باللوحة
 
-في جذر المستودع ضع متغيرات البيئة (محلياً في `.env.local`، وللنشر في GitHub → Settings → Secrets and variables → Actions):
+محلياً، ضع متغيرات البيئة الآتية في جذر المستودع داخل `.env.local`:
 
 ```
 NEXT_PUBLIC_SANITY_PROJECT_ID=<نفس المعرّف>
 NEXT_PUBLIC_SANITY_DATASET=production
 NEXT_PUBLIC_SANITY_COMMENT_TOKEN=<توكن Sanity يسمح بإنشاء المستندات في هذا الداتاسيت>
 ```
+
+للنشر، أضفها في GitHub → **Settings → Environments → github-pages → Secrets** (أو في أسرار
+المستودع) بالأسماء التي يقرأها الـ workflow، من دون بادئة `NEXT_PUBLIC_`:
+
+```
+SANITY_PROJECT_ID=<نفس المعرّف>
+SANITY_DATASET=production
+SANITY_API_VERSION=2025-02-19
+SANITY_COMMENT_TOKEN=<توكن التعليقات الاختياري>
+```
+
+مهمة البناء تعمل ضمن بيئة `github-pages`، لذلك تصلها أسرار البيئة وأسرار المستودع معاً.
 
 **مهم:** `comment` هو نوع مستند في مخطط Sanity، وليس اسم صلاحية للتوكن؛ لن تجد بالضرورة خياراً باسم `comment` في صفحة التوكنات. الموقع ينفذ `client.create()` مع معرّف يبدأ بـ`drafts.` لإنشاء مسودة `_type: "comment"` في الداتاسيت المحدد، بدلاً من إنشاء مستند منشور مباشرةً. هذا يناسب دور Contributor إذا كان يسمح بإنشاء المسودات. راجع المسودة في Studio، وفعّل الموافقة ثم انشرها كي تظهر للزوار. لا تختَر Administrator كحل سريع.
 

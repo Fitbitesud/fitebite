@@ -1,6 +1,7 @@
 /**
- * Partial dashboard data must still show up (completed from local defaults),
- * and images must resolve safely through imgUrl.
+ * The local catalogue is preview-only. Once the dashboard has published menu
+ * content, its data is the only data shown; images must still resolve safely
+ * through imgUrl.
  */
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { getMenu, MENU_SYNC } from '../lib/menu';
@@ -10,7 +11,7 @@ import { setSanityDoc, setSanityError } from './helpers';
 
 beforeEach(() => setSanityDoc(null));
 
-describe('getMenu — partial dashboard data is kept, not dropped', () => {
+describe('getMenu — dashboard content replaces the preview catalogue', () => {
   const sanityCategories = [{ _id: 'sc1', slug: 'bowls', name: 'باولز', icon: 'bowl', order: 1 }];
   const sanityItems = [
     {
@@ -27,18 +28,14 @@ describe('getMenu — partial dashboard data is kept, not dropped', () => {
     },
   ];
 
-  it('sanity categories + empty items → sanity categories completed with local items', async () => {
+  it('dashboard categories + no items → no local preview items are mixed in', async () => {
     setSanityDoc({ categories: sanityCategories, items: [] });
-    const menu = await getMenu();
-    expect(menu.categories).toEqual(sanityCategories);
-    expect(menu.items).toEqual(MENU_SYNC.items);
+    expect(await getMenu()).toEqual({ categories: sanityCategories, items: [] });
   });
 
-  it('empty categories + sanity items → sanity items completed with local categories', async () => {
+  it('dashboard items + no categories → no local preview categories are mixed in', async () => {
     setSanityDoc({ categories: [], items: sanityItems });
-    const menu = await getMenu();
-    expect(menu.items).toEqual(sanityItems);
-    expect(menu.categories).toEqual(MENU_SYNC.categories);
+    expect(await getMenu()).toEqual({ categories: [], items: sanityItems });
   });
 
   it('fully published menu is used as-is', async () => {
@@ -47,7 +44,7 @@ describe('getMenu — partial dashboard data is kept, not dropped', () => {
     expect(menu).toEqual({ categories: sanityCategories, items: sanityItems });
   });
 
-  it('no dashboard data or a network failure → full local menu', async () => {
+  it('no dashboard data or a network failure → full local preview menu', async () => {
     setSanityDoc({ categories: [], items: [] });
     expect(await getMenu()).toBe(MENU_SYNC);
 
