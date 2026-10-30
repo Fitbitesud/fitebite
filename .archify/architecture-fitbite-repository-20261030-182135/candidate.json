@@ -1,0 +1,314 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Fitbite Repository Architecture",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "output": ".archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+    "repository": {
+      "url": "https://github.com/Fitbitesud/fitebite.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "07c39ee5cc55de6e533d68b9580f6b962c6c4f4d"
+    }
+  },
+  "components": [
+    {
+      "id": "github-repo",
+      "type": "cloud",
+      "label": "GitHub repository",
+      "sublabel": "source code + workflow",
+      "pos": [40, 70],
+      "size": [150, 72],
+      "sources": [
+        {
+          "path": ".github/workflows/deploy-pages.yml",
+          "line": 27,
+          "end_line": 37,
+          "label": "Checkout source"
+        }
+      ]
+    },
+    {
+      "id": "github-actions",
+      "type": "cloud",
+      "label": "GitHub Actions",
+      "sublabel": "Node 20 · npm ci/build",
+      "pos": [270, 70],
+      "size": [160, 72],
+      "sources": [
+        {
+          "path": ".github/workflows/deploy-pages.yml",
+          "line": 20,
+          "end_line": 61,
+          "label": "Build export"
+        },
+        {
+          "path": ".github/workflows/deploy-pages.yml",
+          "line": 63,
+          "end_line": 72,
+          "label": "Deploy job"
+        }
+      ]
+    },
+    {
+      "id": "github-pages",
+      "type": "cloud",
+      "label": "GitHub Pages",
+      "sublabel": "static host · fitbite-sudan.com",
+      "pos": [500, 70],
+      "size": [170, 72],
+      "sources": [
+        {
+          "path": ".github/workflows/deploy-pages.yml",
+          "line": 55,
+          "end_line": 72,
+          "label": "Pages artifact + deploy"
+        },
+        {
+          "path": "next.config.mjs",
+          "line": 11,
+          "end_line": 20,
+          "label": "Static export config"
+        },
+        {
+          "path": "README.md",
+          "line": 70,
+          "end_line": 87,
+          "label": "Custom domain"
+        }
+      ]
+    },
+    {
+      "id": "visitor",
+      "type": "external",
+      "label": "Visitor",
+      "sublabel": "Customer browser",
+      "pos": [500, 255],
+      "size": [150, 72],
+      "sources": [
+        {
+          "path": "app/page.tsx",
+          "line": 27,
+          "end_line": 39,
+          "label": "Rendered page"
+        },
+        {
+          "path": "components/cart/CartDrawer.tsx",
+          "line": 78,
+          "end_line": 104,
+          "label": "Checkout interaction"
+        }
+      ]
+    },
+    {
+      "id": "fitbite-app",
+      "type": "frontend",
+      "label": "Fitbite web app",
+      "sublabel": "Next.js 15 · static export",
+      "pos": [780, 255],
+      "size": [180, 80],
+      "sources": [
+        {
+          "path": "app/page.tsx",
+          "line": 17,
+          "end_line": 40,
+          "label": "App Router page"
+        },
+        {
+          "path": "components/useLiveData.ts",
+          "line": 13,
+          "end_line": 30,
+          "label": "Client refresh"
+        },
+        {
+          "path": "components/SiteContext.tsx",
+          "line": 6,
+          "end_line": 27,
+          "label": "Site settings refresh"
+        }
+      ]
+    },
+    {
+      "id": "sanity-api",
+      "type": "database",
+      "label": "Sanity Content API",
+      "sublabel": "GROQ · published dataset",
+      "pos": [1080, 255],
+      "size": [150, 80],
+      "sources": [
+        {
+          "path": "lib/sanity/client.ts",
+          "line": 37,
+          "end_line": 71,
+          "label": "Read/write clients"
+        },
+        {
+          "path": "lib/sanity/queries.ts",
+          "line": 3,
+          "end_line": 18,
+          "label": "Content queries"
+        },
+        {
+          "path": "lib/sanity/queries.ts",
+          "line": 73,
+          "end_line": 105,
+          "label": "CMS data queries"
+        }
+      ]
+    },
+    {
+      "id": "whatsapp",
+      "type": "external",
+      "label": "WhatsApp",
+      "sublabel": "wa.me · order handoff",
+      "pos": [500, 465],
+      "size": [160, 72],
+      "sources": [
+        {
+          "path": "lib/whatsapp.ts",
+          "line": 88,
+          "end_line": 95,
+          "label": "wa.me link builder"
+        },
+        {
+          "path": "components/cart/CartDrawer.tsx",
+          "line": 91,
+          "end_line": 104,
+          "label": "Order handoff"
+        },
+        {
+          "path": "lib/consultations.ts",
+          "line": 153,
+          "end_line": 215,
+          "label": "Consultation handoff"
+        }
+      ]
+    },
+    {
+      "id": "browser-storage",
+      "type": "database",
+      "label": "Browser storage",
+      "sublabel": "localStorage · cart + drafts",
+      "pos": [780, 465],
+      "size": [180, 72],
+      "sources": [
+        {
+          "path": "components/cart/CartContext.tsx",
+          "line": 19,
+          "end_line": 68,
+          "label": "Persisted cart"
+        },
+        {
+          "path": "lib/comments.ts",
+          "line": 114,
+          "end_line": 145,
+          "label": "Pending comments"
+        },
+        {
+          "path": "lib/consultations.ts",
+          "line": 126,
+          "end_line": 145,
+          "label": "Saved consultations"
+        }
+      ]
+    },
+    {
+      "id": "sanity-studio",
+      "type": "frontend",
+      "label": "Sanity Studio",
+      "sublabel": "content admin · publish",
+      "pos": [1080, 465],
+      "size": [150, 80],
+      "sources": [
+        {
+          "path": "studio/sanity.config.ts",
+          "line": 44,
+          "end_line": 53,
+          "label": "Studio configuration"
+        },
+        {
+          "path": "studio/schemaTypes/index.ts",
+          "line": 12,
+          "end_line": 23,
+          "label": "Managed document types"
+        },
+        {
+          "path": "studio/README.md",
+          "line": 14,
+          "end_line": 24,
+          "label": "Run and deploy Studio"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "repo-checkout",
+      "from": "github-repo",
+      "to": "github-actions",
+      "label": "checkout"
+    },
+    {
+      "id": "actions-pages",
+      "from": "github-actions",
+      "to": "github-pages",
+      "label": "deploy"
+    },
+    {
+      "id": "pages-app",
+      "from": "github-pages",
+      "to": "fitbite-app",
+      "label": "serves"
+    },
+    {
+      "id": "visitor-app",
+      "from": "visitor",
+      "to": "fitbite-app",
+      "label": "browse / order"
+    },
+    {
+      "id": "app-sanity",
+      "from": "fitbite-app",
+      "to": "sanity-api",
+      "label": "GROQ + drafts"
+    },
+    {
+      "id": "studio-sanity",
+      "from": "sanity-studio",
+      "to": "sanity-api",
+      "label": "edit / publish"
+    },
+    {
+      "id": "app-storage",
+      "from": "fitbite-app",
+      "to": "browser-storage",
+      "label": "persist cart"
+    },
+    {
+      "id": "app-whatsapp",
+      "from": "fitbite-app",
+      "to": "whatsapp",
+      "label": "wa.me handoff"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Content path",
+      "items": [
+        "Build-time reads use Sanity's CDN; after first render, the browser fetches fresh CMS data directly.",
+        "Without a configured Sanity project ID, local defaults supply the content."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Customer flows",
+      "items": [
+        "Cart quantities persist in browser localStorage; checkout opens a prefilled WhatsApp message.",
+        "Optional comment and consultation drafts sync to Sanity; local device copies remain available."
+      ]
+    }
+  ]
+}

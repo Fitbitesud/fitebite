@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/candidate.json",
+    "sha256": "20ccb7d0cdb030ee9320cc7af6aaf3db620182b9ce244d0c6d5bceecf9612773",
+    "bytes": 7633
+  },
+  "artifact": {
+    "path": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+    "sha256": "76ade96bcde0d7a522337c7ccbc5dbb12101d41e898cfa186d315162d53da20e",
+    "bytes": 849706
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/review-2/fitbite-repository.finalize.json",
+    "summaryReceipt": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/review-2/fitbite-repository.finalize-summary.json",
+    "browserCheckReceipt": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/review-2/fitbite-repository.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3801,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

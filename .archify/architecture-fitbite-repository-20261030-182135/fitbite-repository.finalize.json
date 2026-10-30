@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "skipped",
+  "type": "architecture",
+  "quality": "showcase",
+  "startedAt": "2026-10-30T14:23:26.816Z",
+  "specification": {
+    "path": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/candidate.json",
+    "sha256": "20ccb7d0cdb030ee9320cc7af6aaf3db620182b9ce244d0c6d5bceecf9612773",
+    "bytes": 7633
+  },
+  "artifact": {
+    "path": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+    "sha256": "76ade96bcde0d7a522337c7ccbc5dbb12101d41e898cfa186d315162d53da20e",
+    "bytes": 849706
+  },
+  "stages": {
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/user/.agents/skills/archify/bin/archify.mjs",
+        "deliver",
+        "architecture",
+        "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/candidate.json",
+        "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "/home/user/fitebite",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "20ccb7d0cdb030ee9320cc7af6aaf3db620182b9ce244d0c6d5bceecf9612773",
+          "bytes": 7633
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 436,
+      "command": [
+        "/usr/local/bin/node",
+        "/home/user/.agents/skills/archify/bin/archify.mjs",
+        "deliver",
+        "architecture",
+        "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/candidate.json",
+        "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "/home/user/fitebite",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "9ae0e3e7-ab46-4f10-97d7-e7f2c9830cf4",
+        "ok": true,
+        "command": "deliver",
+        "type": "architecture",
+        "input": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/candidate.json",
+        "output": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+        "specification": {
+          "sha256": "20ccb7d0cdb030ee9320cc7af6aaf3db620182b9ce244d0c6d5bceecf9612773",
+          "bytes": 7633
+        },
+        "artifact": {
+          "sha256": "76ade96bcde0d7a522337c7ccbc5dbb12101d41e898cfa186d315162d53da20e",
+          "bytes": 849706
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        },
+        "evidence": {
+          "verified": true,
+          "repository": "https://github.com/Fitbitesud/fitebite",
+          "revision": "07c39ee5cc55de6e533d68b9580f6b962c6c4f4d",
+          "references": 23
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 177,
+      "command": [
+        "/usr/local/bin/node",
+        "/home/user/.agents/skills/archify/bin/archify.mjs",
+        "check",
+        "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+        "artifact": {
+          "sha256": "76ade96bcde0d7a522337c7ccbc5dbb12101d41e898cfa186d315162d53da20e",
+          "bytes": 849706
+        },
+        "checks": [
+          {
+            "name": "single_svg",
+            "ok": true,
+            "details": [
+              "found 1 <svg> block(s)"
+            ]
+          },
+          {
+            "name": "finite_svg",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "orthogonal_arrows",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "label_route_clearance",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_crossings",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_corridors",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "container_border_runs",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "route_rhythm",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "legend_clearance",
+            "ok": true,
+            "details": []
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "showcase",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "metrics": {
+            "properCrossings": 0,
+            "resolvedCrossovers": 0,
+            "ambiguousCorridors": 0,
+            "arrowheadCollisions": 0,
+            "containerBorderRuns": 0,
+            "labelRouteClearanceIssues": 0,
+            "labelCanvasOverflowIssues": 0,
+            "minLabelRouteClearance": 20,
+            "desktopReadabilityIssues": 0,
+            "viewportHeightIssues": 0,
+            "minProjectedNodeTextPx": 7.5,
+            "maxBends": 2,
+            "routesOverSuggestedBends": 0,
+            "maxStretch": 1,
+            "routesOverSuggestedStretch": 0,
+            "minSegmentPx": 60,
+            "minInteriorSegmentPx": 192,
+            "shortSegmentCount": 0,
+            "shortEndpointSegmentCount": 0,
+            "shortInteriorSegmentCount": 0,
+            "microSegmentCount": 0
+          },
+          "suggestedLimits": {
+            "bendsPerRelationship": 2,
+            "stretch": 1.35,
+            "segmentPx": 16,
+            "microSegmentPx": 8
+          },
+          "routeReview": {
+            "crossings": [],
+            "detours": []
+          },
+          "leadingSpace": {
+            "measured": true,
+            "emptyTopPx": 70,
+            "emptyTopRatio": 0.114,
+            "occupiedTop": 70,
+            "viewBoxTop": 0,
+            "canvasHeight": 613,
+            "typicalNodeHeight": 72,
+            "reviewSuggested": false
+          },
+          "desktopReadability": {
+            "budgetBasis": "recognized-declared-wide",
+            "readerContract": "declared-wide-v1",
+            "availableDiagramWidth": 1190.625,
+            "actualBudgetPx": 1190.625,
+            "actualReaderWidth": 1220.625,
+            "desiredReaderWidth": 1220.625,
+            "viewportCap": 1376,
+            "limit": "source-size",
+            "requestedTargetPx": 7.5,
+            "requestedTargetMet": true,
+            "hardFloorPx": 6,
+            "hardFloorMet": true,
+            "minimumOwner": {
+              "kind": "edge",
+              "id": "repo-checkout",
+              "from": "github-repo",
+              "to": "github-actions"
+            },
+            "minimumSourceTextPx": 8,
+            "minimumProjectedTextPx": 7.5,
+            "semanticTextCount": 26
+          },
+          "issues": []
+        },
+        "provenance": "current",
+        "deliveryReceiptId": "9ae0e3e7-ab46-4f10-97d7-e7f2c9830cf4"
+      }
+    },
+    "browser-check": {
+      "status": "skipped",
+      "exitCode": 2,
+      "durationMs": 25,
+      "command": [
+        "/usr/local/bin/node",
+        "/home/user/.agents/skills/archify/bin/archify.mjs",
+        "browser-check",
+        "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+        "--json",
+        "--require-provenance"
+      ],
+      "execution": "in-process",
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "browser-check",
+        "evidenceKind": "automated-browser",
+        "status": "skipped",
+        "visualReview": "not-requested",
+        "provenance": "current",
+        "deliveryReceiptId": "9ae0e3e7-ab46-4f10-97d7-e7f2c9830cf4",
+        "artifact": {
+          "path": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+          "sha256": "76ade96bcde0d7a522337c7ccbc5dbb12101d41e898cfa186d315162d53da20e",
+          "bytes": 849706
+        },
+        "state": {
+          "detail": "read",
+          "motion": "still"
+        },
+        "chrome": {
+          "status": "unavailable",
+          "executable": null
+        },
+        "diagnostics": [
+          {
+            "code": "viewer/chrome-unavailable",
+            "severity": "warning",
+            "message": "No supported browser found. Install Chrome/Chromium (or Microsoft Edge), or set ARCHIFY_CHROME to its executable path.",
+            "subject": {
+              "artifact": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html"
+            },
+            "evidence": {
+              "executable": null
+            },
+            "supportedFixes": [
+              "set ARCHIFY_CHROME to a Chrome/Chromium executable (or Microsoft Edge) and rerun browser-check"
+            ]
+          }
+        ],
+        "containment": {
+          "status": "skipped",
+          "policy": "fit-or-reader-declared-readable-vertical-scroll",
+          "viewports": []
+        },
+        "themeStates": {
+          "status": "skipped",
+          "viewports": []
+        },
+        "readability": {
+          "status": "skipped",
+          "minimumProjectedNodeTextPx": 6,
+          "viewports": []
+        },
+        "viewerChrome": {
+          "status": "skipped",
+          "viewports": []
+        },
+        "captures": {
+          "status": "not-requested",
+          "screenshots": [],
+          "contactSheet": null
+        },
+        "sidecars": {
+          "receipt": "fitbite-repository.browser-check.json",
+          "files": []
+        },
+        "error": "No supported browser found. Install Chrome/Chromium (or Microsoft Edge), or set ARCHIFY_CHROME to its executable path."
+      }
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [
+    {
+      "code": "viewer/chrome-unavailable",
+      "severity": "warning",
+      "message": "No supported browser found. Install Chrome/Chromium (or Microsoft Edge), or set ARCHIFY_CHROME to its executable path.",
+      "subject": {
+        "artifact": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html"
+      },
+      "evidence": {
+        "executable": null
+      },
+      "supportedFixes": [
+        "set ARCHIFY_CHROME to a Chrome/Chromium executable (or Microsoft Edge) and rerun browser-check"
+      ]
+    }
+  ],
+  "evidence": {
+    "receipt": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.finalize.json",
+    "summaryReceipt": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.finalize-summary.json",
+    "browserCheckReceipt": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "browser-check",
+  "finishedAt": "2026-10-30T14:23:27.544Z",
+  "durationMs": 727,
+  "update": {
+    "status": "unavailable",
+    "installedVersion": null,
+    "availableVersion": null,
+    "releaseNotes": null,
+    "checkedAt": null,
+    "source": null,
+    "noticeRequired": false,
+    "noticeText": null,
+    "reason": "check-failed"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "skipped",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/candidate.json",
+    "sha256": "20ccb7d0cdb030ee9320cc7af6aaf3db620182b9ce244d0c6d5bceecf9612773",
+    "bytes": 7633
+  },
+  "artifact": {
+    "path": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+    "sha256": "76ade96bcde0d7a522337c7ccbc5dbb12101d41e898cfa186d315162d53da20e",
+    "bytes": 849706
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "skipped"
+  },
+  "failedStage": "browser-check",
+  "diagnostics": [
+    {
+      "code": "viewer/chrome-unavailable",
+      "severity": "warning",
+      "message": "No supported browser found. Install Chrome/Chromium (or Microsoft Edge), or set ARCHIFY_CHROME to its executable path.",
+      "subject": {
+        "artifact": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html"
+      },
+      "evidence": {
+        "executable": null
+      },
+      "supportedFixes": [
+        "set ARCHIFY_CHROME to a Chrome/Chromium executable (or Microsoft Edge) and rerun browser-check"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.finalize.json",
+    "summaryReceipt": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.finalize-summary.json",
+    "browserCheckReceipt": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 727,
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  }
+}

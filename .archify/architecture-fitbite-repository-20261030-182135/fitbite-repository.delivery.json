@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "a3e1a714-a3cb-4038-a1ab-a1622b11a9e5",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/candidate.json",
+  "output": "/home/user/fitebite/.archify/architecture-fitbite-repository-20261030-182135/fitbite-repository.html",
+  "specification": {
+    "sha256": "20ccb7d0cdb030ee9320cc7af6aaf3db620182b9ce244d0c6d5bceecf9612773",
+    "bytes": 7633
+  },
+  "artifact": {
+    "sha256": "76ade96bcde0d7a522337c7ccbc5dbb12101d41e898cfa186d315162d53da20e",
+    "bytes": 849706
+  }
+}
