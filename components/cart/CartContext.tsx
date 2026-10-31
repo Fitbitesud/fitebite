@@ -125,6 +125,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [cart, catalog],
   );
 
+  /* إجماليات السلة = قيمة الأكل فقط (سعر التوصيل يُحسب في السلة بعد اختيار المنطقة) */
   const totals = useMemo(() => computeTotals(lines), [lines]);
   const qtyOf = useCallback((id: string) => cart[id] ?? 0, [cart]);
 

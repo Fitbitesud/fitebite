@@ -1,5 +1,6 @@
 import {category} from './category'
 import {comment} from './comment'
+import {deliveryRegion} from './deliveryRegion'
 import {consultation} from './consultation'
 import {faqItem} from './faqItem'
 import {galleryItem} from './galleryItem'
@@ -11,6 +12,7 @@ import {siteSettings} from './siteSettings'
 
 export const schemaTypes = [
   siteSettings,
+  deliveryRegion,
   category,
   menuItem,
   readyPackage,

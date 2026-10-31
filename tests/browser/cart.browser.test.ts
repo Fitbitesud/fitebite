@@ -141,7 +141,7 @@ async function chooseFulfillment(page: Page, label: 'توصيل' | 'استلام
 }
 const submitBtn = (page: Page) => page.getByRole('button', { name: /إتمام الطلب عبر واتساب/ });
 
-/** Adds m9×2 + m10×1 (20,500 — no delivery fee is ever added), opens the drawer, fills the form. */
+/** Adds m9×2 + m10×1 (20,500 before any delivery fee), opens the drawer, fills the form. */
 async function readyToOrder(opts: Opts = {}) {
   const ctx = await openPage(opts);
   await act(ctx.page, 'add', 'm9');
@@ -161,7 +161,7 @@ d('cart — state and totals', () => {
     const { page } = await openPage();
     const s = await state(page);
     expect(s.lines).toEqual([]);
-    expect(s.totals).toEqual({ count: 0, kcal: 0, protein: 0, subtotal: 0, total: 0 });
+    expect(s.totals).toEqual({ count: 0, kcal: 0, protein: 0, subtotal: 0, delivery: 0, total: 0 });
   });
 
   it('add / inc / dec / remove / clear behave and totals follow', async () => {
@@ -202,19 +202,18 @@ d('cart — state and totals', () => {
     expect((await state(page)).totals.subtotal).toBe(0);
   });
 
-  it('no delivery fee is ever added — the total is the food value above and below the old 40,000 threshold', async () => {
+  it('with no configured fee the total is the food value above and below the old 40,000 threshold', async () => {
     const five = byPrice(5000);
     const { page } = await openPage();
     for (let i = 0; i < 7; i++) await act(page, 'add', five._id); // 35,000
     await act(page, 'add', byPrice(4500)._id); // 39,500 (used to pay a 2,000 delivery fee)
     let t = (await state(page)).totals;
-    expect([t.subtotal, t.total]).toEqual([39500, 39500]);
-    expect(t).not.toHaveProperty('delivery');
+    expect([t.subtotal, t.delivery, t.total]).toEqual([39500, 0, 39500]);
 
     await act(page, 'remove', byPrice(4500)._id);
     await act(page, 'add', five._id); // 8 × 5,000 = 40,000 exactly (used to be «مجاني»)
     t = (await state(page)).totals;
-    expect([t.subtotal, t.total]).toEqual([40000, 40000]);
+    expect([t.subtotal, t.delivery, t.total]).toEqual([40000, 0, 40000]);
   });
 
   it('the drawer shows the same numbers as the cart state', async () => {
@@ -552,7 +551,7 @@ d('checkout — the WhatsApp message and recipient', () => {
     expect(text).toContain('1) باول الشوفان بالتوت × 2');
     expect(text).toContain('2) بان كيك البروتين × 1');
     expect(n(/المجموع الفرعي: ([\d,]+)/.exec(text)![1])).toBe(before.totals.subtotal);
-    expect(text).toContain('🛵 التوصيل: مع مندوب التوصيل');
+    expect(text).toContain('🛵 التوصيل (أم درمان): بدون رسوم');
     expect(n(/الإجمالي الكلي: ([\d,]+)/.exec(text)![1])).toBe(before.totals.total);
     expect(before.totals.total).toBe(20500);
   });
@@ -583,23 +582,75 @@ d('checkout — the WhatsApp message and recipient', () => {
     expect(new URL(href).searchParams.get('text')).toContain('20,500 SDG');
   });
 
+  it('the fixed fee of the chosen region is added to the drawer totals and to the WhatsApp message', async () => {
+    const { page } = await readyToOrder({
+      sanityDoc: {
+        regions: [
+          { name: 'أم درمان', deliveryFee: 3000 },
+          { name: 'بحري', deliveryFee: 0 },
+        ],
+      },
+    });
+
+    const cart = await state(page);
+    expect(cart.totals).toMatchObject({ subtotal: 20500, delivery: 3000, total: 23500 });
+    const drawer = await drawerText(page);
+    expect(drawer).toContain('التوصيل — أم درمان');
+    expect(drawer).toContain('3,000 ج.س');
+    expect(drawer).toContain('سعر التوصيل الثابت إلى أم درمان: 3,000 ج.س');
+    expect(await submitBtn(page).innerText()).toContain('23,500 ج.س');
+
+    // switching to a region with no fee removes the delivery charge immediately
+    await page.locator('aside select').selectOption('بحري');
+    await page.waitForTimeout(40);
+    expect((await state(page)).totals.delivery).toBe(0);
+    expect(await submitBtn(page).innerText()).toContain('20,500 ج.س');
+
+    await page.locator('aside select').selectOption('أم درمان');
+    await page.waitForTimeout(40);
+    await submitBtn(page).click();
+    const [href] = (await opened(page))[0] as string[];
+    const text = new URL(href).searchParams.get('text')!;
+    expect(text).toContain('🛵 التوصيل (أم درمان): 3,000 ج.س');
+    expect(text).toContain('المجموع الفرعي: 20,500 ج.س');
+    expect(text).toContain('الإجمالي الكلي: 23,500 ج.س');
+  });
+
+  it('picking up at the store never pays the delivery fee of a leftover region', async () => {
+    const { page } = await readyToOrder({
+      sanityDoc: { regions: [{ name: 'أم درمان', deliveryFee: 3000 }] },
+    });
+    await chooseFulfillment(page, 'استلام في المحل');
+    expect((await state(page)).totals).toMatchObject({ subtotal: 20500, delivery: 0, total: 20500 });
+    expect(await submitBtn(page).innerText()).toContain('20,500 ج.س');
+    await submitBtn(page).click();
+    const [href] = (await opened(page))[0] as string[];
+    const text = new URL(href).searchParams.get('text')!;
+    expect(text).toContain('🏪 الاستلام: من المحل');
+    expect(text).not.toContain('🛵 التوصيل');
+    expect(text).toContain('الإجمالي الكلي: 20,500 ج.س');
+  });
+
   it('legacy delivery fee/threshold fields still saved in the dashboard are ignored (nothing is added)', async () => {
     const { page } = await readyToOrder({ sanityDoc: { deliveryFee: 3000, freeDeliveryAbove: 20000 } });
     expect((await state(page)).totals).toMatchObject({ subtotal: 20500, total: 20500 });
     await submitBtn(page).click();
     const [href] = (await opened(page))[0] as string[];
     const text = new URL(href).searchParams.get('text')!;
-    expect(text).toContain('🛵 التوصيل: مع مندوب التوصيل');
+    expect(text).toContain('🛵 التوصيل (أم درمان): بدون رسوم');
     expect(text).toContain('الإجمالي الكلي: 20,500');
     expect(text).not.toContain('مجاني');
   });
 
-  it('the delivery wording saved in the dashboard reaches both the drawer and the message', async () => {
+  it('the fallback delivery wording saved in the dashboard reaches both the drawer and the message before a region is chosen', async () => {
     const { page } = await readyToOrder({ sanityDoc: { deliveryNote: 'مع مندوبنا داخل أم درمان' } });
+    await fillForm(page, { region: '' });
     expect(await drawerText(page)).toContain('مع مندوبنا داخل أم درمان');
     await submitBtn(page).click();
     const [href] = (await opened(page))[0] as string[];
-    expect(new URL(href).searchParams.get('text')).toContain('🛵 التوصيل: مع مندوبنا داخل أم درمان');
+    expect(new URL(href).searchParams.get('text')).toContain(
+      '🛵 التوصيل: مع مندوبنا داخل أم درمان — تُحدَّد حسب المنطقة',
+    );
   });
 
   it('special characters in the address / notes reach WhatsApp unchanged', async () => {
@@ -686,7 +737,7 @@ d('checkout — next order after sending one', () => {
     const second = new URL((calls[1] as string[])[0]).searchParams.get('text')!;
     expect(second).toContain('1) عجة بياض البيض بالخضار × 1');
     expect(second).toContain('الإجمالي الكلي: 5,500');
-    expect(second).toContain('🛵 التوصيل: مع مندوب التوصيل');
+    expect(second).toContain('🛵 التوصيل (أم درمان): بدون رسوم');
     expect(second).not.toContain('باول الشوفان');
   });
 });

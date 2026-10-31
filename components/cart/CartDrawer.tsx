@@ -2,8 +2,9 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSite } from '../SiteContext';
+import { deliveryFeeFor, findDeliveryRegion } from '@/lib/delivery';
 import { fmt, price, toLatinDigits } from '@/lib/format';
 import { imgUrl } from '@/lib/site-data';
 import type { CustomerInfo } from '@/lib/types';
@@ -49,7 +50,7 @@ const FULFILLMENT_OPTIONS = [
 ] as const;
 
 export default function CartDrawer() {
-  const { lines, totals, isOpen, closeCart, inc, dec, remove, clear } = useCart();
+  const { lines, isOpen, closeCart, inc, dec, remove, clear } = useCart();
   const [form, setForm] = useState<CustomerInfo>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [step, setStep] = useState<'cart' | 'success'>('cart');
@@ -57,6 +58,14 @@ export default function CartDrawer() {
   const [orderNo, setOrderNo] = useState('');
 
   const site = useSite();
+
+  /* سعر التوصيل الثابت يتبع المنطقة المختارة:
+     - «توصيل» + منطقة محددة → سعر تلك المنطقة من الإعدادات (0 = بدون رسوم).
+     - «استلام في المحل» أو بلا منطقة → لا تُضاف رسوم. */
+  const selectedRegion = findDeliveryRegion(site.regions, form.region);
+  const deliveryFee = form.fulfillment === 'delivery' ? deliveryFeeFor(site.regions, form.region) : 0;
+  /* إجماليات السلة المعروضة والمرسلة إلى واتساب تشمل التوصيل (لا تُحفظ الرسوم في السلة) */
+  const totals = useMemo(() => computeTotals(lines, deliveryFee), [lines, deliveryFee]);
 
   /* بعد إرسال الطلب: إغلاق السلة بأي طريقة (✕ أو الخلفية) يعيد الشاشة لوضع السلة الطبيعي */
   useEffect(() => {
@@ -279,8 +288,16 @@ export default function CartDrawer() {
                       </div>
                     ) : (
                       <div className="flex justify-between text-muted">
-                        <span>التوصيل داخل {site.city}</span>
-                        <span className="font-bold text-ink">{site.deliveryNote}</span>
+                        <span>
+                          التوصيل{selectedRegion ? ` — ${selectedRegion.name}` : ` داخل ${site.city}`}
+                        </span>
+                        <span className="font-bold text-ink">
+                          {!form.region
+                            ? site.deliveryNote
+                            : totals.delivery > 0
+                              ? price(totals.delivery, site.currency)
+                              : 'بدون رسوم'}
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between border-t border-sand pt-2.5 text-base font-black text-forest">
@@ -365,11 +382,21 @@ export default function CartDrawer() {
                           >
                             <option value="">موقع الاستلام — المنطقة (اختياري)</option>
                             {site.regions.map((r) => (
-                              <option key={r} value={r}>
-                                {r}
+                              <option key={r.name} value={r.name}>
+                                {r.fee > 0
+                                  ? `${r.name} — التوصيل ${price(r.fee, site.currency)}`
+                                  : `${r.name} — بدون رسوم توصيل`}
                               </option>
                             ))}
                           </select>
+                          {/* سعر التوصيل الثابت للمنطقة المختارة — يظهر قبل إتمام الطلب */}
+                          <p className="mt-1.5 text-[11px] font-bold leading-5 text-muted">
+                            {selectedRegion
+                              ? totals.delivery > 0
+                                ? `سعر التوصيل الثابت إلى ${selectedRegion.name}: ${price(totals.delivery, site.currency)}`
+                                : `التوصيل إلى ${selectedRegion.name} بدون رسوم.`
+                              : 'اختر المنطقة ليُضاف سعر التوصيل الثابت إلى الإجمالي.'}
+                          </p>
                         </div>
                         <div>
                           <input

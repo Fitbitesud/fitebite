@@ -15,13 +15,13 @@ for `vi.mock` / `jest.mock`.
 
 | File | What it checks |
 |---|---|
-| `cart-totals.test.ts` | `computeTotals`: subtotal = total (no delivery fee at any amount), kcal/protein, edge cases |
+| `cart-totals.test.ts` | `computeTotals`: subtotal + the fixed delivery fee of the chosen region (0 by default), kcal/protein, broken-fee edge cases |
 | `whatsapp-message.test.ts` | Order message content, numbers adding up, link/recipient, URL-encoding, `openWhatsApp`, order number, the optional pickup location (region/address) and both place-of-collection options (توصيل / استلام من المحل) |
 | `whatsapp-number.test.ts` | Which number is used: config default vs Sanity dashboard, normalisation (`0…`, `+249…`, `00249…`, Arabic digits, empty field), display number |
 | `live-fetch-freshness.test.ts` | Live dashboard refreshes bypass the CDN; static-build reads keep the cached client |
 | `comments.test.ts` | Approved-only reads, Sanity moderation writes, local/WhatsApp fallback, and malformed storage |
 | `subscriptions.test.ts` | Package/subscription pricing, discounts, macros, package WhatsApp message |
-| `browser/cart.browser.test.ts` | The real cart + drawer + menu in headless Chromium: add/remove, totals on screen (courier note, no fee, no «مجاني»), saved-cart corruption, form validation, the exact WhatsApp link opened, the place-of-collection switch (توصيل / استلام في المحل), second order |
+| `browser/cart.browser.test.ts` | The real cart + drawer + menu in headless Chromium: add/remove, totals on screen (region select with its fixed fee, pickup without a fee, fallback courier note), saved-cart corruption, form validation, the exact WhatsApp link opened, the place-of-collection switch (توصيل / استلام في المحل), second order |
 
 `browser/` needs `playwright` and a Chromium install (`npm i -D playwright && npx playwright install chromium`).
 Without Playwright that file is skipped automatically. `tests/setup.ts` fakes the Sanity client so nothing

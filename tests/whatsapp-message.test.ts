@@ -55,27 +55,26 @@ describe('buildOrderMessage — content', () => {
     expect(msg).toContain('الإجمالي الكلي: 20,500 ج.س'); // no delivery fee on top
   });
 
-  it('writes the delivery note instead of a fee: «التوصيل: مع مندوب التوصيل»', () => {
-    expect(msg).toContain('🛵 التوصيل: مع مندوب التوصيل');
+  it('writes the fixed fee of the chosen region next to it («التوصيل (أم درمان): بدون رسوم» when the fee is 0)', () => {
+    expect(msg).toContain('🛵 التوصيل (أم درمان): بدون رسوم');
     expect(msg).not.toContain('مجاني');
-    expect(msg).not.toContain('2,000 ج.س');
   });
 
-  it('keeps the money story food-only at any cart size (even past the old 40,000 threshold)', () => {
+  it('keeps the money story food-only when the delivery fee is 0 (any cart size, no old 40,000 threshold)', () => {
     const big = [line(fakeItem({ price: 40000 }), 1)];
     const m = build({}, big, computeTotals(big));
     expect(m).toContain('الإجمالي الكلي: 40,000 ج.س');
-    expect(m).toContain('🛵 التوصيل: مع مندوب التوصيل');
+    expect(m).toContain('🛵 التوصيل (أم درمان): بدون رسوم');
     expect(m).not.toContain('مجاني ✅');
     expect(m).not.toContain('45,000'); // the old +2,000 fee must not come back
   });
 
-  it('uses the delivery wording saved in the dashboard', () => {
+  it('uses the fallback delivery wording saved in the dashboard before a region is chosen', () => {
     const m = buildOrderMessage(
-      { lines, customer, orderNo: 'FB-1', totals },
+      { lines, customer: { ...customer, region: '' }, orderNo: 'FB-1', totals },
       { ...SITE, deliveryNote: 'مع مندوبنا داخل أم درمان' },
     );
-    expect(m).toContain('🛵 التوصيل: مع مندوبنا داخل أم درمان');
+    expect(m).toContain('🛵 التوصيل: مع مندوبنا داخل أم درمان — تُحدَّد حسب المنطقة');
   });
 
   it('bank transfer label for payment=bank', () => {
@@ -124,8 +123,8 @@ describe('buildOrderMessage — notes', () => {
 describe('buildOrderMessage — pickup location is optional (only name + phone are required)', () => {
   it('omits the region and address lines when the customer left them empty', () => {
     const m = build({ region: '', address: '' });
-    expect(m).not.toContain('المنطقة');
-    expect(m).not.toContain('العنوان');
+    expect(m).not.toContain('• المنطقة');
+    expect(m).not.toContain('• العنوان');
     expect(m).toContain('الاسم: أحمد محمد');
     expect(m).toContain('الجوال: 0912345678');
     expect(m).toContain('الإجمالي الكلي: 20,500 ج.س');
@@ -148,12 +147,12 @@ describe('buildOrderMessage — pickup location is optional (only name + phone a
 });
 
 describe('buildOrderMessage — place of collection: توصيل / استلام من المحل', () => {
-  it('delivery is the default: «طريقة الاستلام: 🛵 توصيل» plus the courier note', () => {
+  it('delivery is the default: «طريقة الاستلام: 🛵 توصيل» plus the region delivery line', () => {
     const m = build();
     expect(m).toContain('• طريقة الاستلام: 🛵 توصيل');
     expect(m).not.toContain('استلام من المحل');
     expect(m).not.toContain('مكان الاستلام:');
-    expect(m).toContain('🛵 التوصيل: مع مندوب التوصيل');
+    expect(m).toContain('🛵 التوصيل (أم درمان): بدون رسوم');
   });
 
   it('pickup names the store from the settings and replaces the courier line', () => {
@@ -202,12 +201,67 @@ describe('buildOrderMessage — place of collection: توصيل / استلام �
     expect(normalizeFulfillment(null)).toBe('delivery');
   });
 
-  it('both options keep the money story unchanged (no fee is added for either)', () => {
+  it('with no configured fee both options keep the money story unchanged', () => {
     for (const fulfillment of ['delivery', 'pickup'] as const) {
       const m = build({ fulfillment });
       expect(m).toContain('المجموع الفرعي: 20,500 ج.س');
       expect(m).toContain('الإجمالي الكلي: 20,500 ج.س');
     }
+  });
+});
+
+describe('buildOrderMessage — fixed delivery fee per region', () => {
+  const siteWithFees = {
+    ...SITE,
+    regions: [
+      { name: 'الرياض', fee: 2000 },
+      { name: 'أم درمان', fee: 3500 },
+      { name: 'بحري', fee: 0 },
+    ],
+  };
+
+  it('adds the fixed fee of the chosen region to the grand total and names it in its own line', () => {
+    const withFee = computeTotals(lines, 3500);
+    const m = buildOrderMessage(
+      { lines, customer, orderNo: 'FB-1', totals: withFee },
+      siteWithFees,
+    );
+    expect(m).toContain('المجموع الفرعي: 20,500 ج.س');
+    expect(m).toContain('🛵 التوصيل (أم درمان): 3,500 ج.س');
+    expect(m).toContain('الإجمالي الكلي: 24,000 ج.س');
+  });
+
+  it('a region with a 0 fee says «بدون رسوم» and keeps the total unchanged', () => {
+    const m = buildOrderMessage(
+      { lines, customer: { ...customer, region: 'بحري' }, orderNo: 'FB-1', totals },
+      siteWithFees,
+    );
+    expect(m).toContain('🛵 التوصيل (بحري): بدون رسوم');
+    expect(m).toContain('الإجمالي الكلي: 20,500 ج.س');
+  });
+
+  it('pickup never pays the delivery fee, even with a region left over in the form', () => {
+    const m = buildOrderMessage(
+      {
+        lines,
+        customer: { ...customer, fulfillment: 'pickup', region: 'الرياض' },
+        orderNo: 'FB-1',
+        totals,
+      },
+      siteWithFees,
+    );
+    expect(m).not.toContain('🛵 التوصيل');
+    expect(m).toContain('🏪 الاستلام: من المحل');
+    expect(m).toContain('الإجمالي الكلي: 20,500 ج.س');
+  });
+
+  it('without a region it keeps the fallback note and adds no fee', () => {
+    const m = buildOrderMessage(
+      { lines, customer: { ...customer, region: '' }, orderNo: 'FB-1', totals },
+      siteWithFees,
+    );
+    expect(m).toContain('🛵 التوصيل: مع مندوب التوصيل — تُحدَّد حسب المنطقة');
+    expect(m).toContain('الإجمالي الكلي: 20,500 ج.س');
   });
 });
 
