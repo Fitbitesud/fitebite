@@ -1,7 +1,9 @@
 import { BASE_PATH, SITE } from './config';
+import { normalizeRegions } from './delivery';
 import { toLatinDigits } from './format';
 import { getReadClient, isSanityConfigured, type ReadClientOptions } from './sanity/client';
 import { SETTINGS_QUERY } from './sanity/queries';
+import type { DeliveryRegion } from './types';
 
 /**
  * كل نصوص وأرقام وروابط الموقع في مكان واحد (SiteData).
@@ -72,12 +74,16 @@ export interface SiteData {
   whatsapp: string;
   whatsappDisplay: string;
   currency: string;
-  /** نص التوصيل المعروض في السلة ورسالة الطلب (التوصيل مع مندوب التوصيل) */
+  /**
+   * نص احتياطي للتوصيل يظهر في السلة ورسالة الطلب قبل اختيار المنطقة
+   * (بعد الاختيار يظهر سعر التوصيل الثابت للمنطقة).
+   */
   deliveryNote: string;
   city: string;
   address: string;
   hours: HoursRow[];
-  regions: string[];
+  /** مناطق التوصيل — لكل منطقة سعر توصيل ثابت (`fee`) يُضاف إلى الإجمالي */
+  regions: DeliveryRegion[];
   socials: { instagram: string; facebook: string; tiktok: string };
   home: HomeContent;
 }
@@ -98,7 +104,7 @@ export const DEFAULT_SITE: SiteData = {
   city: SITE.city,
   address: SITE.address,
   hours: SITE.hours as unknown as HoursRow[],
-  regions: SITE.regions as unknown as string[],
+  regions: SITE.regions as unknown as DeliveryRegion[],
   socials: SITE.socials as unknown as { instagram: string; facebook: string; tiktok: string },
   home: {
     heroBadge: 'وجبات طازجة تُطهى يومياً بدون زيوت ضارة',
@@ -373,10 +379,9 @@ function mergeSite(raw: Partial<SiteData> & { home?: Partial<HomeContent> }): Si
   if (!Array.isArray(h.strip) || !h.strip.length) h.strip = DEFAULT_SITE.home.strip;
   if (!Array.isArray(h.features) || !h.features.length) h.features = DEFAULT_SITE.home.features;
   if (!Array.isArray(h.steps) || !h.steps.length) h.steps = DEFAULT_SITE.home.steps;
-  /* المناطق: قصّ المسافات الزائدة (مثل "شارع المطار ") وحذف الفارغ */
-  merged.regions = Array.isArray(merged.regions)
-    ? merged.regions.map((r) => (typeof r === 'string' ? r.trim() : '')).filter(Boolean)
-    : [];
+  /* المناطق: قصّ المسافات الزائدة (مثل "شارع المطار ") وحذف الفارغ والمكرر،
+     وقراءة سعر التوصيل الثابت لكل منطقة (يقبل الشكل القديم: نص بدون سعر → 0) */
+  merged.regions = normalizeRegions(merged.regions);
   if (!merged.regions.length) merged.regions = DEFAULT_SITE.regions;
   /* الهوية والأرقام: قيم فارغة أو غير صالحة تسقط على الافتراضية */
   merged.nameAr = toSafeString(merged.nameAr, DEFAULT_SITE.nameAr);

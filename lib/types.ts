@@ -41,6 +41,15 @@ export interface MenuData {
   items: MenuItem[];
 }
 
+/**
+ * منطقة توصيل: اسم المنطقة + سعر التوصيل الثابت لها.
+ * `fee = 0` تعني توصيلاً بدون رسوم (وهو الافتراضي حتى يُكتب السعر من لوحة التحكم).
+ */
+export interface DeliveryRegion {
+  name: string;
+  fee: number;
+}
+
 export interface CartLine {
   item: MenuItem;
   qty: number;
@@ -70,11 +79,13 @@ export interface CustomerInfo {
   fulfillment: FulfillmentMethod;
 }
 
-/** إجماليات السلة — لا يوجد حقل لرسوم توصيل: الموقع يحسب قيمة الأكل فقط */
+/** إجماليات السلة — قيمة الأكل + سعر التوصيل الثابت للمنطقة المختارة */
 export interface OrderTotals {
   count: number;
   kcal: number;
   protein: number;
   subtotal: number;
+  /** سعر التوصيل الثابت للمنطقة (0 في الاستلام من المحل أو قبل اختيار المنطقة) */
+  delivery: number;
   total: number;
 }

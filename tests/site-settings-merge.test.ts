@@ -58,7 +58,11 @@ describe('multiple siteSettings documents', () => {
 
     const site = await getSite();
 
-    expect(site.regions).toEqual(['أم درمان', 'بحري']);
+    /* الشكل القديم (نص فقط) يُقرأ بلا سعر توصيل حتى يُضبط من اللوحة */
+    expect(site.regions).toEqual([
+      { name: 'أم درمان', fee: 0 },
+      { name: 'بحري', fee: 0 },
+    ]);
     expect(site.hours).toEqual([{ days: 'اليوم', time: '12:00' }]);
     expect(site.home.strip).toEqual([{ title: 'أحدث', icon: 'flame' }]);
   });
@@ -273,7 +277,7 @@ describe('common spelling fixes in dashboard texts', () => {
 
     const site = await getSite();
 
-    expect(site.regions).toEqual(['البحر الأحمر']);
+    expect(site.regions).toEqual([{ name: 'البحر الأحمر', fee: 0 }]);
     expect(site.home.heroParagraph).toBe('توصلك حتى باب البيت في البحر الأحمر.');
     expect(site.home.features[0]?.title).toBe('وجبة البحر الأحمر');
   });
@@ -292,5 +296,73 @@ describe('common spelling fixes in dashboard texts', () => {
     expect(site.address).toBe('بورتسودان — البحر الأحمر');
     expect(site.city).toBe('بورتسودان');
     expect(site.home.heroTitleLead).toBe('طعام صحي يُحسب');
+  });
+});
+
+describe('delivery regions and their fixed fees (dashboard)', () => {
+  it('reads a name + deliveryFee object per region from the dashboard', async () => {
+    setSanityDoc({
+      regions: [
+        { _key: 'a', _type: 'deliveryRegion', name: 'الرياض', deliveryFee: 2000 },
+        { _key: 'b', _type: 'deliveryRegion', name: 'أم درمان', deliveryFee: 3500 },
+        { _key: 'c', _type: 'deliveryRegion', name: 'بحري', deliveryFee: 0 },
+      ],
+    });
+
+    expect((await getSite()).regions).toEqual([
+      { name: 'الرياض', fee: 2000 },
+      { name: 'أم درمان', fee: 3500 },
+      { name: 'بحري', fee: 0 },
+    ]);
+  });
+
+  it('supports the older `fee` key and Arabic-Indic digits typed in the dashboard', async () => {
+    setSanityDoc({
+      regions: [
+        { name: 'الطائف', fee: 2500 },
+        { name: 'المنشية', deliveryFee: '٣٠٠٠' },
+      ],
+    });
+
+    expect((await getSite()).regions).toEqual([
+      { name: 'الطائف', fee: 2500 },
+      { name: 'المنشية', fee: 3000 },
+    ]);
+  });
+
+  it('mixes legacy string regions with priced ones without losing either', async () => {
+    setSanityDoc({ regions: ['الخرطوم', { name: 'الرياض', deliveryFee: 2000 }, '  '] });
+
+    expect((await getSite()).regions).toEqual([
+      { name: 'الخرطوم', fee: 0 },
+      { name: 'الرياض', fee: 2000 },
+    ]);
+  });
+
+  it('cleans broken fees and duplicate / nameless regions instead of showing them', async () => {
+    setSanityDoc({
+      regions: [
+        { name: 'الرياض', deliveryFee: -500 },
+        { name: '  الرياض  ', deliveryFee: 9000 },
+        { name: '', deliveryFee: 4000 },
+        { deliveryFee: 4000 },
+        { name: 'بحري', deliveryFee: 'abc' },
+        { name: 'أم درمان', deliveryFee: 1999.6 },
+      ],
+    });
+
+    expect((await getSite()).regions).toEqual([
+      { name: 'الرياض', fee: 0 },
+      { name: 'بحري', fee: 0 },
+      { name: 'أم درمان', fee: 2000 },
+    ]);
+  });
+
+  it('the local defaults are fee-free until the dashboard sets prices', async () => {
+    setSanityDoc(null);
+    const site = await getSite();
+    expect(site.regions.length).toBeGreaterThan(0);
+    expect(site.regions.every((r) => r.fee === 0)).toBe(true);
+    expect(site.regions.map((r) => r.name)).toEqual(DEFAULT_SITE.regions.map((r) => r.name));
   });
 });

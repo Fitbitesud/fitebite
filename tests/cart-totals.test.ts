@@ -5,11 +5,11 @@ import { fakeItem, line, menuItem } from './helpers';
 describe('computeTotals — happy path', () => {
   it('empty cart is all zeros', () => {
     expect(computeTotals([])).toEqual({
-      count: 0, kcal: 0, protein: 0, subtotal: 0, total: 0,
+      count: 0, kcal: 0, protein: 0, subtotal: 0, delivery: 0, total: 0,
     });
   });
 
-  it('a single item is charged at its own price — the total adds nothing on top', () => {
+  it('a single item is charged at its own price — with no fee the total adds nothing on top', () => {
     const t = computeTotals([line(fakeItem({ price: 6500 }), 1)]);
     expect(t.subtotal).toBe(6500);
     expect(t.total).toBe(6500);
@@ -32,7 +32,7 @@ describe('computeTotals — happy path', () => {
     expect(t.total).toBe(20500);
   });
 
-  it('total is always the sum of the lines, whatever they cost', () => {
+  it('with no fee, total is always the sum of the lines, whatever they cost', () => {
     for (const price of [1, 999, 20000, 39999, 40000, 40001, 123456]) {
       const t = computeTotals([line(fakeItem({ price }), 1)]);
       expect(t.total).toBe(t.subtotal);
@@ -41,31 +41,53 @@ describe('computeTotals — happy path', () => {
   });
 });
 
-describe('computeTotals — no delivery fee at all', () => {
-  it('the totals carry no delivery field (التوصيل مع مندوب التوصيل، لا رسوم على الموقع)', () => {
-    expect(computeTotals([line(fakeItem(), 3)])).not.toHaveProperty('delivery');
+describe('computeTotals — fixed delivery fee per region', () => {
+  it('with no fee (the default until one is set in the dashboard) the total is the food value only', () => {
+    const t = computeTotals([line(fakeItem(), 3)]);
+    expect(t.delivery).toBe(0);
+    expect(t.total).toBe(t.subtotal);
   });
 
-  it('a large cart is charged for the food only — nothing is added at any total', () => {
+  it('adds the fixed fee once — not per item or per unit', () => {
+    const t = computeTotals([line(fakeItem({ price: 5000 }), 4)], 2500);
+    expect(t.subtotal).toBe(20000);
+    expect(t.delivery).toBe(2500);
+    expect(t.total).toBe(22500);
+  });
+
+  it('the fee is independent of the cart size (no free-delivery threshold)', () => {
     for (const price of [500, 6500, 10000, 39999, 40000, 40001, 250000]) {
-      const t = computeTotals([line(fakeItem({ price }), 1)]);
+      const t = computeTotals([line(fakeItem({ price }), 1)], 2000);
       expect(Object.values(t).every((v) => Number.isFinite(v))).toBe(true);
-      expect(t.total).toBe(price);
+      expect([t.subtotal, t.delivery, t.total]).toEqual([price, 2000, price + 2000]);
     }
   });
 
-  it('adding to the cart never changes the money story: total = Σ price × qty', () => {
+  it('total = Σ price × qty + one fixed delivery fee', () => {
     const item = fakeItem({ price: 13500 });
     for (const qty of [1, 2, 3, 9]) {
-      expect(computeTotals([line(item, qty)]).total).toBe(13500 * qty);
+      expect(computeTotals([line(item, qty)], 3000).total).toBe(13500 * qty + 3000);
     }
   });
 
-  it('the old free-delivery threshold (40,000) means nothing now — same rule above and below it', () => {
-    const below = computeTotals([line(fakeItem({ price: 39999 }), 1)]);
-    const exact = computeTotals([line(fakeItem({ price: 40000 }), 1)]);
-    const above = computeTotals([line(fakeItem({ price: 40001 }), 1)]);
-    expect([below.total, exact.total, above.total]).toEqual([39999, 40000, 40001]);
+  it('an empty cart never pays a delivery fee', () => {
+    expect(computeTotals([], 5000)).toEqual({
+      count: 0, kcal: 0, protein: 0, subtotal: 0, delivery: 0, total: 0,
+    });
+  });
+
+  it('a broken fee (negative / fractional / NaN / text) is cleaned instead of corrupting the total', () => {
+    const lineItem = line(fakeItem({ price: 6500 }), 2);
+    for (const bad of [-3000, -1, NaN, Infinity, 'abc', null, undefined, '', '2,000', 2499.6]) {
+      const t = computeTotals([lineItem], bad as never);
+      expect(Number.isFinite(t.delivery)).toBe(true);
+      expect(Number.isInteger(t.delivery)).toBe(true);
+      expect(t.delivery).toBeGreaterThanOrEqual(0);
+      expect(t.total).toBe(t.subtotal + t.delivery);
+    }
+    expect(computeTotals([lineItem], '2,000' as never).delivery).toBe(2000);
+    expect(computeTotals([lineItem], 2499.6).delivery).toBe(2500);
+    expect(computeTotals([lineItem], -3000).delivery).toBe(0);
   });
 });
 
@@ -78,9 +100,9 @@ describe('computeTotals — edge cases', () => {
     expect(Number.isNaN(t.total)).toBe(false);
   });
 
-  it('a zero-quantity line contributes nothing', () => {
-    const t = computeTotals([line(fakeItem({ price: 5000 }), 0)]);
-    expect(t).toEqual({ count: 0, kcal: 0, protein: 0, subtotal: 0, total: 0 });
+  it('a zero-quantity line contributes nothing (and no delivery fee)', () => {
+    const t = computeTotals([line(fakeItem({ price: 5000 }), 0)], 3000);
+    expect(t).toEqual({ count: 0, kcal: 0, protein: 0, subtotal: 0, delivery: 0, total: 0 });
   });
 
   it('large quantities stay exact integers', () => {

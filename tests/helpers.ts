@@ -28,7 +28,7 @@ export function fakeItem(over: Partial<MenuItem> = {}): MenuItem {
 
 export const line = (item: MenuItem, qty: number): CartLine => ({ item, qty });
 
-/** Site used by the unit tests — the local defaults (no delivery fee: التوصيل مع مندوب التوصيل). */
+/** Site used by the unit tests — the local defaults (all delivery fees are 0 until set in the dashboard). */
 export const SITE: SiteData = { ...DEFAULT_SITE };
 
 export const setSanityDoc = (doc: unknown) => {

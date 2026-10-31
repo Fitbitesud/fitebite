@@ -1,4 +1,5 @@
 import { DEFAULT_SITE, type SiteData } from './site-data';
+import { normalizeDeliveryFee } from './delivery';
 import { fmt, price } from './format';
 import type { CartLine, CustomerInfo, FulfillmentMethod, OrderTotals } from './types';
 
@@ -12,13 +13,18 @@ export const FULFILLMENT_LABEL: Record<FulfillmentMethod, string> = {
 export const normalizeFulfillment = (v: unknown): FulfillmentMethod =>
   v === 'pickup' ? 'pickup' : 'delivery';
 
-export function computeTotals(lines: CartLine[]): OrderTotals {
+/**
+ * إجماليات السلة: قيمة الأكل + سعر التوصيل الثابت للمنطقة المختارة.
+ * - `deliveryFee` يُمرَّر من السلة بعد معرفة المنطقة (0 في الاستلام من المحل أو قبل الاختيار).
+ * - سلة فارغة لا تُضاف عليها أي رسوم، وأي قيمة تالفة أو سالبة تُعامل كـ 0.
+ */
+export function computeTotals(lines: CartLine[], deliveryFee = 0): OrderTotals {
   const count = lines.reduce((s, l) => s + l.qty, 0);
   const kcal = lines.reduce((s, l) => s + (l.item.macros?.kcal ?? 0) * l.qty, 0);
   const protein = lines.reduce((s, l) => s + (l.item.macros?.protein ?? 0) * l.qty, 0);
   const subtotal = lines.reduce((s, l) => s + l.item.price * l.qty, 0);
-  /* لا رسوم توصيل: الموقع يحسب قيمة الأكل فقط، والتوصيل مع مندوب التوصيل */
-  return { count, kcal, protein, subtotal, total: subtotal };
+  const delivery = subtotal > 0 ? normalizeDeliveryFee(deliveryFee) : 0;
+  return { count, kcal, protein, subtotal, delivery, total: subtotal + delivery };
 }
 
 export function makeOrderNo(): string {
@@ -77,8 +83,20 @@ export function buildOrderMessage(
   L.push('━━━━━━━━━━━━━━━');
   L.push(`🍽 عدد الأصناف: ${fmt(totals.count)}`);
   L.push(`🧾 المجموع الفرعي: ${price(totals.subtotal, cur)}`);
-  /* في التوصيل نكتب نص التوصيل من الإعدادات، وفي الاستلام من المحل نؤكد أن الطلب يُستلم من المحل */
-  L.push(isPickup ? '🏪 الاستلام: من المحل' : `🛵 التوصيل: ${site.deliveryNote}`);
+  /* سطر التوصيل:
+     - استلام من المحل → يُستلم من المحل بلا رسوم.
+     - توصيل مع منطقة → سعر التوصيل الثابت للمنطقة (أو «بدون رسوم» إذا كان 0).
+     - توصيل بلا منطقة → نص التوصيل الاحتياطي من الإعدادات مع تنبيه أن السعر يُحدَّد حسب المنطقة. */
+  const deliveryFee = normalizeDeliveryFee(totals.delivery);
+  if (isPickup) {
+    L.push('🏪 الاستلام: من المحل');
+  } else if (region) {
+    L.push(
+      `🛵 التوصيل (${region}): ${deliveryFee > 0 ? price(deliveryFee, cur) : 'بدون رسوم'}`,
+    );
+  } else {
+    L.push(`🛵 التوصيل: ${site.deliveryNote} — تُحدَّد حسب المنطقة`);
+  }
   L.push(`💰 *الإجمالي الكلي: ${price(totals.total, cur)}*`);
   L.push('');
   L.push(`_أُرسل تلقائياً من موقع ${site.nameAr}_ 🌿`);
